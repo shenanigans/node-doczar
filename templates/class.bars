@@ -1,0 +1,18 @@
+{{> header}}
+    <!-- constructor function -->
+    <div id="constructor" class="function">
+        <h3 class="title">
+            {{name}} (
+                {{#arguments}}
+{{> argument}}
+                {{/arguments}}
+            ) {
+        </h3>
+        {{#constructorDoc}}
+            <div class="markdown">
+{{{doc}}}
+            </div>
+        {{/constructorDoc}}
+    </div>
+{{> children}}
+{{> footer}}

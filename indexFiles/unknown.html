@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>unknown type</title>
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <script type="text/javascript">
+        window.onload = function(){
+            if (location.search)
+                document.getElementById ('typename').innerText = location.search.split ('=')[1];
+        };
+    </script>
+</head>
+<body>
+    <h1 class="error">
+        Unkown Type
+        <span id="typename" class="valtype"></span>
+    </h1>
+</body>
+</html>

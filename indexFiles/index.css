@@ -1,0 +1,142 @@
+
+html {
+    background-color: #fff;
+}
+
+body {
+    padding: 0em 3em;
+    font-family: sans-serif;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+#content {
+    margin: auto;
+    width: 36em;
+    padding: 1em 2em 10em 2em;
+    display: inline-block;
+    text-align: left;
+    border-top: 1px solid #D6D6D6;
+}
+
+#header {
+    display: inline-block;
+    min-width: 18em;
+    font-size: 210%;
+    text-align: left;
+    margin: 0.5em 0 0.5em 0;
+}
+
+#header .ctype {
+    color: #85B481;
+    min-width: 30em;
+}
+
+#header .breadcrumbs {
+
+}
+
+.breadcrumbs a {
+    text-decoration: none;
+}
+
+.breadcrumbs .delimiter {
+
+}
+.breadcrumbs .delimiter:first-child {
+    display: none;
+}
+
+#header .title {
+
+}
+
+.markdown {
+
+}
+
+.child .markdown {
+    background-color: #fff;
+    padding: 0.1em 1em;
+    border-radius: 0.5em 0 0 0;
+    font-family: serif;
+    margin: 0.5em 0 0 -1em;
+}
+.markdown:empty {
+    padding: 0;
+}
+
+/* if a .section has only one child, hide it */
+.section > *:only-child {
+    display:        none;
+}
+/* if a .section is empty, hide it */
+.section:empty {
+    display:        none;
+}
+
+#summary {
+
+}
+
+#details {
+
+}
+
+#statics {
+
+}
+
+#functions {
+
+}
+
+#members {
+
+}
+
+#methods {
+
+}
+
+.function {
+
+}
+
+.valtype {
+    text-decoration: none;
+    font-size: 85%;
+}
+/* skip leading pipe for first valtype */
+.valsep:first-child {
+    display: none;
+}
+
+.child {
+    padding: 0.7em 0 0.1em 1em;
+    margin: 0.75em 0;
+    background-color: #eee;
+    border-radius: 0.5em 0.5em 0 0;
+}
+
+.signature .argument {
+    display: inline-block;
+}
+
+.argument {
+
+}
+
+.argument .title, .child .title {
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.comma {
+    font-size: 150%
+}
+/* hide comma after final argument */
+*:last-child > .comma {
+    display: none;
+}

@@ -1,0 +1,28 @@
+    <!-- static properties -->
+    <div id="statics" class="section properties">
+        <h2 class="header">Static Properties</h2>
+        {{#statics}}
+{{> child}}
+        {{/statics}}
+    </div>
+    <!-- static functions -->
+    <div id="functions" class="section properties">
+        <h2 class="header">Static Functions</h2>
+        {{#functions}}
+{{> function}}
+        {{/functions}}
+    </div>
+    <!-- instance properties -->
+    <div id="members" class="section members">
+        <h2 class="header">Instance Properties</h2>
+        {{#members}}
+{{> child}}
+        {{/members}}
+    </div>
+    <!-- instance methods -->
+    <div id="methods" class="section members">
+        <h2 class="header">Instance Methods</h2>
+        {{#methods}}
+{{> function}}
+        {{/methods}}
+    </div>

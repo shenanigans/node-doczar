@@ -1,0 +1,39 @@
+<div class="function">
+    <h3 class="signature">
+        {{#returns}}
+            <a href="{{path}}">
+                {{type}}
+            </a>
+            <div class="markdown">
+{{{summary}}}
+            </div>
+        {{/returns}}
+        <a href="/{{simpleCtype}}/{{pathname}}/index.html">
+            {{name}}
+        </a>
+        (
+            {{#arguments}}
+                {{> argument}}
+            {{/arguments}}
+        ) {
+    </h3>
+    <div class="markdown">
+{{{summary}}}
+    </div>
+    <ul class="arguments">
+        {{#arguments}}
+            <li class="argTitle">
+                {{#valtype}}
+                    <span class="valsep">|</span>
+                    <a class="valtype" href="{{path}}">{{name}}</a>
+                {{/valtype}}
+                <a class="argname" href="argument/{{pathname}}/index.html">
+                    {{name}}
+                </a>
+                <div class="markdown">
+{{{summary}}}
+                </div>
+            </li>
+        {{/arguments}}
+    </ul>
+</div>

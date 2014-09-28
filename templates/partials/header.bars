@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{pathstr}} documentation</title>
+    <link rel="stylesheet" type="text/css" href="{{baseTagPath}}index.css" />
+    <link rel="stylesheet" type="text/css" href="{{baseTagPath}}highlight.css" />
+    <script type="text/javascript" src="{{baseTagPath}}index.js"></script>
+</head>
+<body class="{{ctype}}">
+    <div id="header">
+        <span class="ctype">{{ctype}}</span>
+        <span class="breadcrumbs">
+            {{#breadcrumbs}}
+                <span class="delimiter">{{delimiter}}</span>
+                <a href="{{path}}" class="breadcrumb {{ctype}}">{{name}}</a>
+            {{/breadcrumbs}}
+        </span>
+    </div>
+    <br />
+    <div id="content">
+        <!-- basic document info -->
+        <div id="details" class="markdown">{{{details}}}</div>
+        <!-- extra document info -->
+        <div id="spares" class="section">
+            <h2>More Information</h2>
+            {{#spares}}
+                <div class="spare">
+                    <a href="spare/{{name}}/index.html">{{name}}</a>
+                    <div class="markdown">
+{{{doc}}}
+                    </div>
+                </div>
+            {{/spares}}
+        </div>
+        {{#constructorFunction}}
+            <!-- constructor function -->
+            <h2>Constructor</h2>
+            <div id="constructor" class="function">
+                <h3 class="signature">
+                    {{../name}} (
+                        {{#../arguments}}
+                            {{> argument}}
+                        {{/../arguments}}
+                    ) {
+                </h3>
+                <div class="markdown">
+{{{doc}}}
+                </div>
+                <ul class="arguments">
+                    {{#../arguments}}
+                        <li class="argument">
+                            {{#valtype}}
+                                <span class="valsep">|</span>
+                                <a class="valtype" href="{{path}}">{{name}}</a>
+                            {{/valtype}}
+                            <a class="title" href="argument/{{pathname}}/index.html">
+                                {{name}}
+                            </a>
+                            <div class="markdown">
+{{{summary}}}
+                            </div>
+                        </li>
+                    {{/../arguments}}
+                </ul>
+            </div>
+        {{/constructorFunction}}
