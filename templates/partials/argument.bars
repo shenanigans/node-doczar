@@ -1,7 +1,7 @@
 <div class="argument">
     {{#valtype}}
         <span class="valsep">|</span>
-        <a class="valtype" href="{{path}}">{{name}}</a>
+        <a class="valtype" href="{{link path}}">{{name}}</a>
     {{/valtype}}
     <a class="title" href="argument/{{pathname}}/index.html">
         {{name}}

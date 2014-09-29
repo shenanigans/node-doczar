@@ -1,14 +1,14 @@
-<div class="function">
+<div id="{{ctype}}_{{name}}" class="function">
     <h3 class="signature">
         {{#returns}}
-            <a href="{{path}}">
+            <a href="{{link path}}">
                 {{type}}
             </a>
             <div class="markdown">
-{{{summary}}}
+{{{markdown summaryDoc}}}
             </div>
         {{/returns}}
-        <a href="/{{simpleCtype}}/{{pathname}}/index.html">
+        <a href="{{simpleCtype}}/{{pathname}}/index.html">
             {{name}}
         </a>
         (
@@ -18,20 +18,20 @@
         ) {
     </h3>
     <div class="markdown">
-{{{summary}}}
+{{{markdown summaryDoc}}}
     </div>
     <ul class="arguments">
         {{#arguments}}
             <li class="argTitle">
                 {{#valtype}}
                     <span class="valsep">|</span>
-                    <a class="valtype" href="{{path}}">{{name}}</a>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
                 {{/valtype}}
-                <a class="argname" href="argument/{{pathname}}/index.html">
+                <a class="argname" href="{{../ctype}}/{{../name}}/argument/{{pathname}}/index.html">
                     {{name}}
                 </a>
                 <div class="markdown">
-{{{summary}}}
+{{{markdown summaryDoc}}}
                 </div>
             </li>
         {{/arguments}}

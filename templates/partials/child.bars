@@ -1,10 +1,10 @@
-<div class="child">
+<div id="{{ctype}}_{{name}}" class="child">
     {{#valtype}}
         <span class="valsep">|</span>
-        <a class="valtype" href="{{path}}">{{name}}</a>
+        <a class="valtype" href="{{link path}}">{{name}}</a>
     {{/valtype}}
     <a class="title" href="{{simpleCtype}}/{{pathname}}/index.html">{{name}}</a>
     <div class="markdown">
-{{{summary}}}
+{{{markdown summaryDoc}}}
     </div>
 </div>

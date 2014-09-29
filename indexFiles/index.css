@@ -13,7 +13,7 @@ body {
 
 #content {
     margin: auto;
-    width: 36em;
+    width: 43em;
     padding: 1em 2em 10em 2em;
     display: inline-block;
     text-align: left;
@@ -55,6 +55,32 @@ body {
 .markdown {
 
 }
+
+#TOC {
+    display: inline-block;
+    float: left;
+    padding: 0.7em 1em 1em 1em;
+    border: 0.1em solid #D8D8D8;
+    border-radius: 0.2em;
+    margin-right: 2em;
+}
+#TOC h3 {
+    margin: 0 0 0.2em 0;
+}
+#TOC h4 {
+    margin: 0.33em 0 0 -0.5em;
+}
+#TOC h4 a {
+    text-decoration: none;
+}
+#TOC .section {
+    padding: 0 0 0 1em;
+}
+
+.clear {
+    clear: both;
+}
+
 
 .child .markdown {
     background-color: #fff;
