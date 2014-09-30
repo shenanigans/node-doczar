@@ -22,50 +22,69 @@
     </div>
     <br />
     <div id="content">
+        {{#if isFunction}}
+            <h2 class="signature">
+                {{name}} (
+                    {{#arguments}}
+                        {{> argument}}
+                    {{/arguments}}
+                ) {
+            </h3>
+        {{/if}}
         <!-- basic document info -->
         <div id="details" class="markdown">
             <div id="TOC">
                 <h3>Table of Contents</h3>
-                <div class="section">
-                    <h4 class="header"><a href="#statics">Static Properties</a></h4>
-                    {{#statics}}
-                        <a href="#property_{{name}}">{{name}}</a><br />
-                    {{/statics}}
-                </div>
-                <div class="section">
-                    <h4 class="header"><a href="#functions">Static Functions</a></h4>
-                    {{#functions}}
-                        <a href="#property_{{name}}">{{name}}</a><br />
-                    {{/functions}}
-                </div>
-                <div class="section">
-                    <h4 class="header"><a href="#members">Instance Properties</a></h4>
-                    {{#members}}
-                        <a href="#member_{{name}}">{{name}}</a><br />
-                    {{/members}}
-                </div>
-                <div class="section">
-                    <h4 class="header"><a href="#methods">Instance Methods</a></h4>
-                    {{#methods}}
-                        <a href="#member_{{name}}">{{name}}</a><br />
-                    {{/methods}}
-                </div>
+                {{#if statics}}
+                    <div class="section">
+                        <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                        {{#statics}}
+                            <a href="#property_{{name}}">{{name}}</a><br />
+                        {{/statics}}
+                    </div>
+                {{/if}}
+                {{#if functions}}
+                    <div class="section">
+                        <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                        {{#functions}}
+                            <a href="#property_{{name}}">{{name}}</a><br />
+                        {{/functions}}
+                    </div>
+                {{/if}}
+                {{#if members}}
+                    <div class="section">
+                        <h4 class="header"><a href="#members">Instance Properties</a></h4>
+                        {{#members}}
+                            <a href="#member_{{name}}">{{name}}</a><br />
+                        {{/members}}
+                    </div>
+                {{/if}}
+                {{#if methods}}
+                    <div class="section">
+                        <h4 class="header"><a href="#methods">Instance Methods</a></h4>
+                        {{#methods}}
+                            <a href="#member_{{name}}">{{name}}</a><br />
+                        {{/methods}}
+                    </div>
+                {{/if}}
             </div>
 {{{markdown details}}}
         <br class="clear" />
         </div>
-        <!-- extra document info -->
-        <div id="spares" class="section">
-            <h2>More Information</h2>
-            {{#spares}}
-                <div class="spare">
-                    <a href="spare/{{name}}/index.html">{{name}}</a>
-                    <div class="markdown">
-{{{markdown doc}}}
+        {{#if spares}}
+            <!-- extra document info -->
+            <div id="spares" class="section">
+                <h2>More Information</h2>
+                {{#spares}}
+                    <div class="spare">
+                        <a href="spare/{{name}}/index.html">{{name}}</a>
+                        <div class="markdown">
+    {{{markdown doc}}}
+                        </div>
                     </div>
-                </div>
-            {{/spares}}
-        </div>
+                {{/spares}}
+            </div>
+        {{/if}}
         {{#constructorFunction}}
             <!-- constructor function -->
             <h2>Constructor</h2>

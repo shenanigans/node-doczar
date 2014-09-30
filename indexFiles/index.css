@@ -93,15 +93,6 @@ body {
     padding: 0;
 }
 
-/* if a .section has only one child, hide it */
-.section > *:only-child {
-    display:        none;
-}
-/* if a .section is empty, hide it */
-.section:empty {
-    display:        none;
-}
-
 #summary {
 
 }

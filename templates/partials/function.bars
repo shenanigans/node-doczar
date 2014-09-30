@@ -22,12 +22,12 @@
     </div>
     <ul class="arguments">
         {{#arguments}}
-            <li class="argTitle">
+            <li class="child argument">
                 {{#valtype}}
                     <span class="valsep">|</span>
                     <a class="valtype" href="{{link path}}">{{name}}</a>
                 {{/valtype}}
-                <a class="argname" href="{{../ctype}}/{{../name}}/argument/{{pathname}}/index.html">
+                <a class="argname" href="{{link path}}">
                     {{name}}
                 </a>
                 <div class="markdown">

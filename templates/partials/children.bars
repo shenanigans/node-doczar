@@ -1,53 +1,67 @@
-    <!-- arguments -->
-    <div id="arguments" class="section arguments">
-        <h2 class="header">Static Properties</h2>
-        {{#arguments}}
-            <div class="argTitle">
-                {{#valtype}}
-                    <span class="valsep">|</span>
-                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                {{/valtype}}
-                <a class="argname" href="argument/{{pathname}}/index.html">
-                    {{name}}
-                </a>
-                <div class="markdown">
-{{{markdown summaryDoc}}}
-                </div>
+    {{#if isFunction}}
+        {{#if arguments}}
+            <!-- arguments -->
+            <div id="arguments" class="section arguments">
+                <h2 class="header">Arguments</h2>
+                {{#arguments}}
+                    <div class="child argument">
+                        {{#valtype}}
+                            <span class="valsep">|</span>
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                        {{/valtype}}
+                        <a class="argname" href="argument/{{pathname}}/index.html">
+                            {{name}}
+                        </a>
+                        <div class="markdown">
+        {{{markdown summaryDoc}}}
+                        </div>
+                    </div>
+                {{/arguments}}
             </div>
-        {{/arguments}}
-    </div>
-    <!-- return values -->
-    <div id="returns" class="section returns">
-        <h2 class="header">Static Properties</h2>
-        {{#returns}}
-{{> child}}
-        {{/returns}}
-    </div>
-    <!-- static properties -->
-    <div id="statics" class="section properties">
-        <h2 class="header">Static Properties</h2>
-        {{#statics}}
-{{> child}}
-        {{/statics}}
-    </div>
-    <!-- static functions -->
-    <div id="functions" class="section properties">
-        <h2 class="header">Static Functions</h2>
-        {{#functions}}
-{{> function}}
-        {{/functions}}
-    </div>
-    <!-- instance properties -->
-    <div id="members" class="section members">
-        <h2 class="header">Instance Properties</h2>
-        {{#members}}
-{{> child}}
-        {{/members}}
-    </div>
-    <!-- instance methods -->
-    <div id="methods" class="section members">
-        <h2 class="header">Instance Methods</h2>
-        {{#methods}}
-{{> function}}
-        {{/methods}}
-    </div>
+        {{/if}}
+        {{#if returns}}
+            <!-- return values -->
+            <div id="returns" class="section returns">
+                <h2 class="header">Return Values</h2>
+                {{#returns}}
+        {{> child}}
+                {{/returns}}
+            </div>
+        {{/if}}
+    {{/if}}
+    {{#if statics}}
+        <!-- static properties -->
+        <div id="statics" class="section properties">
+            <h2 class="header">Static Properties</h2>
+            {{#statics}}
+    {{> child}}
+            {{/statics}}
+        </div>
+    {{/if}}
+    {{#if functions}}
+        <!-- static functions -->
+        <div id="functions" class="section properties">
+            <h2 class="header">Static Functions</h2>
+            {{#functions}}
+    {{> function}}
+            {{/functions}}
+        </div>
+    {{/if}}
+    {{#if members}}
+        <!-- instance properties -->
+        <div id="members" class="section members">
+            <h2 class="header">Instance Properties</h2>
+            {{#members}}
+    {{> child}}
+            {{/members}}
+        </div>
+    {{/if}}
+    {{#if methods}}
+        <!-- instance methods -->
+        <div id="methods" class="section members">
+            <h2 class="header">Instance Methods</h2>
+            {{#methods}}
+    {{> function}}
+            {{/methods}}
+        </div>
+    {{/if}}
