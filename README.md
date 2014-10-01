@@ -50,7 +50,7 @@ Examples
 
 The simplest form of document comment: a single [declaration](#doc-comment-syntax) in its own block
 comment.
-```javascript
+```c
 /**     @class FooBox
     Represents a box of foos.
 */
@@ -59,7 +59,7 @@ comment.
 The easiest way to document something a little more interesting is to use subdeclarations. You may
 also declare one or more value types for each component. Subdeclaration paths are scoped to the
 first Component declared in the comment.
-```javascript
+```c
 /**     @class FooBox
     Represents a box of foos.
 @argument/Number maxCount
@@ -72,7 +72,7 @@ first Component declared in the comment.
 
 The `@module` declaration has an infectious scope. Every subsequent decaration in the current source
 file is automatically the child of the declared `module`.
-```javascript
+```c
 /**     @module foocontainers
     An assortment of useful collections for storing foos.
 */
@@ -84,7 +84,7 @@ file is automatically the child of the declared `module`.
 Function-related declarations have a special scope. `argument` and `callback` declarations apply to
 the most recently declared `Component`. Adding one or more `returns` declarations will manually
 close the scope.
-```javascript
+```c
 /**     @class FooBox
     Represents a box of foos.
 @member/Function storeFoo
@@ -109,7 +109,7 @@ close the scope.
 Nearly every `Component` we declare has its own addressable path. Here we will add an additional
 document to several children of a `Component` by selecting them by path in a second file. A `spare`
 is simply an extra named markdown document which is associated with another `Component`.
-```javascript
+```c
 /**     @module foocontainers
     An assortment of useful collections for storing foos.
 */
@@ -131,7 +131,7 @@ is simply an extra named markdown document which is associated with another `Com
         A useful status message.
 */
 ```
-```javascript
+```c
 /**     @module foocontainers
 @spare FooBox~additionalInfo
     This content will be added to the `spare` called "additionalInfo".
@@ -152,7 +152,7 @@ is simply an extra named markdown document which is associated with another `Com
 
 You can specify shorter documentation for a complex `Component` by adding a `spare` called
 "summary". The summary will be used whenever the `Component` is documented as a child.
-```javascript
+```c
 /**     @module foocontainers
 
     -- long documentation goes here --
@@ -164,7 +164,7 @@ You can specify shorter documentation for a complex `Component` by adding a `spa
 Since path delimiters imply the type of their `Component`, you can usually just jump right to the
 value type. The default type is `property` so the leading delimiter may even be emitted for static
 properties. You cannot open a new comment with this syntax, nor can you use it to create a `module`.
-```javascript
+```c
 /**     @class FooBox
 @Array .allBoxes
     The unique name of this box.
@@ -175,19 +175,23 @@ properties. You cannot open a new comment with this syntax, nor can you use it t
 */
 ```
 
-An additional note about value types: if you start a type with a delimiter character, it is scoped
-appropriate to its location. Imagine you have two sources for a `Component` called "Nodule"...
-```javascript
+To help make your documentation easier to navigate, doczar supports automatic links to another 
+`Component`. An additional note about value types: if you start a type with a delimiter 
+character, it is scoped as if you were creating a new comment at the same line in the same 
+file.
+```c
 /**     @module NoduleHeap
-    A monad heap of `NoduleHeap.Nodule` instances.
+    A monad heap of [Nodule](.Nodule) instances. Not to be confused with 
+    [NoduleChain](NoduleChain) or its [Nodules](NoduleChain.Nodule).
 */
 /**     @class Nodule
     A data unit containing arbitrary information.
 */
 ```
-```javascript
+```c
 /**     @module NoduleChain
-    A monad chain of `NoduleChain.Nodule` instances.
+    A monad chain of [Nodule](.Nodule) instances. Not to be confused with 
+    [NoduleHeap](NoduleHeap) or its [Nodules](NoduleHeap.Nodule).
 */
 /**     @class Nodule
     A data unit containing arbitray information.
@@ -195,11 +199,6 @@ appropriate to its location. Imagine you have two sources for a `Component` call
     This is scoped to the current module.
 */
 ```
-
-
-To help make your documentation easy to navigate, doczar supports automatic links to another
-`Component`.
-
 
 Doc Comment Syntax
 ------------------
