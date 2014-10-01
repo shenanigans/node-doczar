@@ -14,7 +14,7 @@
   "author": "Kevin \"Schmidty\" Smith",
   "main": "main.js",
   "bin": {
-    "doczar": "cli.js"
+    "doczar": "./cli.js"
   },
   "dependencies": {
     "marked": "^0.3.2",
