@@ -6,7 +6,9 @@ node-doczar
  2 | [Shell Usage](#shell-usage)
  3 | [API](#api)
  4 | [Examples](#examples)
- 5 | [Doc Comment Syntax](#doc-comment-syntax)
+ 5 | [Components And Modifiers](#components-and-modifiers)
+ 6 | [Major To-Do Items](#major-to-do-items)
+ 7 | [License](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for all languages.
 
@@ -163,7 +165,7 @@ You can specify shorter documentation for a complex `Component` by adding a `spa
 ```
 
 Since path delimiters imply the type of their `Component`, you can usually just jump right to the
-value type. The default type is `property` so the leading delimiter may even be emitted for static
+value type. The default type is `property` so the leading delimiter may even be ommitted for static
 properties. You cannot open a new comment with this syntax, nor can you use it to create a `module`.
 ```c
 /**     @class FooBox
@@ -218,35 +220,76 @@ is probably a safe link, but `unscrew` probably isn't.
 */
 ```
 ```c
-/**     @Object John
+/**     @property/Human.Mechanic John
     This monad worker Object knows a few things about mechanics, like how to use a
     [screw driver](Screwdriver) to [unscrew](unscrew) things.
 */
 ```
 
-Doc Comment Syntax
-------------------
-The parser is compatible with c-like block comments, python docstrings and ruby's weird =begin/=end
-syntax. C-like blocks may start with your preferred number of consecutive asterisks. In all
-syntaxes, the first `@directive` must be on the same line as the characters which open the document
-block.
+Here are a few more opportunities to be lazy and ommit things.
+```c
+/**     @property/Function asynchronouslyGetString
+    Fetch a string from the filesystem or something.
+@String (format
+    How would you like your [String]()?
+@callback
+    @argument/Error
+    @argument/String
+        The fetched string, formatted to order.
+*/
+```
 
-### Components and Directives
-Doczar assembles your docs into a tree of nodes, called Components. The types of components
-available are:
- * **module:** An importable/require-able collection of related Components. A `module` is sufficiently flexible to support the crazy things javascript devs regularly export.
- * **class:** A constructor, with arguments, that produces instances of itself.
- * **spare:** Additional information related to a Component. Under the hood, *all* textual documentation lives inside a `spare`.
- * **property:** A static function or property of the parent `Component`. A simply reference/pointer from one static instance to another.
- * **member:** A property or method of an instance of the parent `Component`.
- * **argument:** An argument passed to a function. Optionally named.
- * **callback:** A specialized `argument` for documenting callback functions. Arguments of callback functions will be conveniently displayed whenever the `callback` is displayed as if it were an `argument`.
- * **returns:** The value returned from a function. Multiple return values are supported.
+Components and Modifiers
+------------------------
+###Components
+ * `@spare`
+ * `@module`
+ * `@property`
+ * `@class`
+ * `@member`
+ * `@argument`
+ * `@callback`
+ * `@returns`
 
-Components are created and described by `directives`, of which there are only two types.
- * A **declaration** creates or selects a `Component`. Most lines containing an @ symbol are declarations. They may be immediately followed by one or more `modifier` and a markdown document.
- * A **modifier** is a keyword starting with an @ symbol which applies a simple modification to the Component created or selected by a declaration.
+###Modifiers
+ * `@development`
+ * `@api`
+ * `@super`
+ * `@interface`
+ * `@public`
+ * `@protected`
+ * `@private`
+ * `@abstract`
 
-### Paths
+Major To-Do Items
+-----------------
+* Java interfaces
+* tons of simple modifiers - abstract, public, protected, private, constant, final
+* output currently looks **much** better in Chrome than Firefox.
+* standard libs for javascript/node.js/htmlDOM
+* A recursive declaration for elegantly documenting JSON documents
 
-### Inline Links
+License
+-------
+The MIT License (MIT)
+
+Copyright (c) 2014 Kevin "Schmidty" Smith
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+

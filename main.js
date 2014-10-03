@@ -74,8 +74,8 @@ Doczar.prototype.finalize = function (directory, callback) {
 
 @argument/String directory
 @callback
-    @argument/Array errors
-    @argument/Array warnings
+    @argument/Array
+    @argument/Array
     @returns
 @callback
     @argument/Array errors
