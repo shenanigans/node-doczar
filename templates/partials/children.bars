@@ -1,40 +1,74 @@
-    {{#if isFunction}}
-        {{#if arguments}}
-            <!-- arguments -->
-            <div id="arguments" class="section arguments">
-                <h2 class="header">Arguments</h2>
-                {{#arguments}}
-                    <div class="child argument">
-                        {{#valtype}}
-                            <span class="valsep">|</span>
-                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                        {{/valtype}}
-                        <a class="argname" href="argument/{{pathname}}/index.html">
-                            {{name}}
-                        </a>
-                        <div class="markdown">
-        {{{markdown summaryDoc}}}
+    {{#unless hasConstructor}}
+        {{#if isFunction}}
+            {{#if arguments}}
+                <!-- arguments -->
+                <div id="arguments" class="section arguments">
+                    <h2 class="header">Arguments</h2>
+                    {{#arguments}}
+                        <div class="child argument">
+                            {{#valtype}}
+                                <span class="valsep">|</span>
+                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                            {{/valtype}}
+                            <a class="title" href="argument/{{pathname}}/index.html">
+                                {{name}}
+                            </a>
+                            {{#if isCallback}}
+                                <span class="signature">
+                                    (
+                                    {{#arguments}}
+                                        {{> argument}}
+                                    {{/arguments}}
+                                    ) {
+                                </span>
+                            {{/if}}
+                            <div class="markdown">{{{markdown summaryDoc}}}</div>
+                            {{#if isCallback}}
+                                <ul class="arguments">
+                                    {{#arguments}}
+                                        <li class="child {{ctype}}">
+                                            {{#valtype}}
+                                                <span class="valsep">|</span>
+                                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                                            {{/valtype}}
+                                            <a class="argname" href="{{link path}}">
+                                                {{name}}
+                                            </a>
+                                            <div class="markdown">{{{markdown summaryDoc}}}</div>
+                                        </li>
+                                    {{/arguments}}
+                                </ul>
+                            {{/if}}
                         </div>
-                    </div>
-                {{/arguments}}
-            </div>
+                    {{/arguments}}
+                </div>
+            {{/if}}
+            {{#if returns}}
+                <!-- return values -->
+                <div id="returns" class="section returns">
+                    <h2 class="header">Return Values</h2>
+                    {{#returns}}
+                        {{> child}}
+                    {{/returns}}
+                </div>
+            {{/if}}
         {{/if}}
-        {{#if returns}}
-            <!-- return values -->
-            <div id="returns" class="section returns">
-                <h2 class="header">Return Values</h2>
-                {{#returns}}
-        {{> child}}
-                {{/returns}}
-            </div>
-        {{/if}}
+    {{/unless}}
+    {{#if modules}}
+        <!-- modules -->
+        <div id="modules" class="section modules">
+            <h2 class="header">Modules</h2>
+            {{#modules}}
+                {{> child}}
+            {{/modules}}
+        </div>
     {{/if}}
     {{#if statics}}
         <!-- static properties -->
         <div id="statics" class="section properties">
             <h2 class="header">Static Properties</h2>
             {{#statics}}
-    {{> child}}
+                {{> child}}
             {{/statics}}
         </div>
     {{/if}}
@@ -43,7 +77,7 @@
         <div id="functions" class="section properties">
             <h2 class="header">Static Functions</h2>
             {{#functions}}
-    {{> function}}
+                {{> function}}
             {{/functions}}
         </div>
     {{/if}}
@@ -52,7 +86,7 @@
         <div id="members" class="section members">
             <h2 class="header">Instance Properties</h2>
             {{#members}}
-    {{> child}}
+                {{> child}}
             {{/members}}
         </div>
     {{/if}}
@@ -61,7 +95,7 @@
         <div id="methods" class="section members">
             <h2 class="header">Instance Methods</h2>
             {{#methods}}
-    {{> function}}
+                {{> function}}
             {{/methods}}
         </div>
     {{/if}}

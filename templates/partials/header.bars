@@ -69,7 +69,7 @@
                 {{/if}}
             </div>
 {{{markdown details}}}
-        <br class="clear" />
+            <br class="clear" />
         </div>
         {{#if spares}}
             <!-- extra document info -->
@@ -78,29 +78,25 @@
                 {{#spares}}
                     <div class="spare">
                         <a href="spare/{{name}}/index.html">{{name}}</a>
-                        <div class="markdown">
-    {{{markdown doc}}}
-                        </div>
+                        <div class="markdown">{{{markdown doc}}}</div>
                     </div>
                 {{/spares}}
             </div>
         {{/if}}
-        {{#constructorFunction}}
+        {{#if hasConstructor}}
             <!-- constructor function -->
             <h2>Constructor</h2>
             <div id="constructor" class="function">
                 <h3 class="signature">
-                    {{../name}} (
-                        {{#../arguments}}
+                    {{name}} (
+                        {{#arguments}}
                             {{> argument}}
-                        {{/../arguments}}
+                        {{/arguments}}
                     ) {
                 </h3>
-                <div class="markdown">
-{{{markdown doc}}}
-                </div>
+                <div class="markdown">{{{markdown doc}}}</div>
                 <ul class="arguments">
-                    {{#../arguments}}
+                    {{#arguments}}
                         <li class="argument">
                             {{#valtype}}
                                 <span class="valsep">|</span>
@@ -109,11 +105,9 @@
                             <a class="title" href="argument/{{pathname}}/index.html">
                                 {{name}}
                             </a>
-                            <div class="markdown">
-{{{markdown summaryDoc}}}
-                            </div>
+                            <div class="markdown">{{{markdown summaryDoc}}}</div>
                         </li>
-                    {{/../arguments}}
+                    {{/arguments}}
                 </ul>
             </div>
-        {{/constructorFunction}}
+        {{/if}}

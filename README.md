@@ -56,9 +56,10 @@ comment.
 */
 ```
 
-The easiest way to document something a little more interesting is to use subdeclarations. You may
-also declare one or more value types for each component. Subdeclaration paths are scoped to the
-first Component declared in the comment.
+The easiest way to document something a little more interesting is to use inner Declarations. All
+inner Declarations affect the parent Declaration, not the one immediately above. You can use a
+forward slash after a Component type to add value types to a Component, and use the pipe character
+to chain multiple value types onto the same Component.
 ```c
 /**     @class FooBox
     Represents a box of foos.
@@ -175,13 +176,13 @@ properties. You cannot open a new comment with this syntax, nor can you use it t
 */
 ```
 
-To help make your documentation easier to navigate, doczar supports automatic links to another 
-`Component`. An additional note about value types: if you start a type with a delimiter 
-character, it is scoped as if you were creating a new comment at the same line in the same 
+To help make your documentation easier to navigate, doczar supports automatic links to another
+`Component`. An additional note about value types: if you start a type with a delimiter
+character, it is scoped as if you were creating a new comment at the same line in the same
 file.
 ```c
 /**     @module NoduleHeap
-    A monad heap of [Nodule](.Nodule) instances. Not to be confused with 
+    A monad heap of [Nodule](.Nodule) instances. Not to be confused with
     [NoduleChain](NoduleChain) or its [Nodules](NoduleChain.Nodule).
 */
 /**     @class Nodule
@@ -190,13 +191,36 @@ file.
 ```
 ```c
 /**     @module NoduleChain
-    A monad chain of [Nodule](.Nodule) instances. Not to be confused with 
+    A monad chain of [Nodule](.Nodule) instances. Not to be confused with
     [NoduleHeap](NoduleHeap) or its [Nodules](NoduleHeap.Nodule).
 */
 /**     @class Nodule
     A data unit containing arbitray information.
 @property/.Nodule first
     This is scoped to the current module.
+*/
+```
+
+In case you *still* think explicit paths are pain, doczar also has a greedy root which claims to own
+every unique name in the entire tree. This means you can declare a Component with an interesting
+name in one file and access it easily in another. When names conflict, Components closer to the root
+and Declared earlier in the input file(s) are preferred. However: this feature is best reserved for
+names which you are positive will never conflict with anything else. In this example, `Screwdriver`
+is probably a safe link, but `unscrew` probably isn't.
+```c
+/**     @module someTools
+    A collection of tools.
+*/
+/**     @class Screwdriver
+    A tool for adding or removing screws.
+@Function #screw
+@Function #unscrew
+*/
+```
+```c
+/**     @Object John
+    This monad worker Object knows a few things about mechanics, like how to use a
+    [screw driver](Screwdriver) to [unscrew](unscrew) things.
 */
 ```
 

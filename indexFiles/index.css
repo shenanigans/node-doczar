@@ -85,12 +85,12 @@ body {
 .child .markdown {
     background-color: #fff;
     padding: 0.1em 1em;
-    border-radius: 0.5em 0 0 0;
+    border-radius: 0.7em 0 0.7em 0;
     font-family: serif;
-    margin: 0.5em 0 0 -1em;
+    margin: 0.5em 0 -0.5em -1em;
 }
 .markdown:empty {
-    padding: 0;
+    display: none;
 }
 
 #summary {
@@ -131,10 +131,15 @@ body {
 }
 
 .child {
-    padding: 0.7em 0 0.1em 1em;
+    padding: 0.7em 0 0.6em 1em;
     margin: 0.75em 0;
     background-color: #eee;
-    border-radius: 0.5em 0.5em 0 0;
+    border-radius: 0.5em 0.7em 0.7em 0;
+}
+
+.child .child {
+    background-color: #fff;
+    border-radius: 0.5em 0 0 0.5em;
 }
 
 .signature .argument {
@@ -143,6 +148,10 @@ body {
 
 .argument {
 
+}
+
+.argument .arguments {
+    padding-left: 0.75em;
 }
 
 .argument .title, .child .title {

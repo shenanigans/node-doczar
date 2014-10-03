@@ -81,12 +81,13 @@ var sourcefiles = [];
 var options = {
     codeStyle:  argv.code || DEFAULT_HIGHLIGHT_STYLE,
     showDev:    argv.dev,
-    showAPI:    argv.api
+    showAPI:    argv.api,
+    verbose:    argv.verbose
 };
-function processSource () {
-    var context = ComponentCache();
+function processSource(){
+    var context = new ComponentCache();
     async.eachSeries (sourcefiles, function (fname, callback) {
-        Parser.parseFile (fname, context, callback);
+        Parser.parseFile (fname, context, options, callback);
     }, function (err) {
         if (err) {
             console.log ((''+err).red);
@@ -134,10 +135,11 @@ if (!argv.jsmod)
     return processSource();
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
+var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
+    dfnames.push (mod);
     required (mod, { ignoreMissing:true }, function (err, deps) {
         if (err) return callback (err);
-        var dfnames = [];
         var toProcess = deps;
         var next = [];
         var done = {};

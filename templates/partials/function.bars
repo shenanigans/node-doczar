@@ -4,9 +4,7 @@
             <a href="{{link path}}">
                 {{type}}
             </a>
-            <div class="markdown">
-{{{markdown summaryDoc}}}
-            </div>
+            <div class="markdown">{{{markdown summaryDoc}}}</div>
         {{/returns}}
         <a href="{{simpleCtype}}/{{pathname}}/index.html">
             {{name}}
@@ -17,9 +15,12 @@
             {{/arguments}}
         ) {
     </h3>
-    <div class="markdown">
-{{{markdown summaryDoc}}}
-    </div>
+    {{#if source}}
+        <div class="source">
+            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+        </div>
+    {{/if}}
+    <div class="markdown">{{{markdown summaryDoc}}}</div>
     <ul class="arguments">
         {{#arguments}}
             <li class="child argument">
@@ -27,12 +28,35 @@
                     <span class="valsep">|</span>
                     <a class="valtype" href="{{link path}}">{{name}}</a>
                 {{/valtype}}
-                <a class="argname" href="{{link path}}">
+                <a class="title" href="{{link path}}">
                     {{name}}
                 </a>
-                <div class="markdown">
-{{{markdown summaryDoc}}}
-                </div>
+                {{#if isCallback}}
+                    <span class="signature">
+                        (
+                        {{#arguments}}
+                            {{> argument}}
+                        {{/arguments}}
+                        ) {
+                    </span>
+                {{/if}}
+                <div class="markdown">{{{markdown summaryDoc}}}</div>
+                {{#if isCallback}}
+                    <ul class="arguments">
+                        {{#arguments}}
+                            <li class="child {{ctype}}">
+                                {{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                {{/valtype}}
+                                <a class="title" href="{{link path}}">
+                                    {{name}}
+                                </a>
+                                <div class="markdown">{{{markdown summaryDoc}}}</div>
+                            </li>
+                        {{/arguments}}
+                    </ul>
+                {{/if}}
             </li>
         {{/arguments}}
     </ul>
