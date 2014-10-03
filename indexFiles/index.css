@@ -166,3 +166,7 @@ body {
 *:last-child > .comma {
     display: none;
 }
+
+.tail {
+    display: inline-block;
+}
