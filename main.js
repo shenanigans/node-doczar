@@ -60,11 +60,12 @@ Doczar.prototype.close = function (directory, callback) {
 /**     @member/Function finalize
     @development
 
+@argument/String directory
 @callback callback
     @argument/Array errors
     @argument/Array warnings
 */
-Doczar.prototype.finalize = function (callback) {
+Doczar.prototype.finalize = function (directory, callback) {
 
 };
 
@@ -72,9 +73,14 @@ Doczar.prototype.finalize = function (callback) {
     @development
 
 @argument/String directory
-@callback callback
+@callback
     @argument/Array errors
     @argument/Array warnings
+    @returns
+@callback
+    @argument/Array errors
+    @argument/Array warnings
+
 */
 Doczar.prototype.writeFiles = function (directory, callback) {
     if (this.fileopsOutstanding) {
