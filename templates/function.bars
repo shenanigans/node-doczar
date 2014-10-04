@@ -1,5 +1,8 @@
 <div id="{{ctype}}_{{name}}" class="function">
     <h3 class="signature">
+        {{#if isPublic}}<div class="flag public">public</div>{{/if}}
+        {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
+        {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
         {{#returns}}
             <a href="{{link path}}">
                 {{type}}
@@ -20,6 +23,11 @@
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
+    {{#interface}}
+        <div class="interface">
+            Satisfies Interface <a class="interface" href="{{link path}}">{{name}}</a>
+        </div>
+    {{/interface}}
     <div class="markdown">{{{markdown summaryDoc}}}</div>
     <ul class="arguments">
         {{#arguments}}

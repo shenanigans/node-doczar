@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Documentation Root</title>
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="stylesheet" type="text/css" href="highlight.css" />
+    <script type="text/javascript" src="index.js"></script>
+</head>
+<body class="root">
+    <div id="header">
+        Documentation Root
+    </div>
+    <br />
+    <div id="content">
+        {{#if modules}}
+            <!-- modules -->
+            <div id="modules" class="section modules">
+                <h2 class="header">Modules</h2>
+                {{#modules}}
+                    {{> child}}
+                {{/modules}}
+            </div>
+        {{/if}}
+        {{#if properties}}
+            <!-- static properties -->
+            <div id="statics" class="section properties">
+                {{#properties}}
+                    {{> child}}
+                {{/properties}}
+            </div>
+        {{/if}}
+{{> footer}}

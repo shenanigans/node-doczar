@@ -49,7 +49,7 @@ Doczar.prototype.addJSModule = function (fname) {
     finalization error has occured. A final error and warning report will be given to the callback
     when all filesystem changes have finished.
 @argument/String directory
-@callback callback
+@callback
     @argument/Array errors
     @argument/Array warnings
 */
@@ -61,7 +61,7 @@ Doczar.prototype.close = function (directory, callback) {
     @development
 
 @argument/String directory
-@callback callback
+@callback
     @argument/Array errors
     @argument/Array warnings
 */
@@ -73,10 +73,6 @@ Doczar.prototype.finalize = function (directory, callback) {
     @development
 
 @argument/String directory
-@callback
-    @argument/Array
-    @argument/Array
-    @returns
 @callback
     @argument/Array errors
     @argument/Array warnings

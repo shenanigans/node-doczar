@@ -8,6 +8,16 @@
 </head>
 <body class="{{ctype}}">
     <div id="header">
+        {{#if chain}}
+            {{#chain}}
+                <a class="super" href="{{link path}}">{{name}}</a>
+            {{/chain}}
+        {{/if}}
+        {{#if isFinal}}<div class="flag final">final</div>{{/if}}
+        {{#if isVolatile}}<div class="flag volatile">volatile</div>{{/if}}
+        {{#if isPublic}}<div class="flag public">public</div>{{/if}}
+        {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
+        {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
         <span class="ctype">{{ctype}}</span>
         {{#valtype}}
             <span class="valsep">|</span>

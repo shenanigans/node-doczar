@@ -9,5 +9,10 @@
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
+    {{#interface}}
+        <div class="interface">
+            Satisfies Interface <a class="interface" href="{{link path}}">{{name}}</a>
+        </div>
+    {{/interface}}
     <div class="markdown">{{{markdown summaryDoc}}}</div>
 </div>

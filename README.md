@@ -264,10 +264,12 @@ Components and Modifiers
 Major To-Do Items
 -----------------
 * Java interfaces
-* tons of simple modifiers - abstract, public, protected, private, constant, final
+* tons of simple modifiers - abstract, public, protected, private, constant, final, volatile
 * output currently looks **much** better in Chrome than Firefox.
 * standard libs for javascript/node.js/htmlDOM
 * A recursive declaration for elegantly documenting JSON documents
+* @event
+* @exception
 
 License
 -------

@@ -1,3 +1,11 @@
-{{> header}}
-{{> children}}
-{{> footer}}
+<div class="argument">
+    {{#if isOptional}}<div class="flag optional">optional</div>{{/if}}
+    {{#valtype}}
+        <span class="valsep">|</span>
+        <a class="valtype" href="{{link path}}">{{name}}</a>
+    {{/valtype}}
+    <a class="title" href="{{link path}}">
+        {{name}}
+    </a>
+    <span class="comma">,</span>
+</div>
