@@ -15,4 +15,7 @@
         </div>
     {{/interface}}
     <div class="markdown">{{{markdown summaryDoc}}}</div>
+    {{#if isInline}}
+        {{> children}}
+    {{/if}}
 </div>

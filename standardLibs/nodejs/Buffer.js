@@ -1,0 +1,4 @@
+
+/**     @module|class Buffer
+
+*/

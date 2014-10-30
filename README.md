@@ -48,8 +48,6 @@ API
 
 Examples
 --------
-**all indentation is optional**
-
 The simplest form of document comment: a single [declaration](#doc-comment-syntax) in its own block
 comment.
 ```c
@@ -62,6 +60,12 @@ The easiest way to document something a little more interesting is to use inner 
 inner Declarations affect the parent Declaration, not the one immediately above. You can use a
 forward slash after a Component type to add value types to a Component, and use the pipe character
 to chain multiple value types onto the same Component.
+
+Each documentation string between the declaration lines is rendered in the final output as a
+markdown document. Prior to rendering, indentation is normalized by eliminating the longest-possible
+identical string of whitespace characters from the begining of every line in each document. Simply:
+if every line starts with 8 spaces, it will be rendered as starting with none. Whitespace is ignored
+on declaration lines.
 ```c
 /**     @class FooBox
     Represents a box of foos.
@@ -154,7 +158,8 @@ is simply an extra named markdown document which is associated with another `Com
 ```
 
 You can specify shorter documentation for a complex `Component` by adding a `spare` called
-"summary". The summary will be used whenever the `Component` is documented as a child.
+"summary". The summary will be used whenever the `Component` is documented as a child. You may also
+manually specify the "details" spare, instead.
 ```c
 /**     @module foocontainers
 
@@ -162,6 +167,14 @@ You can specify shorter documentation for a complex `Component` by adding a `spa
 
 @spare summary
     An assortment of useful collections for storing foos.
+*/
+/**     @class FooBox
+    A box of foos.
+@spare details
+
+    -- long documentation goes here --
+
+*/
 ```
 
 Since path delimiters imply the type of their `Component`, you can usually just jump right to the
@@ -180,8 +193,8 @@ properties. You cannot open a new comment with this syntax, nor can you use it t
 
 To help make your documentation easier to navigate, doczar supports automatic links to another
 `Component`. An additional note about value types: if you start a type with a delimiter
-character, it is scoped as if you were creating a new comment at the same line in the same
-file.
+character, it is scoped to the link's position in the current file. It is **not** scoped to the
+surrounding declaration.
 ```c
 /**     @module NoduleHeap
     A monad heap of [Nodule](.Nodule) instances. Not to be confused with
@@ -206,7 +219,7 @@ file.
 In case you *still* think explicit paths are pain, doczar also has a greedy root which claims to own
 every unique name in the entire tree. This means you can declare a Component with an interesting
 name in one file and access it easily in another. When names conflict, Components closer to the root
-and Declared earlier in the input file(s) are preferred. However: this feature is best reserved for
+and declared earlier in the input file(s) are preferred. However: this feature is best reserved for
 names which you are positive will never conflict with anything else. In this example, `Screwdriver`
 is probably a safe link, but `unscrew` probably isn't.
 ```c
@@ -231,11 +244,12 @@ Here are a few more opportunities to be lazy and ommit things.
 /**     @property/Function asynchronouslyGetString
     Fetch a string from the filesystem or something.
 @String (format
+    (this is an @argument/String declaration)
     How would you like your [String]()?
 @callback
     @argument/Error
     @argument/String
-        The fetched string, formatted to order.
+        The fetched String, formatted to order.
 */
 ```
 
@@ -264,12 +278,11 @@ Components and Modifiers
 Major To-Do Items
 -----------------
 * Java interfaces
-* tons of simple modifiers - abstract, public, protected, private, constant, final, volatile
 * output currently looks **much** better in Chrome than Firefox.
 * standard libs for javascript/node.js/htmlDOM
 * A recursive declaration for elegantly documenting JSON documents
 * @event
-* @exception
+* @throws
 
 License
 -------

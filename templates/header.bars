@@ -19,10 +19,12 @@
         {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
         {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
         <span class="ctype">{{ctype}}</span>
-        {{#valtype}}
-            <span class="valsep">|</span>
-            <a class="valtype" href="{{link path}}">{{name}}</a>
-        {{/valtype}}
+        <span>
+            {{#valtype}}
+                <a class="valtype" href="{{link path}}">{{name}}</a>
+                <span class="valsep">|</span>
+            {{/valtype}}
+        </span>
         <span class="breadcrumbs">
             {{#breadcrumbs}}
                 <span class="delimiter">{{delimiter}}</span>
@@ -78,7 +80,7 @@
                     </div>
                 {{/if}}
             </div>
-{{{markdown details}}}
+            <div class="markdown">{{{markdown details}}}</div>
             <br class="clear" />
         </div>
         {{#if spares}}
@@ -93,7 +95,7 @@
                 {{/spares}}
             </div>
         {{/if}}
-        {{#if hasConstructor}}
+        {{#if isClasslike}}
             <!-- constructor function -->
             <h2>Constructor</h2>
             <div id="constructor" class="function">
@@ -116,8 +118,17 @@
                                 {{name}}
                             </a>
                             <div class="markdown">{{{markdown summaryDoc}}}</div>
+                            {{#if isInline}}
+                                {{> children}}
+                            {{/if}}
                         </li>
                     {{/arguments}}
                 </ul>
             </div>
+            <!-- enumerations -->
+            {{if enums}}
+                {{#enum}}
+
+                {{/enum}}
+            {{/if}}
         {{/if}}

@@ -13,7 +13,7 @@ body {
 
 #content {
     margin: auto;
-    width: 43em;
+    width: 35em;
     padding: 1em 2em 10em 2em;
     display: inline-block;
     text-align: left;
@@ -125,8 +125,11 @@ body {
     text-decoration: none;
     font-size: 85%;
 }
-/* skip leading pipe for first valtype */
+/* skip terminal pipes for valtype lists */
 .valsep:first-child {
+    display: none;
+}
+.valsep:last-child {
     display: none;
 }
 

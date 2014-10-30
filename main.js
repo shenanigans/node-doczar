@@ -1,9 +1,18 @@
 
 /**     @module/Function doczar
 
-@argument/Object options
+@argument/Options options
+*/
+/**     @class Options
+    @api
+@Boolean #verbose
+@Boolean #showDev
+@Boolean #showAPI
+@String #codeStyle
+@Array|String #library
 */
 require ('colors');
+var fs = require ('fs-extra');
 var Parser = require ('./lib/Parser');
 var ComponentCache = require ('./lib/ComponentCache');
 
@@ -14,12 +23,13 @@ var Doczar = function (options) {
     this.warnings = [];
     this.errors = [];
     this.queue = [];
+    this.finalDirs = {};
 };
 
 /**     @member/Function addLibrary
     @api
 
-@argument/String libname
+@argument/String|Array libname
 */
 Doczar.prototype.addLibrary = function (libname) {
 
@@ -57,16 +67,31 @@ Doczar.prototype.close = function (directory, callback) {
 
 };
 
+/**     @member/Function getJSON
+    @api
+    Gets the generated documentation as a JSON string.
+@callback
+    @argument/Error err
+*/
+Doczar.prototype.getJSON = function (callback) {
+
+};
+
 /**     @member/Function finalize
     @development
 
-@argument/String directory
 @callback
     @argument/Array errors
     @argument/Array warnings
 */
-Doczar.prototype.finalize = function (directory, callback) {
-
+var PUSH = Array.prototype.push;
+Doczar.prototype.finalize = function (callback) {
+    var self = this;
+    this.context.finalize (this.options, function (errors, warnings) {
+        PUSH.apply (self.errors, errors);
+        PUSH.apply (self.warnings, warnings);
+        callback (self.errors, self.warnings);
+    });
 };
 
 /**     @member/Function writeFiles
@@ -79,16 +104,30 @@ Doczar.prototype.finalize = function (directory, callback) {
 
 */
 Doczar.prototype.writeFiles = function (directory, callback) {
-    if (this.fileopsOutstanding) {
-        var self = this;
-        this.queue.push (function(){ self.writeFiles (directory, callback); });
-        return;
-    }
+    var self = this;
 
-    if (this.errors.length) {
-        var errs = this.errors;
-        return process.nextTick (function(){ callback (errs); });
-    }
+    if (this.fileopsOutstanding)
+        return this.queue.push (function(){ self.writeFiles (directory, callback); });
+
+    if (this.errors.length)
+        throw new Error ('critical error prevents filesystem output');
+
+    if (Object.hasOwnProperty.call (this.finalDirs, directory))
+        return process.nextTick (callback);
+
+    var basedir = Object.keys (this.finalDirs)[0];
+    if (basedir === undefined)
+        return this.context.writeFiles (directory, this.options, function (err) {
+            if (err) return callback (err);
+            self.finalDirs[directory] = true;
+            callback();
+        });
+
+    fs.copy (basedir, directory, function (err) {
+        if (err)
+            return callback (err);
+        self.finalDirs[directory] = true;
+    });
 };
 
 /**     @member/Function clearQueue
