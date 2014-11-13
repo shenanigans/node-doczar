@@ -3,8 +3,11 @@
         <span class="valsep">|</span>
         <a class="valtype" href="{{link path}}">{{name}}</a>
     {{/valtype}}
+    {{#unless valtype}}{{#unless hideCtype}}
+        <span class="ctype">{{ctype}}</span>
+    {{/unless}}{{/unless}}
     <a class="title" href="{{link path}}">{{name}}</a>
-    {{#if source}}
+    {{#if isInherited}}
         <div class="source">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
@@ -14,8 +17,10 @@
             Satisfies Interface <a class="interface" href="{{link path}}">{{name}}</a>
         </div>
     {{/interface}}
-    <div class="markdown">{{{markdown summaryDoc}}}</div>
-    {{#if isInline}}
-        {{> children}}
-    {{/if}}
+    <div class="info">
+        <span class="markdown">{{{markdown summaryDoc}}}</span>
+        {{#if isInline}}
+            {{> children}}
+        {{/if}}
+    </div>
 </div>

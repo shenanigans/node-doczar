@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 var path = require ('path');
+var fs = require ('fs');
 var async = require ('async');
 var required = require ('required');
+var resolve = require ('resolve');
 var glob = require ('glob');
 require ('colors');
 var Parser = require ('./lib/parser');
@@ -61,13 +63,18 @@ var HIGHLIGHT_STYLES = {
 };
 var DEFAULT_HIGHLIGHT_STYLE = 'github';
 
+var STDLIBS = {
+    javascript: true,
+    nodejs:     true,
+    browser:    true
+};
+
 var argv = require ('minimist') (process.argv, {
     default:        { out:'docs' },
     boolean:        [ 'verbose', 'dev', 'api' ],
     string:         [ 'jsmod', 'in', 'with', 'code' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
-
 function isArray (a) { return a.__proto__ === Array.prototype; }
 function appendArr (a, b) { a.push.apply (a, b); }
 
@@ -105,8 +112,6 @@ function processSource(){
             }
 
             console.log ('parsing complete\n'.green);
-            for (var i in warnings)
-                console.log (('warning - ' + JSON.stringify (warnings[i]) + '\n').yellow);
 
             context.writeFiles (argv.out, options, function (err) {
                 if (err) {
@@ -117,11 +122,51 @@ function processSource(){
                     return process.exit (1);
                 }
 
-                console.log ('finished writing to filesystem'.green);
+                console.log ('finished writing to filesystem\n'.green);
+
+                for (var i in warnings)
+                    console.log (('warning - ' + JSON.stringify (warnings[i]) + '\n').yellow);
+
                 console.log ('done'.green);
             });
         });
     });
+}
+
+var libsIncluded = {};
+var DEPENDENCIES = {
+    nodejs:     [ 'javascript' ],
+    browser:    [ 'javascript' ]
+};
+var stdDir = path.join (__dirname, 'standardLibs');
+function includeLib (libname) {
+    if (Object.hasOwnProperty.call (libsIncluded, libname))
+        return; // already included
+
+    if (Object.hasOwnProperty.call (DEPENDENCIES, libname)) {
+        var deps = DEPENDENCIES[libname];
+        for (var i in deps)
+            if (!Object.hasOwnProperty.call (libsIncluded, deps[i]))
+                includeLib (deps[i]);
+    }
+
+    try {
+        var files = fs.readdirSync (path.join (stdDir, libname))
+    } catch (err) {
+        throw new Error ('unknown library "' + libname + '"');
+    }
+    for (var i in files)
+        sourcefiles.push (path.join (stdDir, libname, files[i]));
+}
+
+if (argv.with) {
+    if (isArray (argv.with))
+        for (var i in argv.with) includeLib (argv.with[i]);
+    else {
+        var files = fs.readdirSync (path.join (stdDir, argv.with))
+        for (var i in files)
+            sourcefiles.push (path.join (stdDir, argv.with, files[i]));
+    }
 }
 
 if (argv.in)
@@ -134,11 +179,14 @@ if (argv.in)
 if (!argv.jsmod)
     return processSource();
 
+includeLib ('nodejs');
+
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
+    mod = resolve.sync (mod, { basedir:process.cwd() });
     dfnames.push (mod);
-    required (mod, { ignoreMissing:true }, function (err, deps) {
+    required (mod, { ignoreMissing:true, silent:true }, function (err, deps) {
         if (err) return callback (err);
         var toProcess = deps;
         var next = [];

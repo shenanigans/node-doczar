@@ -42,10 +42,6 @@
 
 */
 
-/**     @class Error
-
-*/
-
 /**     @class Function
     @super Object
 

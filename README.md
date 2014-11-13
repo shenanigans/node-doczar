@@ -278,9 +278,6 @@ Components and Modifiers
 Major To-Do Items
 -----------------
 * Java interfaces
-* output currently looks **much** better in Chrome than Firefox.
-* standard libs for javascript/node.js/htmlDOM
-* A recursive declaration for elegantly documenting JSON documents
 * @event
 * @throws
 

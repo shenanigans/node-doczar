@@ -14,8 +14,8 @@
     <div id="content">
         {{#if modules}}
             <!-- modules -->
+            <h2 class="header">Modules</h2>
             <div id="modules" class="section modules">
-                <h2 class="header">Modules</h2>
                 {{#modules}}
                     {{> child}}
                 {{/modules}}
@@ -23,6 +23,7 @@
         {{/if}}
         {{#if properties}}
             <!-- static properties -->
+            <h2 class="header">Globals</h2>
             <div id="statics" class="section properties">
                 {{#properties}}
                     {{> child}}

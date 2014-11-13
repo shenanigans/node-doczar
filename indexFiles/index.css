@@ -1,19 +1,32 @@
 
 html {
     background-color: #fff;
+    color: #2f2f2f;
 }
 
 body {
-    padding: 0em 3em;
+    padding: 0 0 0 1em;
     font-family: sans-serif;
     overflow-x: hidden;
     overflow-y: scroll;
-    text-align: center;
+}
+
+a {
+    text-decoration: none;
+    color:#4264AA;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 1.3em 0 0.4em 0;
+}
+
+.section {
+    padding-left: 1em;
 }
 
 #content {
     margin: auto;
-    width: 35em;
+    /* width: 48em; */
     padding: 1em 2em 10em 2em;
     display: inline-block;
     text-align: left;
@@ -22,38 +35,54 @@ body {
 
 #header {
     display: inline-block;
-    min-width: 22em;
+    min-width: 18em;
     font-size: 210%;
     text-align: left;
     margin: 0.5em 0 0.5em 0;
+    padding-left: 1em;
 }
 
-#header .ctype {
-    color: #85B481;
-    min-width: 30em;
+.ctype {
+    color: #7FBC38;
 }
 
-#header .breadcrumbs {
-
+.child .ctype {
+    color: #376902;
 }
 
-.breadcrumbs a {
-    text-decoration: none;
+.children {
+    display: inline-block;
 }
 
-.breadcrumbs .delimiter {
+.source {
+    color: #5E6B52;
 
+    font-size: 90%;
+    margin: 0.2em 0 0.3em 0.3em;
 }
+
+.info h2 {
+    font-size: 1em;
+}
+
 .breadcrumbs .delimiter:first-child {
     display: none;
 }
 
-#header .title {
-
+.markdown {
+    font-size: 115%;
+    font-family: georgia, serif;
+    color: #2F2F2F;
+}
+.markdown:empty {
+    display: none;
 }
 
-.markdown {
-
+p {
+    max-width: 27em;
+    padding: 0.5em;
+    padding-left: 0;
+    margin: 0.5em 0;
 }
 
 #TOC {
@@ -81,49 +110,49 @@ body {
     clear: both;
 }
 
+.child {
+    padding: 0.5em 2.3em 2px 1.3em;
+    margin-bottom: 1.5em;
+    background-color: #C6F292;
+    border-radius: 0.5em;
+}
 
-.child .markdown {
+.child .child {
+    background-color: #E4FFC7;
+    margin-bottom: 0.6em;
+}
+
+.child.named {
+    margin-bottom: 0.4em;
+    background-color: #E5F9CC;
+}
+
+.info {
     background-color: #fff;
-    padding: 0.1em 1em;
     border-radius: 0.7em 0 0.7em 0;
-    font-family: serif;
-    margin: 0.5em 0 -0.5em -1em;
-}
-.markdown:empty {
-    display: none;
-}
-
-#summary {
-
+    margin: 0.3em -2.3em 0 -1.3em;
+    padding: 1px 1em;
+    /* overflow: auto; */
 }
 
 #details {
-
+    border-bottom: 0.1em solid #E0E0E0;
+    margin-bottom: 1em;
+    padding-bottom: 3em;
 }
 
-#statics {
-
-}
-
-#functions {
-
-}
-
-#members {
-
-}
-
-#methods {
-
-}
-
-.function {
-
+#details p {
+    max-width: 37em;
 }
 
 .valtype {
     text-decoration: none;
     font-size: 85%;
+    color: #5F87BA;
+    font-weight:100;
+}
+.valsep {
+    color: #C813B1;
 }
 /* skip terminal pipes for valtype lists */
 .valsep:first-child {
@@ -133,33 +162,23 @@ body {
     display: none;
 }
 
-.child {
-    padding: 0.7em 0 0.6em 1em;
-    margin: 0.75em 0;
-    background-color: #eee;
-    border-radius: 0.5em 0.7em 0.7em 0;
+.signature {
+    color: #C813B1;
+    font-weight: 700;
 }
-
-.child .child {
-    background-color: #fff;
-    border-radius: 0.5em 0 0 0.5em;
-}
-
-.signature .argument {
+.signature .arguments {
     display: inline-block;
 }
-
-.argument {
-
+.signature .argument {
+    display: inline-block;
 }
 
 .argument .arguments {
     padding-left: 0.75em;
 }
 
-.argument .title, .child .title {
+.child .title {
     font-weight: 900;
-    text-decoration: none;
 }
 
 .comma {
@@ -171,5 +190,4 @@ body {
 }
 
 .tail {
-    display: inline-block;
 }

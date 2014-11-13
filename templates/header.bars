@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>{{pathstr}} documentation</title>
-    <link rel="stylesheet" type="text/css" href="{{baseTagPath}}index.css" />
-    <link rel="stylesheet" type="text/css" href="{{baseTagPath}}highlight.css" />
-    <script type="text/javascript" src="{{baseTagPath}}index.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{{baseTagPath}}}index.css" />
+    <link rel="stylesheet" type="text/css" href="{{{baseTagPath}}}highlight.css" />
+    <script type="text/javascript" src="{{{baseTagPath}}}index.js"></script>
 </head>
 <body class="{{ctype}}">
     <div id="header">
@@ -18,7 +18,7 @@
         {{#if isPublic}}<div class="flag public">public</div>{{/if}}
         {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
         {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
-        <span class="ctype">{{ctype}}</span>
+        <a class="ctype" href="{{{baseTagPath}}}index.html">{{ctype}}</a>
         <span>
             {{#valtype}}
                 <a class="valtype" href="{{link path}}">{{name}}</a>
@@ -44,7 +44,7 @@
             </h3>
         {{/if}}
         <!-- basic document info -->
-        <div id="details" class="markdown">
+        <div id="details">
             <div id="TOC">
                 <h3>Table of Contents</h3>
                 {{#if statics}}
@@ -80,7 +80,7 @@
                     </div>
                 {{/if}}
             </div>
-            <div class="markdown">{{{markdown details}}}</div>
+            <span class="markdown">{{{markdown details}}}</span>
             <br class="clear" />
         </div>
         {{#if spares}}
@@ -107,26 +107,66 @@
                     ) {
                 </h3>
                 <div class="markdown">{{{markdown doc}}}</div>
-                <ul class="arguments">
-                    {{#arguments}}
-                        <li class="argument">
-                            {{#valtype}}
-                                <span class="valsep">|</span>
-                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                            {{/valtype}}
-                            <a class="title" href="argument/{{pathname}}/index.html">
-                                {{name}}
-                            </a>
-                            <div class="markdown">{{{markdown summaryDoc}}}</div>
-                            {{#if isInline}}
-                                {{> children}}
-                            {{/if}}
-                        </li>
-                    {{/arguments}}
-                </ul>
+                {{#if arguments}}
+                    <h4>Arguments</h4>
+                    <div class="section arguments">
+                        {{#arguments}}
+                            <div class="child argument">
+                                {{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                {{/valtype}}
+                                <a class="title" href="{{link path}}">
+                                    {{name}}
+                                </a>
+                                {{#if isCallback}}
+                                    <span class="signature">
+                                        (
+                                        {{#arguments}}
+                                            {{> argument}}
+                                        {{/arguments}}
+                                        ) {
+                                    </span>
+                                {{/if}}
+                                <div class="info">
+                                    <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                    {{#if isCallback}}
+                                        <h5>Arguments</h5>
+                                        <div class="section arguments">
+                                            {{#arguments}}
+                                                <div class="child {{ctype}}">
+                                                    {{#valtype}}
+                                                        <span class="valsep">|</span>
+                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    {{/valtype}}
+                                                    <a class="title" href="{{link path}}">
+                                                        {{name}}
+                                                    </a>
+                                                    <div class="info">
+                                                        <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                    <div class="tail"></div></div>
+                                                </div>
+                                            {{/arguments}}
+                                        </div>
+                                    {{/if}}
+                                <div class="tail"></div></div>
+                            </div>
+                        {{/arguments}}
+                    </div>
+                {{/if}}
+                {{#if returns}}
+                    <h4>returns</h4>
+                    <div class="section returns">
+                        {{#returns}}
+                            <div class="return">
+                                {{> child}}
+                            </div>
+                        {{/returns}}
+                    </div>
+                {{/if}}
             </div>
             <!-- enumerations -->
-            {{if enums}}
+            {{#if enums}}
                 {{#enum}}
 
                 {{/enum}}
