@@ -6,6 +6,14 @@
         <span>{{#valtype}}
             <span class="valsep">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>
+            {{#if generics}}
+                [
+                <span>{{#generics}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                ]
+            {{/if}}
         {{/valtype}}</span>
         {{#unless valtype}}{{#unless hideCtype}}
             <span class="ctype">{{ctype}}</span>

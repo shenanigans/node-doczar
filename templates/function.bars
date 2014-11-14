@@ -3,15 +3,25 @@
         {{#flags}}
             <div class="flag {{.}}">{{.}}</div>
         {{/flags}}
-        {{#returns}}
-            <span class="valsep">,</span>
-            {{#valtype}}
-                <span>
-                    <span class="valsep">|</span>
-                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                </span>
-            {{/valtype}}
-        {{/returns}}
+        {{#if returns}}
+            <span>{{#returns}}
+                <span class="valsep">,</span>
+                {{#valtype}}
+                    <span>
+                        <span class="valsep">|</span>
+                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                        {{#if generics}}
+                            [
+                            <span>{{#generics}}
+                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                                <span class="valsep">,</span>
+                            {{/generics}}</span>
+                            ]
+                        {{/if}}
+                    </span>
+                {{/valtype}}
+            {{/returns}}</span>
+        {{/if}}
         <a href="{{link path}}" class="title">
             {{name}}
         </a>
@@ -48,13 +58,40 @@
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
                             {{/flags}}
-                            <span>{{#valtype}}
-                                <span class="valsep">|</span>
-                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                            {{/valtype}}</span>
-                            <a class="title" href="{{link path}}">
-                                {{name}}
-                            </a>
+                            {{#if isKwarg}}
+                                <a class="title" href="{{link path}}">
+                                    {{name}}
+                                </a>
+                                =
+                                <span>{{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                    {{#if generics}}
+                                        [
+                                        <span>{{#generics}}
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                            <span class="valsep">,</span>
+                                        {{/generics}}</span>
+                                        ]
+                                    {{/if}}
+                                {{/valtype}}</span>
+                            {{else}}
+                                <span>{{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                    {{#if generics}}
+                                        [
+                                        <span>{{#generics}}
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                            <span class="valsep">,</span>
+                                        {{/generics}}</span>
+                                        ]
+                                    {{/if}}
+                                {{/valtype}}</span>
+                                <a class="title" href="{{link path}}">
+                                    {{name}}
+                                </a>
+                            {{/if}}
                         {{#if isCallback}}
                             (
                             {{#arguments}}
