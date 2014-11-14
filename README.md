@@ -33,7 +33,7 @@ Installation
 ------------
 You will need [node.js and npm](http://nodejs.org/).
 ```shell
-# npm install -g doczar
+$ sudo npm install -g doczar
 ```
 The binary `doczar` is now on your executable path.
 
