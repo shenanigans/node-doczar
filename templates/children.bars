@@ -6,22 +6,22 @@
                 <div class="section arguments">
                     {{#arguments}}
                         <div class="child argument">
-                            {{#valtype}}
-                                <span class="valsep">|</span>
-                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                            {{/valtype}}
-                            <a class="title" href="{{link path}}">
-                                {{name}}
-                            </a>
-                            {{#if isCallback}}
-                                <span class="signature">
+                            <span class="signature">
+                                {{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                {{/valtype}}
+                                <a class="title" href="{{link path}}">
+                                    {{name}}
+                                </a>
+                                {{#if isCallback}}
                                     (
                                     {{#arguments}}
                                         {{> argument}}
                                     {{/arguments}}
                                     ) {
-                                </span>
-                            {{/if}}
+                                {{/if}}
+                            </span>
                             <div class="info">
                                 <span class="markdown">{{{markdown summaryDoc}}}</span>
                                 {{#if isCallback}}
@@ -29,13 +29,18 @@
                                     <div class="section arguments">
                                         {{#arguments}}
                                             <div class="child {{ctype}}">
-                                                {{#valtype}}
-                                                    <span class="valsep">|</span>
-                                                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                {{/valtype}}
-                                                <a class="title" href="{{link path}}">
-                                                    {{name}}
-                                                </a>
+                                                <span class="signature">
+                                                    {{#if isOptional}}
+                                                        <div class="flag optional">optional</div>
+                                                    {{/if}}
+                                                    {{#valtype}}
+                                                        <span class="valsep">|</span>
+                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    {{/valtype}}
+                                                    <a class="title" href="{{link path}}">
+                                                        {{name}}
+                                                    </a>
+                                                </span>
                                                 <div class="info">
                                                     <span class="markdown">{{{markdown summaryDoc}}}</span>
                                                 </div>
@@ -53,8 +58,17 @@
                 <h2 class="header">Return Values</h2>
                 <div id="returns" class="section returns">
                     {{#returns}}
-                        {{> child}}
+{{> child}}
                     {{/returns}}
+                </div>
+            {{/if}}
+            {{#if throws}}
+                <!-- exception cases -->
+                <h2 class="header">Thrown Exceptions</h2>
+                <div id="throws" class="section throws">
+                    {{#throws}}
+{{> child}}
+                    {{/throws}}
                 </div>
             {{/if}}
         {{/if}}
@@ -64,7 +78,7 @@
         <h2 class="header">Names</h2>
         <div id="names" class="section names">
             {{#names}}
-                {{> child}}
+{{> child}}
             {{/names}}
         </div>
     {{/if}}
@@ -73,7 +87,7 @@
         <h2 class="header">Modules</h2>
         <div id="modules" class="section modules">
             {{#modules}}
-                {{> child}}
+{{> child}}
             {{/modules}}
         </div>
     {{/if}}
@@ -82,7 +96,7 @@
         <h2 class="header">Static Properties</h2>
         <div id="statics" class="section properties">
             {{#statics}}
-                {{> child}}
+{{> child}}
             {{/statics}}
         </div>
     {{/if}}
@@ -91,7 +105,7 @@
         <h2 class="header">Static Functions</h2>
         <div id="functions" class="section properties">
             {{#functions}}
-                {{> function}}
+{{> function}}
             {{/functions}}
         </div>
     {{/if}}
@@ -100,7 +114,7 @@
         <h2 class="header">Instance Properties</h2>
         <div id="members" class="section members">
             {{#members}}
-                {{> child}}
+{{> child}}
             {{/members}}
         </div>
     {{/if}}
@@ -109,8 +123,17 @@
         <h2 class="header">Instance Methods</h2>
         <div id="methods" class="section members">
             {{#methods}}
-                {{> function}}
+{{> function}}
             {{/methods}}
+        </div>
+    {{/if}}
+    {{#if events}}
+        <!-- events -->
+        <h2 class="header">Events</h2>
+        <div id="events" class="section members">
+            {{#events}}
+{{> child}}
+            {{/events}}
         </div>
     {{/if}}
 </div>

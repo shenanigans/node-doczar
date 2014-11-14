@@ -1,8 +1,8 @@
 <div id="{{ctype}}_{{name}}" class="child function">
     <span class="signature">
-        {{#if isPublic}}<div class="flag public">public</div>{{/if}}
-        {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
-        {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
+        {{#flags}}
+            <div class="flag {{.}}">{{.}}</div>
+        {{/flags}}
         {{#returns}}
             <span class="valsep">,</span>
             {{#valtype}}
@@ -22,21 +22,21 @@
         ) {
     </span>
     {{#if isInherited}}
-        <div class="source">
+        <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{else}}
         {{#override}}
-            <div class="source">
+            <div class="source super">
                 Overrides <a class="super" href="{{link path}}">{{pathstr}}</a>
             </div>
         {{/override}}
     {{/if}}
-    {{#interface}}
-        <div class="interface">
-            Satisfies Interface <a class="interface" href="{{link path}}">{{name}}</a>
+    {{#satisfies}}
+        <div class="source interface">
+            Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
-    {{/interface}}
+    {{/satisfies}}
     <div class="info">
         <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if arguments}}
@@ -44,24 +44,27 @@
             <div class="section arguments">
                 {{#arguments}}
                     <div class="child argument">
-                        {{#valtype}}
-                            <span class="valsep">|</span>
-                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                        {{/valtype}}
-                        <a class="title" href="{{link path}}">
-                            {{name}}
-                        </a>
+                        <span class="signature">
+                            {{#flags}}
+                                <div class="flag {{.}}">{{.}}</div>
+                            {{/flags}}
+                            <span>{{#valtype}}
+                                <span class="valsep">|</span>
+                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                            {{/valtype}}</span>
+                            <a class="title" href="{{link path}}">
+                                {{name}}
+                            </a>
                         {{#if isCallback}}
-                            <span class="signature">
-                                (
-                                {{#arguments}}
-                                    {{> argument}}
-                                {{/arguments}}
-                                ) {
-                            </span>
+                            (
+                            {{#arguments}}
+                                {{> argument}}
+                            {{/arguments}}
+                            ) {
                         {{/if}}
+                        </span>
                         {{#if isInherited}}
-                            <div class="source">
+                            <div class="source super">
                                 Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
                             </div>
                         {{/if}}
@@ -72,13 +75,31 @@
                                 <div class="section arguments">
                                     {{#arguments}}
                                         <div class="child {{ctype}}">
-                                            {{#valtype}}
-                                                <span class="valsep">|</span>
-                                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                                            {{/valtype}}
-                                            <a class="title" href="{{link path}}">
-                                                {{name}}
-                                            </a>
+                                            <span class="signature">
+                                                {{#if isInherited}}
+                                                    <div class="source">
+                                                        Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+                                                    </div>
+                                                {{/if}}
+                                                {{#if isKwarg}}
+                                                    <a class="title" href="{{link path}}">
+                                                        {{name}}
+                                                    </a>
+                                                    =
+                                                    <span>{{#valtype}}
+                                                        <span class="valsep">|</span>
+                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    {{/valtype}}</span>
+                                                {{else}}
+                                                    <span>{{#valtype}}
+                                                        <span class="valsep">|</span>
+                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    {{/valtype}}</span>
+                                                    <a class="title" href="{{link path}}">
+                                                        {{name}}
+                                                    </a>
+                                                {{/if}}
+                                            </span>
                                             <div class="info">
                                                 <span class="markdown">{{{markdown summaryDoc}}}</span>
                                             </div>

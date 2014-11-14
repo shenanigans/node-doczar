@@ -1,11 +1,23 @@
 <div class="argument">
-    {{#if isOptional}}<div class="flag optional">optional</div>{{/if}}
-    {{#valtype}}
-        <span class="valsep">|</span>
-        <a class="valtype" href="{{link path}}">{{name}}</a>
-    {{/valtype}}
-    <a class="title" href="{{link path}}">
-        {{name}}
-    </a>
+    {{#if isOptional}}[{{/if}}
+    {{#if isKwarg}}
+        <a class="title" href="{{link path}}">
+            {{name}}
+        </a>
+        =
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+        {{/valtype}}</span>
+    {{else}}
+        {{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+        {{/valtype}}
+        <a class="title" href="{{link path}}">
+            {{name}}
+        </a>
+    {{/if}}
+    {{#if isOptional}}]{{/if}}
     <span class="comma">,</span>
 </div>

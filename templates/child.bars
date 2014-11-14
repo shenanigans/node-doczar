@@ -1,24 +1,29 @@
 <div id="{{ctype}}_{{name}}" class="child {{ctype}}">
-    {{#valtype}}
-        <span class="valsep">|</span>
-        <a class="valtype" href="{{link path}}">{{name}}</a>
-    {{/valtype}}
-    {{#unless valtype}}{{#unless hideCtype}}
-        <span class="ctype">{{ctype}}</span>
-    {{/unless}}{{/unless}}
-    <a class="title" href="{{link path}}">{{name}}</a>
+    <span class="signature">
+        {{#flags}}
+            <div class="flag {{.}}">{{.}}</div>
+        {{/flags}}
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+        {{/valtype}}</span>
+        {{#unless valtype}}{{#unless hideCtype}}
+            <span class="ctype">{{ctype}}</span>
+        {{/unless}}{{/unless}}
+        <a class="title" href="{{link path}}">{{name}}</a>
+    </span>
     {{#if isInherited}}
         <div class="source">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
-    {{#interface}}
-        <div class="interface">
-            Satisfies Interface <a class="interface" href="{{link path}}">{{name}}</a>
+    {{#interfaces}}
+        <div class="source interface">
+            Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
-    {{/interface}}
+    {{/interfaces}}
     <div class="info">
-        <span class="markdown">{{{markdown summaryDoc}}}</span>
+<span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if isInline}}
             {{> children}}
         {{/if}}

@@ -1,5 +1,5 @@
-node-doczar
-===========
+doczar
+======
    | Table Of Contents
 ---|-------------------------------
  1 | [Installation](#installation)
@@ -10,13 +10,24 @@ node-doczar
  6 | [Major To-Do Items](#major-to-do-items)
  7 | [License](#license)
 
-Doczar (pronounced **dozer**) is a simple, explicit documentation generator for all languages.
+Doczar (pronounced **dozer**) is a simple, explicit documentation generator for most languages.
 
-Rather than attempting to document the source code itself, doczar *only* uses tagged comments. The
+Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
 large, complex entities easy.
 
 Doczar itself is fully cross-platform, open source, and *totally sweet*.
+
+###Features
+ * describe modules and object-oriented structures
+ * inheritence, multiple inheritence and Java `interface`
+ * Github-flavored markdown with syntax highlighting
+ * automatic crosslinking
+ * callbacks and function signatures
+ * multiple return values and keyword arguments
+ * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
+ * and so much more!
+
 
 Installation
 ------------
@@ -26,11 +37,12 @@ You will need [node.js and npm](http://nodejs.org/).
 ```
 The binary `doczar` is now on your executable path.
 
+
 Shell Usage
 -----------
 ```shell
-$ doczar --out docs --in src/**/*.c
-$ doczar --out docs --jsmod main.js --with nodejs
+$ doczar --in=src/**/*.c --out docz
+$ doczar --jsmod ./main # outputs to ./docs
 ```
 option          | description
 ----------------|---------------------------------
@@ -42,9 +54,6 @@ dev             | Display Components marked with the @development flag.
 api             | Display **only** Components marked with the @api flag.
 v, verbose      | Output detailed information about the documentation process.
 
-API
----
-> *nothing here but us chickens!*
 
 Examples
 --------
