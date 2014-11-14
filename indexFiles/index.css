@@ -5,7 +5,6 @@ html {
 }
 
 body {
-    padding: 0 0 0 1em;
     font-family: sans-serif;
     overflow-x: hidden;
     overflow-y: scroll;
@@ -26,7 +25,7 @@ h1, h2, h3, h4, h5, h6 {
 
 #content {
     margin: auto;
-    /* width: 48em; */
+    min-width: 33em;
     padding: 1em 2em 10em 2em;
     display: inline-block;
     text-align: left;

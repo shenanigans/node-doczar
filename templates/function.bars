@@ -12,7 +12,7 @@
                 </span>
             {{/valtype}}
         {{/returns}}
-        <a href="{{simpleCtype}}/{{pathname}}/index.html" class="title">
+        <a href="{{link path}}" class="title">
             {{name}}
         </a>
         (
