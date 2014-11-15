@@ -29,7 +29,10 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
 
 ###Coming Soon
  * Function signatures
+ * javascript, browser and Node standard libraries
 
+###Development
+If you want to see continued development on `doczar`, please help me [pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
 Installation
 ------------
