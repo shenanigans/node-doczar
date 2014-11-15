@@ -23,7 +23,7 @@
     "fs-extra": "^0.11.1",
     "colors": "^0.6.2",
     "handlebars": "^2.0.0",
-    "required": "^1.0.0",
+    "required": "git+http://github.com/shenanigans/node-required#9973bdbe81a1ca798470466a16d921084a3cb877",
     "glob": "^4.0.6",
     "highlight.js": "^8.2.0",
     "resolve": "^1.0.0"
