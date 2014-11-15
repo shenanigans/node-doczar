@@ -53,12 +53,12 @@
                 {{#arguments}}
                     <div class="child argument">
                         <span class="signature">
-                            {{#if isCallback}}
-                            <span class="ctype">callback</span>
-                            {{/if}}
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
                             {{/flags}}
+                            {{#if isCallback}}{{#unless name}}
+                            <span class="ctype">callback</span>
+                            {{/unless}}{{/if}}
                             {{#if isKwarg}}
                                 <a class="title" href="{{link path}}">
                                     {{name}}
@@ -114,11 +114,6 @@
                                     {{#arguments}}
                                         <div class="child {{ctype}}">
                                             <span class="signature">
-                                                {{#if isInherited}}
-                                                    <div class="source">
-                                                        Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
-                                                    </div>
-                                                {{/if}}
                                                 {{#if isKwarg}}
                                                     <a class="title" href="{{link path}}">
                                                         {{name}}
@@ -136,6 +131,11 @@
                                                     <a class="title" href="{{link path}}">
                                                         {{name}}
                                                     </a>
+                                                {{/if}}
+                                                {{#if isInherited}}
+                                                    <div class="source">
+                                                        Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+                                                    </div>
                                                 {{/if}}
                                             </span>
                                             <div class="info">
