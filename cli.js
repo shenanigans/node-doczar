@@ -101,17 +101,7 @@ function processSource(){
             console.log ((''+err).red);
             return process.exit (1);
         }
-        context.finalize (options, function (errors, warnings) {
-            if (errors.length) {
-                // cannot proceed
-                console.log ('fatal error\n'.red);
-                for (var i in errors)
-                    console.log (JSON.stringify (errors[i]).red+'\n');
-                console.log ('no filesystem changes occured'.yellow);
-                console.log ('failed'.red);
-                return process.exit (1);
-            }
-
+        context.finalize (options, function (warnings) {
             console.log ('parsing complete\n'.green);
 
             context.writeFiles (argv.out, options, function (err) {
