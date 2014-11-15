@@ -6,20 +6,18 @@
         {{#if returns}}
             <span>{{#returns}}
                 <span class="valsep">,</span>
-                {{#valtype}}
-                    <span>
-                        <span class="valsep">|</span>
-                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                        {{#if generics}}
-                            [
-                            <span>{{#generics}}
-                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                                <span class="valsep">,</span>
-                            {{/generics}}</span>
-                            ]
-                        {{/if}}
-                    </span>
-                {{/valtype}}
+                <span>{{#valtype}}
+                    <span class="valsep">|</span>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    {{#if generics}}
+                        [
+                        <span>{{#generics}}
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                            <span class="valsep">,</span>
+                        {{/generics}}</span>
+                        ]
+                    {{/if}}
+                {{/valtype}}</span>
             {{/returns}}</span>
         {{/if}}
         <a href="{{link path}}" class="title">
@@ -55,6 +53,9 @@
                 {{#arguments}}
                     <div class="child argument">
                         <span class="signature">
+                            {{#if isCallback}}
+                            <span class="ctype">callback</span>
+                            {{/if}}
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
                             {{/flags}}
@@ -150,7 +151,7 @@
             </div>
         {{/if}}
         {{#if returns}}
-            <h4>returns</h4>
+            <h4>Returns</h4>
             <div class="section returns">
                 {{#returns}}
                     <div class="return">

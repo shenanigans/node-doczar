@@ -73,6 +73,24 @@
             {{/if}}
         {{/if}}
     {{/unless}}
+    {{#if enums}}
+        <!-- enums -->
+        <h2 class="header">Enumerations</h2>
+        <div id="enums" class="section members">
+            {{#enums}}
+{{> child}}
+            {{/enums}}
+        </div>
+    {{/if}}
+    {{#if events}}
+        <!-- events -->
+        <h2 class="header">Events</h2>
+        <div id="events" class="section members">
+            {{#events}}
+{{> event}}
+            {{/events}}
+        </div>
+    {{/if}}
     {{#if names}}
         <!-- names -->
         <h2 class="header">Names</h2>
@@ -125,15 +143,6 @@
             {{#methods}}
 {{> function}}
             {{/methods}}
-        </div>
-    {{/if}}
-    {{#if events}}
-        <!-- events -->
-        <h2 class="header">Events</h2>
-        <div id="events" class="section members">
-            {{#events}}
-{{> event}}
-            {{/events}}
         </div>
     {{/if}}
 </div>

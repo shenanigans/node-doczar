@@ -54,7 +54,6 @@ option          | description
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
 i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob).
 j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
-w, with         | Start with a pre-packaged documentation library for your environment.
 dev             | Display Components marked with the @development flag.
 api             | Display **only** Components marked with the @api flag.
 v, verbose      | Output detailed information about the documentation process.
@@ -125,6 +124,31 @@ close the scope.
     @returns String
         A friendly status message.
 */
+```
+
+To specify multiple return values, you must specify names. A `@returns` Declaration with no type or
+name only closes the argument scope.
+```python
+class FooBox:
+    '''     @class FooBox
+        Represents a box of foos.
+    @member/Function storeFoo
+        Add a foo to this box.
+        @argument/foo foo
+            The foo to store.
+        @callback okCall
+            Called back if the operation completes successfully.
+            @argument/Number count
+                The current number of foos stored in this box.
+            @returns
+        @returns/Array|None warnings
+            An Array of warning messages, or `None`.
+        @returns/String
+            A friendly status message.
+        @returns
+    @member/Number count
+        Total number of foos stored in the box.
+    '''
 ```
 
 Nearly every `Component` we declare has its own addressable path. Here we will add an additional
@@ -205,6 +229,15 @@ properties. You cannot open a new comment with this syntax, nor can you use it t
 */
 ```
 
+Type names also support generics.
+```c
+/**     @class NameList
+    A list of names and addresses.
+@Array[String] #names
+@Object[String, String] #addresses
+*/
+```
+
 To help make your documentation easier to navigate, doczar supports automatic links to another
 `Component`. An additional note about value types: if you start a type with a delimiter
 character, it is scoped to the link's position in the current file. It is **not** scoped to the
@@ -267,27 +300,35 @@ Here are a few more opportunities to be lazy and ommit things.
 */
 ```
 
+
+
 Components and Modifiers
 ------------------------
 ###Components
- * `@spare`
- * `@module`
- * `@property`
- * `@class`
- * `@member`
- * `@argument`
- * `@callback`
- * `@returns`
+ * `@spare` markdown document
+ * `@module` organizational Component
+ * `@interface` Java interfaces
+ * `@class` instantiable class objects
+ * `@property` static properties
+ * `@member` instance properties
+ * `@argument` optionally-named function or event arguments
+ * `@kwarg` python-style keyword arguments
+ * `@callback` callback functions
+ * `@returns` optionally-named return values
+ * `@event` event descriptions
 
 ###Modifiers
- * `@development`
- * `@api`
- * `@super`
- * `@interface`
+ * `@development` hides this Component unless the --dev flag is used
+ * `@api` reveals this Component and its ancestors when the --api flag is used
+ * `@optional` indicates something which need not exist (usually an argument)
+ * `@super` inherits from a superclass
+ * `@implements` associates an implemented Java interface
  * `@public`
  * `@protected`
  * `@private`
  * `@abstract`
+ * `@final`
+ * `@volatile`
 
 Major To-Do Items
 -----------------

@@ -54,6 +54,38 @@
         <div id="details">
             <div id="TOC">
                 <h3>Table of Contents</h3>
+                {{#if modules}}
+                    <div class="section">
+                        <h4 class="header"><a href="#modules">Modules</a></h4>
+                        {{#modules}}
+                            <a href="#module_{{name}}">{{name}}</a><br />
+                        {{/modules}}
+                    </div>
+                {{/if}}
+                {{#if enums}}
+                    <div class="section">
+                        <h4 class="header"><a href="#enums">Enumerations</a></h4>
+                        {{#enums}}
+                            <a href="#enum_{{name}}">{{name}}</a><br />
+                        {{/enums}}
+                    </div>
+                {{/if}}
+                {{#if names}}
+                    <div class="section">
+                        <h4 class="header"><a href="#names">Names</a></h4>
+                        {{#names}}
+                            <a href="#named_{{name}}">{{name}}</a><br />
+                        {{/names}}
+                    </div>
+                {{/if}}
+                {{#if events}}
+                    <div class="section">
+                        <h4 class="header"><a href="#events">Events</a></h4>
+                        {{#events}}
+                            <a href="#event_{{name}}">{{name}}</a><br />
+                        {{/events}}
+                    </div>
+                {{/if}}
                 {{#if statics}}
                     <div class="section">
                         <h4 class="header"><a href="#statics">Static Properties</a></h4>
