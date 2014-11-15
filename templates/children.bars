@@ -132,7 +132,7 @@
         <h2 class="header">Events</h2>
         <div id="events" class="section members">
             {{#events}}
-{{> child}}
+{{> event}}
             {{/events}}
         </div>
     {{/if}}

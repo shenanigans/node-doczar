@@ -72,7 +72,8 @@ var STDLIBS = {
 var argv = require ('minimist') (process.argv, {
     default:        { out:'docs' },
     boolean:        [ 'verbose', 'dev', 'api' ],
-    string:         [ 'jsmod', 'in', 'with', 'code' ],
+    // string:         [ 'jsmod', 'in', 'with', 'code' ],
+    string:         [ 'jsmod', 'in', 'code' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
 function isArray (a) { return a.__proto__ === Array.prototype; }
@@ -159,15 +160,15 @@ function includeLib (libname) {
         sourcefiles.push (path.join (stdDir, libname, files[i]));
 }
 
-if (argv.with) {
-    if (isArray (argv.with))
-        for (var i in argv.with) includeLib (argv.with[i]);
-    else {
-        var files = fs.readdirSync (path.join (stdDir, argv.with))
-        for (var i in files)
-            sourcefiles.push (path.join (stdDir, argv.with, files[i]));
-    }
-}
+// if (argv.with) {
+//     if (isArray (argv.with))
+//         for (var i in argv.with) includeLib (argv.with[i]);
+//     else {
+//         var files = fs.readdirSync (path.join (stdDir, argv.with))
+//         for (var i in files)
+//             sourcefiles.push (path.join (stdDir, argv.with, files[i]));
+//     }
+// }
 
 if (argv.in)
     if (isArray (argv.in))
@@ -179,7 +180,7 @@ if (argv.in)
 if (!argv.jsmod)
     return processSource();
 
-includeLib ('nodejs');
+// includeLib ('nodejs');
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];

@@ -23,10 +23,12 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * inheritence, multiple inheritence and Java `interface`
  * Github-flavored markdown with syntax highlighting
  * automatic crosslinking
- * callbacks and function signatures
+ * callbacks and events
  * multiple return values and keyword arguments
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
- * and so much more!
+
+###Coming Soon
+ * Function signatures
 
 
 Installation
