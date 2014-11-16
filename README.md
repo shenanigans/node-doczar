@@ -7,12 +7,11 @@ doczar
   3 | [Comment Syntax](#comment-syntax)
   4 | [Components, Types and Paths](#components-types-and-paths)
   5 | [Documents and Spares](#documents-and-spares)
-  6 | [Generics](#generics)
-  7 | [Functions](#functions)
-  8 | [Inheritence](#inheritence)
-  9 | [Events and Errors](#events-and-errors)
- 10 | [Examples](#examples)
- 11 | [License](#license)
+  6 | [Functions](#functions)
+  7 | [Inheritence](#inheritence)
+  8 | [Events and Errors](#events-and-errors)
+  9 | [Generics](#generics)
+ 10 | [License](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
 ruby, java and other languages which support c-like block comments.
@@ -23,7 +22,7 @@ large, complex entities easy.
 
 Doczar itself is fully cross-platform, open source, and *totally sweet*.
 
-###Features
+####Features
  * describe modules and object-oriented structures
  * inheritence, multiple inheritence and Java `interface`
  * Github-flavored markdown with syntax highlighting
@@ -32,11 +31,10 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * multiple return values and keyword arguments
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
-###Coming Soon
- * function signatures
+####Coming Soon
  * standard libs for javascript, node, the browser, java, ruby, and python
 
-###Development
+####Development
 `doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
 broke and unemployed. If you want to see continued development on `doczar`, please help me
 [pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
@@ -98,6 +96,9 @@ Ruby users may use `=begin` and `=end` with the same rules.
     I don't know very much about Ruby.
 =end
 ```
+
+Indentation of a markdown section is automagically normalized to the least-indented line and you may
+include any number of tab and space characters before any Declaration.
 
 
 ####Value Types
@@ -166,7 +167,7 @@ Here is a list of the available Modifiers and Flags
 
 Components, Types and Paths
 ---------------------------
-First, let's look at all the Components we have available.
+Let's look at all the Components we have available.
 
 #####Primary Components
 These are the only Components which may be used to open a new document comment.
@@ -187,24 +188,194 @@ These may only appear inside a document comment opened by a Primary Component De
  * `@kwarg` python-style keyword argument
  * `@callback` callback function
  * `@returns` return value
- * `@signature` An alternate function signature
- * `@named` A named value in an `@enum`.
+ * `@signature` an alternate function signature
+ * `@named` a named value in an `@enum`.
 
+Many of these Component types have their own special path delimiters. This lets us reference more
+things as paths than in any other document generator. Here they are:
+
+#####Special Delimiters
+ * `~` `@spare`
+ * `.` `@property`
+ * `#` `@member`
+ * `(` `@argument`
+ * `)` `@returns`
+ * `!` `@throws`
+ * `+` `@event`
+ * `&` `@signature`
+
+You can use a name starting with a delimiter to imply the Component type of any Inner Declaration,
+skipping directly to the value type. You may do this with any of the types listed above as an
+entirely optional feature. My personal recommendation is to use it only for `@property` and
+`@member`.
+
+The default delimiter is `"."`, for `@property`.
+```c
+/**     @class MyClass
+@Function .getAllInstances
+    Load all instances of MyClass.
+@Number count
+    Total number of instances.
+@String #uniqueID
+    The unique identifier of this MyClass instance.
+@Error !EnvironFailure
+    Throws an Error during instantiation if the local
+    environment is configured incorrectly.
+@String (uniqueID
+    A unique identifier to instantiate with.
+*/
+```
+
+#####Crosslinking
+You can easily crosslink to any other defined Component using the normal markdown link syntax. If
+you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
+
+Furthermore, every defined Component is also a valid type, and the same rule applies to starting a
+type path with a delimiter.
+```c
+/**     @module MyModule
+    A simple module.
+*/
+/**     @class MyClass
+    A simple class.
+*/
+/**     @property/Function clone
+@argument/.MyClass source
+    The [MyClass](.MyClass) instance to clone.
+@returns/MyModule.MyClass
+    The fresh [MyClass](MyModule.MyClass) instance.
+*/
+```
 
 
 
 Documents and Spares
 --------------------
+You may Declare a Component any number of times. Child Components and documentation accumulates in
+the order in which it is loaded.
+```c
+/**     @class MyClass
+    Some information about MyClass.
+*/
+/**     @class MyClass
+    Some (more) information about MyClass.
+*/
+```
 
+All markdown documentation is ultimately encapsulated in Components of type `@spare`. In the first
+stage of rendering, the markdown document(s) on a Component are moved into new `@spare` instances.
+The normal documentation appearing after a Declaration is moved to the path `~summary`.
 
+When available, `~summary` is used when a Component is displayed on another Component's output page,
+and `~details` is used on a Component's own page. If you choose to manually specify only one of
+these two paths, all accumulated documentation not associated with a `@spare` will default to the
+unspecified path. When both paths are specified, unassociated documentation is appended to
+`~details`.
 
-Generics
---------
+There is no limit to how many spares a Component may have, however their titles are subject to
+normal namespace restrictions (sorry).
+```c
+/**     @class FooClass
+    Basic information.
+@spare details
+    Detailed information.
+*/
+/**     @class FooClass
+    More basic information.
+*/
+/**     @class BarClass
+    Detailed information.
+@spare summary
+    Basic information.
+*/
+/**     @class BarClass
+    More detailed information.
+*/
+```
 
 
 
 Functions
 ---------
+The Inner Declarations `@argument`, `@kwarg`, `@callback`, `@signature` and `@returns` are used to
+describe Functions. During parsing, these Components have special scoping which is designed to help
+intuitively document an entire Function in one tag. Never forget that this special scope *only*
+affects these Component types *exclusively*. The scope will be immediately reset by the first
+normal Declaration.
+
+Here is a simple Function Declaration with `@argument` and `@returns` declarations. You may name
+your arguments and return values, or not.
+```c
+/**     @property/Function doTheDew
+    Do the Dew until you can't even.
+@argument/Number volume
+    Volume of Dew to do, in fluid ounces.
+@argument/String method
+    How to do the Dew.
+@returns/String message
+    Returns a hip phase, such as "Totally radical!!!".
+*/
+```
+
+```c
+/**     @property/Function sortItems
+    A sorting function for Item instances.
+@argument/Item
+    The first Item.
+@argument/Item
+    The second Item.
+@returns/Number
+    -1, 0, or 1.
+*/
+```
+
+
+#####Callback Functions
+The `@callback` Declaration expands the `@argument` scope in order to document the callback
+Function's arguments. You may reclose this scope with any unnamed `@returns` Declaration. You may
+name your callbacks, or not.
+```c
+/**     @property/Function loadDefinitions
+    Load definition file from the remote server.
+@argument/String hostname
+    URL of the remote server.
+@callback
+    @argument/Error|undefined error
+        If a fatal Error prevented the file from
+        being loaded properly, it is passed to
+        the callback.
+    @argument/Buffer|undefined definitionsFile
+        The loaded definitions file, or `undefined`
+        if an Error occured.
+    @returns
+@argument/Boolean devLogging
+    @optional
+    Activate development-mode logging messages.
+*/
+```
+
+Although I've never seen this pattern used, it is possible to document multiple (pythonic)
+`@returns` Declarations on a `@callback`. You can still close the scope manually with a blank
+`@returns` Declaration.
+```c
+/**     @property/Function getJiggyWithIt
+    Get jiggy with it.
+@callback onError
+    Called if a fatal Exception occured.
+    @returns/function responseAction
+        What to do about the Exception.
+    @returns/Number priority
+        How important this reaction is.
+    @returns
+@callback onSuccess
+    Called if we got jiggy successfully.
+    @argument/Number jigginessLevel
+        Maximum level of jigginess achieved.
+*/
+```
+
+
+#####Function Signatures
 
 
 
@@ -219,247 +390,32 @@ Events and Errors
 
 
 
-Examples
+
+
+Generics
 --------
-The simplest form of document comment: a single [declaration](#doc-comment-syntax) in its own block
-comment.
+Type paths support generics (java), templates (c++) and arrays-of-things (javascript). You may
+specify any number of generic types on any type path, including with the use of multiple types and
+pipes `|`.
 ```c
-/**     @class FooBox
-    Represents a box of foos.
+/**     @property/Array[String]|undefined fooProp
+    An Array of Strings, or undefined.
 */
 ```
 
-The easiest way to document something a little more interesting is to use inner Declarations. All
-inner Declarations affect the parent Declaration, not the one immediately above. You can use a
-forward slash after a Component type to add value types to a Component, and use the pipe character
-to chain multiple value types onto the same Component.
-
-Each documentation string between the declaration lines is rendered in the final output as a
-markdown document. Prior to rendering, indentation is normalized by eliminating the longest-possible
-identical string of whitespace characters from the begining of every line in each document. Simply:
-if every line starts with 8 spaces, it will be rendered as starting with none. Whitespace is ignored
-on declaration lines.
+#####Coming Soon
+Generics in Class Declarations.
 ```c
-/**     @class FooBox
-    Represents a box of foos.
-@argument/Number maxCount
-    The maximum number of foos to store.
-@member/Number count
-    The current number of foos in this `FooBox`.
-@member/foo|undefined latest
-    The most recent foo added to this `FooBox`.
-```
-
-The `@module` declaration has an infectious scope. Every subsequent decaration in the current source
-file is automatically the child of the declared `module`.
-```c
-/**     @module foocontainers
-    An assortment of useful collections for storing foos.
-*/
-/**     @class FooBox
-    Represents a box of foos.
+/**     @class Container<Object elemType>
+    A container of arbitrarily-typed references.
+@function #get
+    @argument/String elemName
+        The name of the element to get.
+    @returns/%elemType|null
+        The requested element, or `null`.
 */
 ```
 
-Function-related declarations have a special scope. `argument` and `callback` declarations apply to
-the most recently declared `Component`. Adding one or more `returns` declarations will manually
-close the scope.
-```c
-/**     @class FooBox
-    Represents a box of foos.
-@member/Function storeFoo
-    Add a foo to this box.
-    @argument/foo foo
-        The foo to store.
-    @callback okCall
-        Called back if the operation completes successfully.
-        @argument/Number count
-            The current number of foos stored in this box.
-        @returns
-    @callback errCall
-        Called back if the operation fails. `okCall` will not be called.
-        @argument/Error err
-            The Error that caused the operation to fail.
-        @returns
-    @returns String
-        A friendly status message.
-*/
-```
-
-To specify multiple return values, you must specify names. A `@returns` Declaration with no type or
-name only closes the argument scope.
-```python
-class FooBox:
-    '''     @class FooBox
-        Represents a box of foos.
-    @member/Function storeFoo
-        Add a foo to this box.
-        @argument/foo foo
-            The foo to store.
-        @callback okCall
-            Called back if the operation completes successfully.
-            @argument/Number count
-                The current number of foos stored in this box.
-            @returns
-        @returns/Array|None warnings
-            An Array of warning messages, or `None`.
-        @returns/String
-            A friendly status message.
-        @returns
-    @member/Number count
-        Total number of foos stored in the box.
-    '''
-```
-
-To specify keyword arguments, just use `@kwarg` instead of `@argument`.
-```python
-class FooBox:
-    '''     @class FooBox
-        Represents a box of foos.
-    @member/Function storeFoo
-        Add a foo to this box.
-        @argument/foo foo
-            The foo to store.
-        @kwarg/Number maxFoos
-            Raise an Exception if adding this foo would raise
-            the total foo count above `maxFoos`.
-    '''
-```
-
-Nearly every `Component` we declare has its own addressable path. Here we will add an additional
-document to several children of a `Component` by selecting them by path in a second file. A `spare`
-is simply an extra named markdown document which is associated with another `Component`.
-```c
-/**     @module foocontainers
-    An assortment of useful collections for storing foos.
-*/
-/**     @class FooBox
-    Represents a box of foos.
-@spare additionalInfo
-    Some more information about `FooBox` intances.
-@property/Array allBoxes
-    An Array of all `FooBox` instances with at least one `foo` inside.
-@member/Function storeFoo
-    Add a foo to this box.
-    @argument/foo foo
-        The foo to store.
-    @callback callback
-        @argument/Error err
-            The Error which caused the operation to fail.
-        @returns
-    @returns/String
-        A useful status message.
-*/
-```
-```c
-/**     @module foocontainers
-@spare FooBox~additionalInfo
-    This content will be added to the `spare` called "additionalInfo".
-@spare FooBox.allBoxes~moreInfo
-    A new `spare` is declared on the property `FooBox.allBoxes`.
-@spare FooBox#storeFoo~moreInfo
-    A new `spare` is declared on the method `FooBox#storeFoo`.
-@spare FooBox#storeFoo(foo~moreInfo
-    A new `spare` is declared on the argument `FooBox#storeFoo(foo`.
-@spare FooBox#storeFoo{callback~moreInfo
-    A new `spare` is declared on the callback function `FooBox#storeFoo{callback`.
-@spare FooBox#storeFoo{callback(err~moreInfo
-    A new `spare` is declared on the callback function's argument `FooBox#storeFoo{callback(err`.
-@spare FooBox#storeFoo)~moreInfo
-    A new `spare` is declared on the first return value of `FooBox#storeFoo`.
-*/
-```
-
-You can specify shorter documentation for a complex `Component` by adding a `spare` called
-"summary". The summary will be used whenever the `Component` is documented as a child. You may also
-manually specify the "details" spare, instead.
-```c
-/**     @module foocontainers
-
-    -- long documentation goes here --
-
-@spare summary
-    An assortment of useful collections for storing foos.
-*/
-/**     @class FooBox
-    A box of foos.
-@spare details
-
-    -- long documentation goes here --
-
-*/
-```
-
-Since path delimiters imply the type of their `Component`, you can usually just jump right to the
-value type. The default type is `property` so the leading delimiter may even be ommitted for static
-properties. You cannot open a new comment with this syntax, nor can you use it to create a `module`.
-```c
-/**     @class FooBox
-@Array .allBoxes
-    The unique name of this box.
-@FooBox|undefined newestBox
-    The most recently-created `FooBox` instance, if any.
-@Function #storeFoo
-    Add a foo to this box.
-*/
-```
-
-Type names also support generics.
-```c
-/**     @class NameList
-    A list of names and addresses.
-@Array[String] #names
-@Object[String, String] #addresses
-*/
-```
-
-To help make your documentation easier to navigate, doczar supports automatic links to another
-`Component`. An additional note about value types: if you start a type with a delimiter
-character, it is scoped to the link's position in the current file. It is **not** scoped to the
-surrounding declaration.
-```c
-/**     @module NoduleHeap
-    A monad heap of [Nodule](.Nodule) instances. Not to be confused with
-    [NoduleChain](NoduleChain) or its [Nodules](NoduleChain.Nodule).
-*/
-/**     @class Nodule
-    A data unit containing arbitrary information.
-*/
-```
-```c
-/**     @module NoduleChain
-    A monad chain of [Nodule](.Nodule) instances. Not to be confused with
-    [NoduleHeap](NoduleHeap) or its [Nodules](NoduleHeap.Nodule).
-*/
-/**     @class Nodule
-    A data unit containing arbitray information.
-@property/.Nodule first
-    This is scoped to the current module.
-*/
-```
-
-Reference the document scope itself with `.`
-```c
-/**     @module/class Nodule
-    A graph node.
-@member/. parent
-    The parent [Nodule](.).
-*/
-```
-
-Here are a few more opportunities to be lazy and ommit things.
-```c
-/**     @property/Function asynchronouslyGetString
-    Fetch a string from the filesystem or something.
-@String (format
-    (this is an @argument/String declaration)
-    How would you like your [String]()?
-@callback
-    @argument/Error
-    @argument/String
-        The fetched [String], formatted to order.
-*/
-```
 
 
 License
