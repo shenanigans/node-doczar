@@ -94,7 +94,7 @@ p {
     padding: 0.7em 1em 1em 1em;
     border: 0.1em solid #D8D8D8;
     border-radius: 0.2em;
-    margin-right: 2em;
+    margin: 0.3em 1.3em 1em 0;
 }
 #TOC.reveal {
     position: fixed;
@@ -147,7 +147,7 @@ p {
 
 #details {
     border-bottom: 0.1em solid #E0E0E0;
-    margin-bottom: 1em;
+    margin: 1em 0 0 0;
     padding-bottom: 3em;
 }
 
@@ -175,6 +175,7 @@ p {
 .signature {
     color: #C813B1;
     font-weight: 700;
+    margin: 0 1em 0 -0.6em;
     margin-left: -0.6em;
     margin-right: 1em;
 }
@@ -217,4 +218,5 @@ p {
     padding: 0.5em 1.3em 2px 1.8em;
     background-color: #DAE6FF;
     border-radius: 0.5em;
+    margin-top: 2em;
 }

@@ -54,22 +54,19 @@
                         {{#flags}}
                             <div class="flag {{.}}">{{.}}</div>
                         {{/flags}}
-                        {{#if returns}}
-                            <span>{{#returns}}
-                                <span class="valsep">,</span>
-                                <span>{{#valtype}}
-                                    <span class="valsep">|</span>
-                                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                                    {{#if generics}}
-                                        [
-                                        <span>{{#generics}}
-                                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                                            <span class="valsep">,</span>
-                                        {{/generics}}</span>
-                                        ]
-                                    {{/if}}
-                                {{/valtype}}</span>
-                            {{/returns}}</span>
+                        {{#if valtype}}
+                            <span>{{#valtype}}
+                                <span class="valsep">|</span>
+                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                                {{#if generics}}
+                                    [
+                                    <span>{{#generics}}
+                                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                                        <span class="valsep">,</span>
+                                    {{/generics}}</span>
+                                    ]
+                                {{/if}}
+                            {{/valtype}}</span>
                         {{/if}}
                         <a href="{{link path}}" class="title">
                             {{../name}}

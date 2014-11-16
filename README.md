@@ -1,14 +1,18 @@
 doczar
 ======
-   | Table Of Contents
----|-------------------------------
- 1 | [Installation](#installation)
- 2 | [Shell Usage](#shell-usage)
- 3 | [API](#api)
- 4 | [Examples](#examples)
- 5 | [Components And Modifiers](#components-and-modifiers)
- 6 | [Major To-Do Items](#major-to-do-items)
- 7 | [License](#license)
+    | Table Of Contents
+----|-------------------------------
+  1 | [Installation](#installation)
+  2 | [Shell Usage](#shell-usage)
+  3 | [Comment Syntax](#comment-syntax)
+  4 | [Components, Types and Paths](#comments-types-and-paths)
+  5 | [Documents and Spares](#documents-and-spares)
+  6 | [Generics](#generics)
+  7 | [Functions](#functions)
+  8 | [Inheritence](#inheritence)
+  9 | [Events and Errors](#events-and-errors)
+ 10 | [Examples](#examples)
+ 11 | [License](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
 ruby, java and other languages which support c-like block comments.
@@ -60,6 +64,161 @@ j, js, jsmod    | Loads the filename with [required](https://github.com/defunctz
 dev             | Display Components marked with the @development flag.
 api             | Display **only** Components marked with the @api flag.
 v, verbose      | Output detailed information about the documentation process.
+
+
+
+Comment Syntax
+--------------
+###Declarations
+The simplest form of documentation is a single Declaration in its own block comment with an
+informational summary. The opening line of a block comment must contain only the characters opening
+the comment, a Declaration and as many spaces and tabs as you want. On the next line you may begin
+describing this unit of code with
+[github-flavored markdown](https://help.github.com/articles/github-flavored-markdown/).
+
+In "c-like" languages, it looks like this:
+```c
+/**     @class MyClass
+    For compatibility purposes, c-like comments support any
+    number of asterisks *immediately after the slash*.
+*/
+```
+
+In python, any "triple" string literal that meets the first-line requirements is a document comment.
+```python
+def referenceMontyPython (skit):
+    """     @property/function referenceMontyPython
+        Either triple or triple-double is fine.
+    """
+```
+
+Ruby users may use `=begin` and `=end` with the same rules.
+```ruby
+=begin  @module MyRubyGem
+    I don't know very much about Ruby.
+=end
+```
+
+
+###Value Types
+A value type is declared with a forward slash. Multiple value types are declared with the pipe `|`
+character.
+```c
+/**     @property/String foobar
+    A String property called "foobar".
+*/
+/**     @property/Number|undefined result
+    This property may be either a Number or `undefined`.
+*/
+```
+
+
+###Inner Declarations
+Once you have opened a declaration, you may write additional declarations which will all be scoped
+to the enclosing comment.
+
+```c
+/**     @class MyClass
+    A simple class.
+@property/Function getAllInstances
+    A static Function that returns all instances of MyClass.
+@member/Function doSomethingCool
+    A member Function on each instance of MyClass.
+*/
+```
+
+
+###Modifiers and Flags
+Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
+above them rather than declaring a new Component. Modifiers have serious consequences for the
+visibility and position of a Component and its children. Flags just render literally as helpful
+keywords in a contrasting color.
+```c
+/**     @class MyClass
+    @super LisasClass
+    @public
+    A simple subclass of Lisa's class.
+@member/String uniqueID
+    @const
+    This id String is generated at instantiation and because
+    it is constant, it will never give you up, never let you
+    down.
+*/
+```
+
+Here is a list of the available Modifiers and Flags
+####Modifiers
+*Describe a Component*
+ * `@development` hides this Component unless the --dev flag is used
+ * `@api` reveals this Component and its ancestors when the --api flag is used
+ * `@optional` indicates something which need not exist (usually an argument)
+ * `@super` inherits from a superclass
+ * `@implements` associates an implemented Java interface
+
+####Flags
+*Simple boolean flag modifiers*
+ * `@public`
+ * `@protected`
+ * `@private`
+ * `@abstract`
+ * `@final`
+ * `@volatile`
+
+
+
+Components, Types and Paths
+---------------------------
+First, let's look at all the Components we have available.
+
+###Primary Components
+These are the only Components which may be used to open a new document comment.
+ * `@module` organizational Component
+ * `@class` instantiable class objects
+ * `@interface` Java interface
+ * `@spare` bare markdown document
+ * `@property` static property
+ * `@member` instance property or method
+ * `@event` event descriptions
+ * `@throws` conditions causing an exception to be thrown
+ * `@enum` list of named values
+
+
+###Inner Components
+These may only appear inside a document comment opened by a Primary Component Declaration.
+ * `@argument` optionally-named function or event argument
+ * `@kwarg` python-style keyword argument
+ * `@callback` callback function
+ * `@returns` return value
+ * `@signature` An alternate function signature
+ * `@named` A named value in an `@enum`.
+
+
+
+
+Documents and Spares
+--------------------
+
+
+
+Generics
+--------
+
+
+
+Functions
+---------
+
+
+
+Inheritence
+-----------
+
+
+
+Events and Errors
+-----------------
+
+
 
 
 Examples
@@ -304,41 +463,6 @@ Here are a few more opportunities to be lazy and ommit things.
 */
 ```
 
-
-
-Components and Modifiers
-------------------------
-###Components
- * `@spare` markdown document
- * `@module` organizational Component
- * `@interface` Java interfaces
- * `@class` instantiable class objects
- * `@property` static properties
- * `@member` instance properties
- * `@argument` optionally-named function or event arguments
- * `@kwarg` python-style keyword arguments
- * `@callback` callback functions
- * `@returns` optionally-named return values
- * `@event` event descriptions
-
-###Modifiers
- * `@development` hides this Component unless the --dev flag is used
- * `@api` reveals this Component and its ancestors when the --api flag is used
- * `@optional` indicates something which need not exist (usually an argument)
- * `@super` inherits from a superclass
- * `@implements` associates an implemented Java interface
- * `@public`
- * `@protected`
- * `@private`
- * `@abstract`
- * `@final`
- * `@volatile`
-
-Major To-Do Items
------------------
-* Java interfaces
-* @event
-* @throws
 
 License
 -------

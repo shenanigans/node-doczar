@@ -62,6 +62,16 @@
                         {{/modules}}
                     </div>
                 {{/if}}
+                {{#if isFunction}}
+                    {{#if arguments}}
+                        <div class="section">
+                            <h4 class="header"><a href="#arguments">Arguments</a></h4>
+                            {{#arguments}}
+                                <a href="#event_{{name}}">{{name}}</a><br />
+                            {{/arguments}}
+                        </div>
+                    {{/if}}
+                {{/if}}
                 {{#if enums}}
                     <div class="section">
                         <h4 class="header"><a href="#enums">Enumerations</a></h4>
@@ -121,6 +131,59 @@
             </div>
             <span class="markdown">{{{markdown details}}}</span>
             <br class="clear" />
+            {{#if signatures}}
+                {{#signatures}}
+                    <div class="secondarySig">
+                        <span class="signature">
+                            {{#flags}}
+                                <div class="flag {{.}}">{{.}}</div>
+                            {{/flags}}
+                            {{#if valtype}}
+                                <span>{{#valtype}}
+                                    <span class="valsep">|</span>
+                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                    {{#if generics}}
+                                        [
+                                        <span>{{#generics}}
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                            <span class="valsep">,</span>
+                                        {{/generics}}</span>
+                                        ]
+                                    {{/if}}
+                                {{/valtype}}</span>
+                            {{/if}}
+                            <a href="{{link path}}" class="title">
+                                {{../name}}
+                            </a>
+                            (
+                                <span>{{#sigargs}}
+                                    <a class="argname">{{.}}</a>
+                                    <span class="valsep">,</span>
+                                {{/sigargs}}</span>
+                            ) {
+                        </span>
+                        {{#if isInherited}}
+                            <div class="source super">
+                                Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+                            </div>
+                        {{else}}
+                            {{#override}}
+                                <div class="source super">
+                                    Overrides <a class="super" href="{{link path}}">{{pathstr}}</a>
+                                </div>
+                            {{/override}}
+                        {{/if}}
+                        {{#satisfies}}
+                            <div class="source interface">
+                                Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>
+                            </div>
+                        {{/satisfies}}
+                        <div class="info">
+                            <span class="markdown">{{{markdown summaryDoc}}}</span>
+                        </div>
+                    </div>
+                {{/signatures}}
+            {{/if}}
         </div>
         {{#if spares}}
             <!-- extra document info -->
