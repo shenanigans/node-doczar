@@ -126,6 +126,9 @@ p {
     background-color: #C6F292;
     border-radius: 0.5em;
 }
+.child.callback {
+    padding-left: 1.9em;
+}
 
 .child .child {
     background-color: #E4FFC7;

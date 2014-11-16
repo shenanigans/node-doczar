@@ -262,10 +262,8 @@ the order in which it is loaded.
 */
 ```
 
-All markdown documentation is ultimately encapsulated in Components of type `@spare`. In the first
-stage of rendering, the markdown document(s) on a Component are moved into new `@spare` instances.
-The normal documentation appearing after a Declaration is moved to the path `~summary`.
-
+In the first stage of rendering, the markdown document(s) on a Component are moved into new `@spare`
+instances. The normal documentation appearing after a Declaration is moved to the path `~summary`.
 When available, `~summary` is used when a Component is displayed on another Component's output page,
 and `~details` is used on a Component's own page. If you choose to manually specify only one of
 these two paths, all accumulated documentation not associated with a `@spare` will default to the
@@ -329,6 +327,15 @@ your arguments and return values, or not.
 */
 ```
 
+Keyword arguments are as easy as replacing `@argument` with `@kwarg`.
+```c
+/**     @property/Function tellParrotJoke
+    Repeat some Monty Python jokes about a parrot.
+@kwarg/String parrotType
+    Type of parrot to joke about.
+*/
+```
+
 
 #####Callback Functions
 The `@callback` Declaration expands the `@argument` scope in order to document the callback
@@ -376,11 +383,86 @@ Although I've never seen this pattern used, it is possible to document multiple 
 
 
 #####Function Signatures
+If you're writing an overloaded function with multiple signatures or need to document special
+permutations of optional arguments, `@signature` is there for you. It redefines the return value and
+argument signature and documents the signature separately.
+```c
+/**     @property/Function writeBuffer
+    Interprets the contents of a Buffer as UTF-8
+    and writes it in the sky with smoke signals.
+@signature/Number (content)
+    Write out the entire Buffer and return the
+    number of bytes written.
+@signature/Number|undefined (content, bytes)
+    Write up to `bytes` bytes of text from
+    `content`. If there is content remaining,
+    returns the number of unwritten bytes.
+@argument/Buffer content
+    Text content to skywrite.
+@argument/Number bytes
+    Limit output to a set number of bytes.
+*/
+```
+
+You may also define a signature with value types. These types have no additional implications, they
+are only displayed in the documentation.
+```c
+/**     @property/Function write
+    Output information through the Morse telegram interface.
+@argument content
+    The content to send.
+@signature (String content)
+    Send the content as ascii text, followed by `STOP`.
+@signature (Number content)
+    Convert the number to ascii text and send, followed
+    by `STOP`.
+*/
+```
+
+Signatures cannot be inherited or overridden individually.
 
 
 
 Inheritence
 -----------
+To inherit static and member properties from another Component of any type, use the `@super`
+modifier.
+```c
+/**     @class BaseClass
+    A simple base class.
+@Function createDefault
+    Create and return a default instance.
+    @returns/.BaseClass
+@Function #toString
+    Produce a String representation of this instance.
+*/
+/**     @class SubClass
+    A simple subclass.
+@Function #toString
+    Overrides `BaseClass#toString`.
+*/
+```
+
+If a Component with a superclass also has at least one value type that is exactly `"function"` or
+`"Function"`, it will also inherit arguments, signatures, return values and thrown exceptions.
+
+Java interfaces are also supported, with `@interface` and `@implements`.
+```c
+/**     @interface UniversalRemote
+    The common interface for a universal remote control.
+@member/Function volumeUp
+    Increase speaker volume.
+@member/Function volumeDown
+    Decrease speaker volume.
+*/
+/**     @class Tamtung_Model042_3
+    @implements .UniversalRemote
+@member/Function volumeUp
+    Increase speaker volume.
+@member/Function volumeDown
+    Decrease speaker volume.
+*/
+```
 
 
 

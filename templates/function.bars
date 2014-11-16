@@ -68,12 +68,12 @@
                                 {{/if}}
                             {{/valtype}}</span>
                         {{/if}}
-                        <a href="{{link path}}" class="title">
+                        <a href="{{softlink ../path}}" class="title">
                             {{../name}}
                         </a>
                         (
                             <span>{{#sigargs}}
-                                <a class="argname">{{.}}</a>
+                                <a class="argname" href="{{softlink target}}">{{.}}</a>
                                 <span class="valsep">,</span>
                             {{/sigargs}}</span>
                         ) {
@@ -104,14 +104,31 @@
             <h4>Arguments</h4>
             <div class="section arguments">
                 {{#arguments}}
-                    <div class="child argument">
+                    <div class="child argument {{#if isCallback}}callback{{/if}}">
                         <span class="signature">
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
                             {{/flags}}
-                            {{#if isCallback}}{{#unless name}}
-                            <span class="ctype">callback</span>
-                            {{/unless}}{{/if}}
+                            {{#if isCallback}}
+                                <span class="ctype">callback</span>
+                                {{#if returns}}
+                                    <span>{{#returns}}
+                                        <span class="valsep">,</span>
+                                        <span>{{#valtype}}
+                                            <span class="valsep">|</span>
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                            {{#if generics}}
+                                                [
+                                                <span>{{#generics}}
+                                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    <span class="valsep">,</span>
+                                                {{/generics}}</span>
+                                                ]
+                                            {{/if}}
+                                        {{/valtype}}</span>
+                                    {{/returns}}</span>
+                                {{/if}}
+                            {{/if}}
                             {{#if isKwarg}}
                                 <a class="title" href="{{link path}}">
                                     {{name}}
@@ -161,43 +178,55 @@
                         {{/if}}
                         <div class="info">
                             <span class="markdown">{{{markdown summaryDoc}}}</span>
-                            {{#if isCallback}}{{#if arguments}}
-                                <h5>Arguments</h5>
-                                <div class="section arguments">
-                                    {{#arguments}}
-                                        <div class="child {{ctype}}">
-                                            <span class="signature">
-                                                {{#if isKwarg}}
-                                                    <a class="title" href="{{link path}}">
-                                                        {{name}}
-                                                    </a>
-                                                    =
-                                                    <span>{{#valtype}}
-                                                        <span class="valsep">|</span>
-                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                    {{/valtype}}</span>
-                                                {{else}}
-                                                    <span>{{#valtype}}
-                                                        <span class="valsep">|</span>
-                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                    {{/valtype}}</span>
-                                                    <a class="title" href="{{link path}}">
-                                                        {{name}}
-                                                    </a>
-                                                {{/if}}
-                                                {{#if isInherited}}
-                                                    <div class="source">
-                                                        Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
-                                                    </div>
-                                                {{/if}}
-                                            </span>
-                                            <div class="info">
-                                                <span class="markdown">{{{markdown summaryDoc}}}</span>
+                            {{#if isCallback}}
+                                {{#if arguments}}
+                                    <h5>Arguments</h5>
+                                    <div class="section arguments">
+                                        {{#arguments}}
+                                            <div class="child {{ctype}}">
+                                                <span class="signature">
+                                                    {{#if isKwarg}}
+                                                        <a class="title" href="{{link path}}">
+                                                            {{name}}
+                                                        </a>
+                                                        =
+                                                        <span>{{#valtype}}
+                                                            <span class="valsep">|</span>
+                                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                        {{/valtype}}</span>
+                                                    {{else}}
+                                                        <span>{{#valtype}}
+                                                            <span class="valsep">|</span>
+                                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                        {{/valtype}}</span>
+                                                        <a class="title" href="{{link path}}">
+                                                            {{name}}
+                                                        </a>
+                                                    {{/if}}
+                                                    {{#if isInherited}}
+                                                        <div class="source">
+                                                            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+                                                        </div>
+                                                    {{/if}}
+                                                </span>
+                                                <div class="info">
+                                                    <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    {{/arguments}}
-                                </div>
-                            {{/if}}{{/if}}
+                                        {{/arguments}}
+                                    </div>
+                                {{/if}}
+                                {{#if returns}}
+                                    <h5>Returns</h5>
+                                    <div class="section returns">
+                                        {{#returns}}
+                                            <div class="return">
+    {{> child}}
+                                            </div>
+                                        {{/returns}}
+                                    </div>
+                                {{/if}}
+                            {{/if}}
                         </div>
                     </div>
                 {{/arguments}}
