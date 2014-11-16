@@ -29,8 +29,8 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
 ###Coming Soon
- * Function signatures
- * standard libs for javascript, node, the browser, java, and python
+ * function signatures
+ * standard libs for javascript, node, the browser, java, ruby, and python
 
 ###Development
 `doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
@@ -151,6 +151,21 @@ class FooBox:
         @returns
     @member/Number count
         Total number of foos stored in the box.
+    '''
+```
+
+To specify keyword arguments, just use `@kwarg` instead of `@argument`.
+```python
+class FooBox:
+    '''     @class FooBox
+        Represents a box of foos.
+    @member/Function storeFoo
+        Add a foo to this box.
+        @argument/foo foo
+            The foo to store.
+        @kwarg/Number maxFoos
+            Raise an Exception if adding this foo would raise
+            the total foo count above `maxFoos`.
     '''
 ```
 

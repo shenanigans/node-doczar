@@ -12,7 +12,7 @@ body {
 
 a {
     text-decoration: none;
-    color:#4264AA;
+    color: #4264AA;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -213,5 +213,8 @@ p {
     background-color: #FFF980;
 }
 
-.argument .title {
+.secondarySig {
+    padding: 0.5em 1.3em 2px 1.8em;
+    background-color: #DAE6FF;
+    border-radius: 0.5em;
 }
