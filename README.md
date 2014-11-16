@@ -5,7 +5,7 @@ doczar
   1 | [Installation](#installation)
   2 | [Shell Usage](#shell-usage)
   3 | [Comment Syntax](#comment-syntax)
-  4 | [Components, Types and Paths](#comments-types-and-paths)
+  4 | [Components, Types and Paths](#components-types-and-paths)
   5 | [Documents and Spares](#documents-and-spares)
   6 | [Generics](#generics)
   7 | [Functions](#functions)
@@ -100,7 +100,7 @@ Ruby users may use `=begin` and `=end` with the same rules.
 ```
 
 
-###Value Types
+####Value Types
 A value type is declared with a forward slash. Multiple value types are declared with the pipe `|`
 character.
 ```c
@@ -113,7 +113,7 @@ character.
 ```
 
 
-###Inner Declarations
+####Inner Declarations
 Once you have opened a declaration, you may write additional declarations which will all be scoped
 to the enclosing comment.
 
@@ -128,7 +128,7 @@ to the enclosing comment.
 ```
 
 
-###Modifiers and Flags
+####Modifiers and Flags
 Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags just render literally as helpful
@@ -147,16 +147,14 @@ keywords in a contrasting color.
 ```
 
 Here is a list of the available Modifiers and Flags
-####Modifiers
-*Describe a Component*
+#####Modifiers
  * `@development` hides this Component unless the --dev flag is used
  * `@api` reveals this Component and its ancestors when the --api flag is used
  * `@optional` indicates something which need not exist (usually an argument)
  * `@super` inherits from a superclass
  * `@implements` associates an implemented Java interface
 
-####Flags
-*Simple boolean flag modifiers*
+#####Flags
  * `@public`
  * `@protected`
  * `@private`
@@ -170,7 +168,7 @@ Components, Types and Paths
 ---------------------------
 First, let's look at all the Components we have available.
 
-###Primary Components
+#####Primary Components
 These are the only Components which may be used to open a new document comment.
  * `@module` organizational Component
  * `@class` instantiable class objects
@@ -183,7 +181,7 @@ These are the only Components which may be used to open a new document comment.
  * `@enum` list of named values
 
 
-###Inner Components
+#####Inner Components
 These may only appear inside a document comment opened by a Primary Component Declaration.
  * `@argument` optionally-named function or event argument
  * `@kwarg` python-style keyword argument
