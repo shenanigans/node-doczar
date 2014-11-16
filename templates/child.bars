@@ -21,10 +21,15 @@
         <a class="title" href="{{link path}}">{{name}}</a>
     </span>
     {{#if isInherited}}
-        <div class="source">
+        <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
+    {{#superClasses}}
+        <div class="source super">
+            Subclass of <a class="super" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/superClasses}}
     {{#interfaces}}
         <div class="source interface">
             Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>

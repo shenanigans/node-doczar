@@ -108,7 +108,7 @@
                         {{/if}}
                         <div class="info">
                             <span class="markdown">{{{markdown summaryDoc}}}</span>
-                            {{#if isCallback}}
+                            {{#if isCallback}}{{#if arguments}}
                                 <h5>Arguments</h5>
                                 <div class="section arguments">
                                     {{#arguments}}
@@ -144,7 +144,7 @@
                                         </div>
                                     {{/arguments}}
                                 </div>
-                            {{/if}}
+                            {{/if}}{{/if}}
                         </div>
                     </div>
                 {{/arguments}}

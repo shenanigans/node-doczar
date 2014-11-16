@@ -10,7 +10,8 @@ doczar
  6 | [Major To-Do Items](#major-to-do-items)
  7 | [License](#license)
 
-Doczar (pronounced **dozer**) is a simple, explicit documentation generator for most languages.
+Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
+ruby, java and other languages which support c-like block comments.
 
 Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
@@ -22,17 +23,19 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * describe modules and object-oriented structures
  * inheritence, multiple inheritence and Java `interface`
  * Github-flavored markdown with syntax highlighting
- * automatic crosslinking
+ * semi-automatic crosslinking
  * callbacks and events
  * multiple return values and keyword arguments
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
 ###Coming Soon
  * Function signatures
- * javascript, browser and Node standard libraries
+ * standard libs for javascript, node, the browser, java, and python
 
 ###Development
-If you want to see continued development on `doczar`, please help me [pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
+broke and unemployed. If you want to see continued development on `doczar`, please help me
+[pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
 Installation
 ------------
@@ -263,26 +266,12 @@ surrounding declaration.
 */
 ```
 
-In case you *still* think explicit paths are pain, doczar also has a greedy root which claims to own
-every unique name in the entire tree. This means you can declare a Component with an interesting
-name in one file and access it easily in another. When names conflict, Components closer to the root
-and declared earlier in the input file(s) are preferred. However: this feature is best reserved for
-names which you are positive will never conflict with anything else. In this example, `Screwdriver`
-is probably a safe link, but `unscrew` probably isn't.
+Reference the document scope itself with `.`
 ```c
-/**     @module someTools
-    A collection of tools.
-*/
-/**     @class Screwdriver
-    A tool for adding or removing screws.
-@Function #screw
-@Function #unscrew
-*/
-```
-```c
-/**     @property/Human.Mechanic John
-    This monad worker Object knows a few things about mechanics, like how to use a
-    [screw driver](Screwdriver) to [unscrew](unscrew) things.
+/**     @module/class Nodule
+    A graph node.
+@member/. parent
+    The parent [Nodule](.).
 */
 ```
 
@@ -296,7 +285,7 @@ Here are a few more opportunities to be lazy and ommit things.
 @callback
     @argument/Error
     @argument/String
-        The fetched String, formatted to order.
+        The fetched [String], formatted to order.
 */
 ```
 

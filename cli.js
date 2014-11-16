@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+/**     @module doczar
+
+*/
+
 var path = require ('path');
 var fs = require ('fs');
 var async = require ('async');
@@ -95,7 +99,7 @@ var options = {
 function processSource(){
     var context = new ComponentCache();
     async.eachSeries (sourcefiles, function (fname, callback) {
-        Parser.parseFile (fname, context, options, callback);
+        Parser.parseFile (fname, context, callback);
     }, function (err) {
         if (err) {
             console.log ((''+err).red);
