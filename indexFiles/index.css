@@ -21,6 +21,9 @@ a {
     text-decoration: none;
     color: #476EBE;
 }
+a:hover {
+    text-decoration: underline;
+}
 
 .section.spares a.spare {
     font-size: 150%;

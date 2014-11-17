@@ -56,16 +56,17 @@ Shell Usage
 $ doczar --in=src/**/*.c --out docz
 $ doczar --jsmod ./main # outputs to ./docs
 ```
+
+The documentation for `doczar` is generated with `$ doczar --jsmod ./cli`.
+
 option          | description
 ---------------:|---------------------------------
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
 i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob).
 j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
-dev             | Display Components marked with the @development flag.
-api             | Display **only** Components marked with the @api flag.
-v, verbose      | Output detailed information about the documentation process.
+dev             | Display Components marked with the `@development` modifier.
+api             | Display **only** Components marked with the `@api` modifier.
 
-The documentation for `doczar` is generated with `$ doczar --jsmod ./cli`.
 
 
 
