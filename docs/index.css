@@ -1,0 +1,305 @@
+
+html {
+    background-color: #fff;
+    color: #2f2f2f;
+    height: 100%;
+}
+
+body {
+    font-family: sans-serif;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin: 0;
+    height: 100%;
+}
+
+#outer {
+    min-height: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: #476EBE;
+}
+
+.section.spares a.spare {
+    font-size: 150%;
+    font-weight: 900;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 1.3em 0 0.4em 0;
+}
+
+.section {
+    padding-left: 1em;
+}
+
+#content {
+    margin: auto;
+    min-width: 33em;
+    padding: 0.3em 2em 3em 2em;
+    display: inline-block;
+    text-align: left;
+}
+
+#header {
+    /* display: inline-block; */
+    min-width: 18em;
+    font-size: 210%;
+    text-align: left;
+    padding: 0.5em 0 0.5em 0.7em;
+    color: #C813B1;
+    border-bottom: 1px solid #D6D6D6;
+    background-color: #F2F2F2;
+}
+
+.delimiter {
+    margin: 0 0.1em;
+}
+
+.ctype {
+    color: #7FBC38;
+}
+
+.child .ctype {
+    color: #376902;
+}
+
+.children {
+    display: inline-block;
+}
+
+.source {
+    color: #939393;
+    font-size: 90%;
+    margin: 0.1em 0 0 0.4em;
+}
+
+.info h2 {
+    font-size: 1em;
+}
+
+.breadcrumbs .delimiter {
+}
+
+.breadcrumbs .delimiter:first-child {
+    display: none;
+}
+
+.markdown {
+    font-size: 115%;
+    font-family: georgia, serif;
+    color: #454545;
+}
+.markdown:empty {
+    display: none;
+}
+
+p {
+    max-width: 27em;
+    padding: 0.5em;
+    padding-left: 0;
+    margin: 0.5em 0;
+}
+
+#TOC {
+    display: inline-block;
+    float: left;
+    padding: 0.7em 1em 1em 1em;
+    border: 0.1em solid #D8D8D8;
+    border-radius: 0.2em;
+    margin: 0.2em 1.2em 1em 0;
+}
+#TOC.reveal {
+    position: fixed;
+    top: 1.5em;
+    left: 1.5em;
+    box-shadow: 0 0 4em 1em #C6C8C4;
+    background-color: #fff;
+}
+#TOC h3 {
+    margin: 0 0 0.2em 0;
+}
+#TOC h4 {
+    margin: 0.33em 0 0 -0.5em;
+}
+#TOC h4 a {
+    text-decoration: none;
+}
+#TOC .section {
+    padding: 0 0 0 1em;
+}
+
+.clear {
+    clear: both;
+}
+
+.child {
+    padding: 0.5em 1.3em 2px 1.8em;
+    margin-bottom: 1.5em;
+    background-color: #C6F292;
+    border-radius: 0.5em;
+}
+.child.callback {
+    padding-left: 1.9em;
+}
+
+.child .child {
+    background-color: #E4FFC7;
+    margin-bottom: 0.6em;
+}
+
+.child.named {
+    margin-bottom: 0.4em;
+    background-color: #E5F9CC;
+}
+
+.info {
+    background-color: #fff;
+    border-radius: 0.7em 0 0.7em 0;
+    margin: 0.3em -1.3em 0 -1.8em;
+    padding: 1px 1em;
+    /* overflow: auto; */
+}
+
+#details {
+    border-bottom: 0.1em solid #E0E0E0;
+    margin: 1em 0 0 0;
+    padding-bottom: 3em;
+}
+
+#details p {
+    max-width: 37em;
+}
+
+.valtype {
+    text-decoration: none;
+    font-size: 85%;
+    color: #5F87BA;
+    font-weight:100;
+}
+
+.valsep {
+    font-size: 130%
+}
+/* skip terminal pipes for valtype lists */
+.valsep:first-child {
+    display: none;
+}
+.valsep:last-child {
+    display: none;
+}
+
+.signature {
+    color: #C813B1;
+    font-weight: 700;
+    margin: 0 1em 0 -0.6em;
+    margin-left: -0.6em;
+    margin-right: 1em;
+}
+.signature .arguments {
+    display: inline-block;
+}
+.signature .argument {
+    display: inline-block;
+}
+
+.argument .arguments {
+    padding-left: 0.75em;
+}
+
+.child .title {
+    font-weight: 900;
+}
+
+.comma {
+    font-size: 130%
+}
+/* hide comma after final argument */
+*:last-child > .comma {
+    display: none;
+}
+
+.flag {
+    display: inline-block;
+    font-size: 90%;
+}
+
+.child.throws {
+    background-color: #FFF980;
+}
+
+.secondarySig {
+    padding: 0.5em 1.3em 2px 1.8em;
+    background-color: #DAE6FF;
+    border-radius: 0.5em;
+    margin-top: 2em;
+}
+
+#footer {
+    padding: 0.8em 0 0.6em 1em;
+    font-size: 80%;
+    color: #6F6F6F;
+    border-top: 1px solid #DADADA;
+    background-color: #F2F2F2;
+}
+
+#footer .date {
+    color: #1B1B1B;
+
+}
+
+#footer .time {
+    color: #1B1B1B;
+}
+
+.markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6, .markdown th {
+    font-family: sans-serif;
+    margin: 1.5em 0 0.3em 0;
+}
+
+.markdown a code {
+    color: #476EBE;
+}
+
+.markdown code {
+    padding: 0 0.4em;
+    background-color: #F1F1F5;
+    border: 1px solid #E5E6E8;
+    border-radius: 3px;
+    color: #000;
+    display: inline-block;
+}
+
+.markdown pre {
+    padding: 0.7em 0.5em 0.7em 0.4em;
+    background-color: #EFEFF4;
+    border-left: 3px solid #C0CAE0;
+}
+
+.markdown pre code {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.markdown > *:first-child {
+    margin-top: 0;
+}
+
+.markdown table {
+    border-collapse: collapse;
+}
+
+.markdown tr:nth-child(even) {
+    background-color: #F2F2F9;
+}
+
+.markdown td, .markdown th {
+    padding: 0.4em 0.5em 0.3em 0.5em;
+}
+
+.markdown td {
+    border-left: 1px solid #eee;
+}

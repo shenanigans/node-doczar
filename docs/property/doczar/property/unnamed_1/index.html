@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>.doczar.unnamed_1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="property" id="component_3">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">property</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">.</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">.</span><a href="javascript:return false;" class="breadcrumb property"></a>
+            </span>
+        </div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+    <div id="TOC">
+        <h3>Table of Contents</h3>
+    </div>
+                    <span class="markdown"><h1 id="doczar">doczar</h1>
+<pre><code><span class="hljs-string">| Table Of Contents</span>
+</code></pre><p>----|-------------------------------
+  1 | <a href="javascript:return false;"><code>Installation</code></a>
+  2 | <a href="javascript:return false;"><code>Shell Usage</code></a>
+  3 | <a href="javascript:return false;"><code>Development</code></a>
+  4 | <a href="javascript:return false;"><code>Comment Syntax</code></a>
+  5 | <a href="javascript:return false;"><code>Components, Types and Paths</code></a>
+  6 | <a href="javascript:return false;"><code>Documents and Spares</code></a>
+  7 | <a href="javascript:return false;"><code>Functions</code></a>
+  8 | <a href="javascript:return false;"><code>Inheritence</code></a>
+  9 | <a href="javascript:return false;"><code>Events and Errors</code></a>
+ 10 | <a href="javascript:return false;"><code>Generics</code></a>
+ 11 | <a href="javascript:return false;"><code>LICENSE</code></a></p>
+<p>Doczar (pronounced <strong>dozer</strong>) is a simple, explicit documentation generator for javascript, python,
+ruby, java and other languages which support c-like block comments.</p>
+<p>Rather than attempting to document the source code itself, doczar <strong>only</strong> uses tagged comments. The
+comment format has been designed for legibility and uses a simple scope model to make documenting
+large, complex entities easy.</p>
+<p>Doczar itself is fully cross-platform, open source, and <em>totally sweet</em>.</p>
+<h4 id="features">Features</h4>
+<ul>
+<li>describe modules and object-oriented structures</li>
+<li>inheritence, multiple inheritence and Java <code>interface</code></li>
+<li>Github-flavored markdown with syntax highlighting</li>
+<li>semi-automatic crosslinking</li>
+<li>callbacks and events</li>
+<li>multiple return values and keyword arguments</li>
+<li>function signatures</li>
+<li>automatic Node.js <a href="https://github.com/defunctzombie/node-required">dependency graph</a> documentation</li>
+</ul>
+<h4 id="coming-soon">Coming Soon</h4>
+<ul>
+<li>special <code>@spare</code> path for documenting a constructor separately from its class.</li>
+<li><code>@file</code> Components to encode file structure information</li>
+<li><code>@import</code> to mount java modules on more crosslink-friendly local paths</li>
+<li>standard libs for javascript, node, the browser, java, ruby, and python</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>You will need <a href="http://nodejs.org/">node.js and npm</a>.</p>
+<pre><code class="lang-shell">$ sudo npm install -g doczar
+</code></pre>
+<p>The binary <code>doczar</code> is now on your executable path.</p>
+<h2 id="shell-usage">Shell Usage</h2>
+<pre><code class="lang-shell">$ doczar --in=src/**/*.c --out docz
+$ doczar --jsmod ./main # outputs to ./docs
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>o, out</td>
+<td>Selects a directory to fill with documentation output. The directory need not exist or be empty.</td>
+</tr>
+<tr>
+<td>i, in</td>
+<td>Selects files to document. Parses nix-like wildcards using <a href="https://github.com/isaacs/node-glob">glob</a>.</td>
+</tr>
+<tr>
+<td>j, js, jsmod</td>
+<td>Loads the filename with <a href="https://github.com/defunctzombie/node-required">required</a> and documents every required source file.</td>
+</tr>
+<tr>
+<td>dev</td>
+<td>Display Components marked with the @development flag.</td>
+</tr>
+<tr>
+<td>api</td>
+<td>Display <strong>only</strong> Components marked with the @api flag.</td>
+</tr>
+<tr>
+<td>v, verbose</td>
+<td>Output detailed information about the documentation process.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="development">Development</h2>
+<p><code>doczar</code> is developed and maintained by Kevin &quot;Schmidty&quot; Smith under the MIT license. I am currently
+broke and unemployed. If you want to see continued development on <code>doczar</code>, please help me
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=PN6C2AZTS2FP8&amp;lc=US&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">pay my bills!</a></p>
+<h2 id="comment-syntax">Comment Syntax</h2>
+<h3 id="declarations">Declarations</h3>
+<p>The simplest form of documentation is a single Declaration in its own block comment with an
+informational summary. The opening line of a block comment must contain only the characters opening
+the comment, a Declaration and as many spaces and tabs as you want. On the next line you may begin
+describing this unit of code with
+<a href="https://help.github.com/articles/github-flavored-markdown/">github-flavored markdown</a>.</p>
+<p>In &quot;c-like&quot; languages, it looks like this:</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
+    For compatibility purposes, c-like comments support any
+    number of asterisks *immediately after the slash*.
+*/</span>
+</code></pre>
+<p>In python, any &quot;triple&quot; string literal that meets the first-line requirements is a document comment.</p>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">referenceMontyPython</span> <span class="hljs-params">(skit)</span>:</span>
+    <span class="hljs-string">"""     @property/function referenceMontyPython
+        Either triple or triple-double is fine.
+    """</span>
+</code></pre>
+<p>Ruby users may use <code>=begin</code> and <code>=end</code> with the same rules.</p>
+<pre><code class="lang-ruby"><span class="hljs-comment">=begin  <span class="hljs-yardoctag">@module</span> MyRubyGem
+    I don't know very much about Ruby.
+=end</span>
+</code></pre>
+<p>Indentation of a markdown section is automagically normalized to the least-indented line and you may
+include any number of tab and space characters before any Declaration.</p>
+<h4 id="modules">Modules</h4>
+<p>The <code>@module</code> Declaration has an infectious scope. Every Declaration after it is scoped to the
+module Component, as are locally-rooted value types. (see <a href="javascript:return false;"><code>crosslinking</code></a>)</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @module Foo
+    The Foo module.
+*/</span>
+<span class="hljs-comment">/**     @class Bar
+    The Foo.Bar class.
+*/</span>
+</code></pre>
+<h4 id="value-types">Value Types</h4>
+<p>A value type is declared with a forward slash. Multiple value types are declared with the pipe <code>|</code>
+character.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/String foobar
+    A String property called "foobar".
+*/</span>
+<span class="hljs-comment">/**     @property/Number|undefined result
+    This property may be either a Number or `undefined`.
+*/</span>
+</code></pre>
+<h4 id="inner-declarations">Inner Declarations</h4>
+<p>Once you have opened a declaration, you may write additional declarations which will all be scoped
+to the enclosing comment.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
+    A simple class.
+@property/Function getAllInstances
+    A static Function that returns all instances of MyClass.
+@member/Function doSomethingCool
+    A member Function on each instance of MyClass.
+*/</span>
+</code></pre>
+<h4 id="modifiers-and-flags">Modifiers and Flags</h4>
+<p>Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
+above them rather than declaring a new Component. Modifiers have serious consequences for the
+visibility and position of a Component and its children. Flags just render literally as helpful
+keywords in a contrasting color.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
+    @super LisasClass
+    @public
+    A simple subclass of Lisa's class.
+@member/String uniqueID
+    @const
+    This id String is generated at instantiation and because
+    it is constant, it will never give you up, never let you
+    down.
+*/</span>
+</code></pre>
+<p>Here is a list of the available Modifiers and Flags</p>
+<h5 id="modifiers">Modifiers</h5>
+<ul>
+<li><code>@development</code> hides this Component unless the --dev flag is used</li>
+<li><code>@api</code> reveals this Component and its ancestors when the --api flag is used</li>
+<li><code>@optional</code> indicates something which need not exist (usually an argument)</li>
+<li><code>@super</code> inherits from a superclass</li>
+<li><code>@implements</code> associates an implemented Java interface</li>
+</ul>
+<h5 id="flags">Flags</h5>
+<ul>
+<li><code>@public</code></li>
+<li><code>@protected</code></li>
+<li><code>@private</code></li>
+<li><code>@abstract</code></li>
+<li><code>@final</code></li>
+<li><code>@volatile</code></li>
+</ul>
+<h2 id="components-types-and-paths">Components, Types and Paths</h2>
+<p>Let&#39;s look at all the Components we have available.</p>
+<h5 id="primary-components">Primary Components</h5>
+<p>These are the only Components which may be used to open a new document comment.</p>
+<ul>
+<li><code>@module</code> organizational Component</li>
+<li><code>@class</code> instantiable class objects</li>
+<li><code>@interface</code> Java interface</li>
+<li><code>@spare</code> bare markdown document</li>
+<li><code>@property</code> static property</li>
+<li><code>@member</code> instance property or method</li>
+<li><code>@event</code> event descriptions</li>
+<li><code>@throws</code> conditions causing an exception to be thrown</li>
+<li><code>@enum</code> list of named values</li>
+</ul>
+<h5 id="inner-components">Inner Components</h5>
+<p>These may only appear inside a document comment opened by a Primary Component Declaration.</p>
+<ul>
+<li><code>@argument</code> optionally-named function or event argument</li>
+<li><code>@kwarg</code> python-style keyword argument</li>
+<li><code>@callback</code> callback function</li>
+<li><code>@returns</code> return value</li>
+<li><code>@signature</code> an alternate function signature</li>
+<li><code>@named</code> a named value in an <code>@enum</code>.</li>
+</ul>
+<p>Many of these Component types have their own special path delimiters. This lets us reference more
+things as paths than in any other document generator. Here they are:</p>
+<h5 id="special-delimiters">Special Delimiters</h5>
+<ul>
+<li><code>~</code> <code>@spare</code></li>
+<li><code>.</code> <code>@property</code></li>
+<li><code>#</code> <code>@member</code></li>
+<li><code>(</code> <code>@argument</code></li>
+<li><code>)</code> <code>@returns</code></li>
+<li><code>!</code> <code>@throws</code></li>
+<li><code>+</code> <code>@event</code></li>
+<li><code>&amp;</code> <code>@signature</code></li>
+</ul>
+<p>You can use a name starting with a delimiter to imply the Component type of any Inner Declaration,
+skipping directly to the value type. You may do this with any of the types listed above as an
+entirely optional feature. My personal recommendation is to use it only for <code>@property</code> and
+<code>@member</code>.</p>
+<p>The default delimiter is <code>&quot;.&quot;</code>, for <code>@property</code>.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
+@Function .getAllInstances
+    Load all instances of MyClass.
+@Number count
+    Total number of instances.
+@String #uniqueID
+    The unique identifier of this MyClass instance.
+@Error !EnvironFailure
+    Throws an Error during instantiation if the local
+    environment is configured incorrectly.
+@String (uniqueID
+    A unique identifier to instantiate with.
+*/</span>
+</code></pre>
+<h5 id="crosslinking">Crosslinking</h5>
+<p>You can easily crosslink to any other defined Component using the normal markdown link syntax. If
+you start a crosslink path with a delimiter, the target will be rooted to the current module scope.</p>
+<p>Furthermore, every defined Component is also a valid type, and the same rule applies when starting a
+type path with a delimiter.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @module MyModule
+    A simple module.
+*/</span>
+<span class="hljs-comment">/**     @class MyClass
+    A simple class.
+*/</span>
+<span class="hljs-comment">/**     @property/Function clone
+@argument/.MyClass source
+    The [MyClass](.MyClass) instance to clone.
+@returns/MyModule.MyClass
+    The fresh [MyClass](MyModule.MyClass) instance.
+*/</span>
+</code></pre>
+<h2 id="documents-and-spares">Documents and Spares</h2>
+<p>You may Declare a Component any number of times. Child Components and documentation accumulates in
+the order in which it is loaded.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
+    Some information about MyClass.
+*/</span>
+<span class="hljs-comment">/**     @class MyClass
+    Some (more) information about MyClass.
+*/</span>
+</code></pre>
+<p>In the first stage of rendering, the markdown document(s) on a Component are moved into new <code>@spare</code>
+instances. The normal documentation appearing after a Declaration is moved to the path <code>~summary</code>.
+When available, <code>~summary</code> is used when a Component is displayed on another Component&#39;s output page,
+and <code>~details</code> is used on a Component&#39;s own page. If you choose to manually specify only one of
+these two paths, all accumulated documentation not associated with a <code>@spare</code> will default to the
+unspecified path. When both paths are specified, unassociated documentation is appended to
+<code>~details</code>.</p>
+<p>There is no limit to how many spares a Component may have, however their titles are subject to
+normal namespace restrictions (sorry).</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class FooClass
+    Basic information.
+@spare details
+    Detailed information.
+*/</span>
+<span class="hljs-comment">/**     @class FooClass
+    More basic information.
+*/</span>
+<span class="hljs-comment">/**     @class BarClass
+    Detailed information.
+@spare summary
+    Basic information.
+*/</span>
+<span class="hljs-comment">/**     @class BarClass
+    More detailed information.
+*/</span>
+</code></pre>
+<h2 id="functions">Functions</h2>
+<p>The Inner Declarations <code>@argument</code>, <code>@kwarg</code>, <code>@callback</code>, <code>@signature</code> and <code>@returns</code> are used to
+describe Functions. During parsing, these Components have special scoping which is designed to help
+intuitively document an entire Function in one tag. Never forget that this special scope <em>only</em>
+affects these Component types <em>exclusively</em>. The scope will be immediately reset by the first
+normal Declaration.</p>
+<p>Here is a simple Function Declaration with <code>@argument</code> and <code>@returns</code> declarations. You may name
+your arguments and return values, or not.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function doTheDew
+    Do the Dew until you can't even.
+@argument/Number volume
+    Volume of Dew to do, in fluid ounces.
+@argument/String method
+    How to do the Dew.
+@returns/String message
+    Returns a hip phase, such as "Totally radical!!!".
+*/</span>
+</code></pre>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function sortItems
+    A sorting function for Item instances.
+@argument/Item
+    The first Item.
+@argument/Item
+    The second Item.
+@returns/Number
+    -1, 0, or 1.
+*/</span>
+</code></pre>
+<p>Keyword arguments are as easy as replacing <code>@argument</code> with <code>@kwarg</code>.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function tellParrotJoke
+    Repeat some Monty Python jokes about a parrot.
+@kwarg/String parrotType
+    Type of parrot to joke about.
+*/</span>
+</code></pre>
+<h5 id="callback-functions">Callback Functions</h5>
+<p>The <code>@callback</code> Declaration expands the <code>@argument</code> scope in order to document the callback
+Function&#39;s arguments. You may reclose this scope with any unnamed <code>@returns</code> Declaration. You may
+name your callbacks, or not.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function loadDefinitions
+    Load definition file from the remote server.
+@argument/String hostname
+    URL of the remote server.
+@callback
+    @argument/Error|undefined error
+        If a fatal Error prevented the file from
+        being loaded properly, it is passed to
+        the callback.
+    @argument/Buffer|undefined definitionsFile
+        The loaded definitions file, or `undefined`
+        if an Error occured.
+    @returns
+@argument/Boolean devLogging
+    @optional
+    Activate development-mode logging messages.
+*/</span>
+</code></pre>
+<p>Although I&#39;ve never seen this pattern used, it is possible to document multiple (pythonic)
+<code>@returns</code> Declarations on a <code>@callback</code>. You can still close the scope manually with a blank
+<code>@returns</code> Declaration.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function getJiggyWithIt
+    Get jiggy with it.
+@callback onError
+    Called if a fatal Exception occured.
+    @returns/function responseAction
+        What to do about the Exception.
+    @returns/Number priority
+        How important this reaction is.
+    @returns
+@callback onSuccess
+    Called if we got jiggy successfully.
+    @argument/Number jigginessLevel
+        Maximum level of jigginess achieved.
+*/</span>
+</code></pre>
+<h5 id="function-signatures">Function Signatures</h5>
+<p>If you&#39;re writing an overloaded function with multiple signatures or need to document special
+permutations of optional arguments, <code>@signature</code> is there for you. It redefines the return value and
+argument signature and documents the signature separately.</p>
+<p>When you create a <code>@signature</code> with an Inner Declaration, the scope rules for Functions and
+<code>@argument</code> Components apply.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function writeBuffer
+    Interprets the contents of a Buffer as UTF-8
+    and writes it in the sky with smoke signals.
+@signature/Number (content)
+    Write out the entire Buffer and return the
+    number of bytes written.
+@signature/Number|undefined (content, bytes)
+    Write up to `bytes` bytes of text from
+    `content`. If there is content remaining,
+    returns the number of unwritten bytes.
+@argument/Buffer content
+    Text content to skywrite.
+@argument/Number bytes
+    Limit output to a set number of bytes.
+*/</span>
+</code></pre>
+<p>Signatures may be declared in their own comments.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @signature writeBuffer (content, bytes)
+    Write up to `bytes` bytes of text from `content`.
+    If there is content remaining, returns the number
+    of unwritten bytes.</span>
+</code></pre>
+<p>You may also define a signature with value types. These types have no additional implications, they
+are only displayed in the documentation (and crosslinked).</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function write
+    Output information through the Morse telegram interface.
+@argument content
+    The content to send.
+@signature (String content)
+    Send the content as ascii text, followed by `STOP`.
+@signature (Number content)
+    Convert the number to ascii text and send, followed
+    by `STOP`.
+@signature (Array[String] content)
+    Send each message, delimited and terminated with
+    `STOP`.
+*/</span>
+</code></pre>
+<p>Signatures cannot be inherited or overridden individually.</p>
+<h2 id="inheritence">Inheritence</h2>
+<p>To inherit static and member properties from another Component of any type, use the <code>@super</code>
+modifier.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class BaseClass
+    A simple base class.
+@Function createDefault
+    Create and return a default instance.
+    @returns/.BaseClass
+@Function #toString
+    Produce a String representation of this instance.
+*/</span>
+<span class="hljs-comment">/**     @class SubClass
+    A simple subclass.
+@Function #toString
+    Overrides `BaseClass#toString`.
+*/</span>
+</code></pre>
+<p>If a Component with a superclass also has at least one value type that is exactly <code>&quot;function&quot;</code> or
+<code>&quot;Function&quot;</code>, it will also inherit arguments, signatures, return values and thrown exceptions.</p>
+<p>Java interfaces are also supported, with <code>@interface</code> and <code>@implements</code>.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @interface UniversalRemote
+    The common interface for a universal remote control.
+@member/Function volumeUp
+    Increase speaker volume.
+@member/Function volumeDown
+    Decrease speaker volume.
+*/</span>
+<span class="hljs-comment">/**     @class Tamtung_Model042_3
+    @implements .UniversalRemote
+@member/Function volumeUp
+    Increase speaker volume.
+@member/Function volumeDown
+    Decrease speaker volume.
+*/</span>
+</code></pre>
+<h2 id="events-and-errors">Events and Errors</h2>
+<p>Document events with the <code>@event</code> declaration. Pass information with your Event by attaching
+<code>@argument</code> Components.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class Element
+    An HTML DOM Element.
+@event click
+    Sent when a user presses down and releases the
+    same mouse button within the bounding box of this
+    Element, without exceeding the host browser's
+    minimum threshold for [drag](Element+drag) events.
+    Unless cancelled, this event bubbles upward and
+    occurs in parent Elements until the `document` is
+    reached.
+    @argument/MouseEvent
+        The originating mouse event.
+*/</span>
+</code></pre>
+<p>Cases which cause exceptions to be thrown may be documented with the simple Declaration <code>@throws</code>.
+You may name your exception cases, or not.</p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">dict</span>:</span>
+    <span class="hljs-string">"""     @class dict
+        A hash map of Strings to untyped references.
+    """</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get</span> <span class="hljs-params">(self, key)</span>:</span>
+        <span class="hljs-string">"""     @member/function dict#get
+            Retrieve a reference.
+        @throws/KeyError notFound
+            Failure to find a key results in an exception.
+        @throws/TypeError
+            If the key reference does not implement
+            `__hash__`, a TypeError is raised.
+        """</span>
+</code></pre>
+<h2 id="generics">Generics</h2>
+<p>Type paths support generics (java), templates (c++) and arrays-of-things (javascript). You may
+specify any number of generic types on any type path, including with the use of multiple types and
+pipes <code>|</code>.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Array[String]|undefined fooProp
+    An Array of Strings, or undefined.
+*/</span>
+</code></pre>
+<h5 id="coming-soon">Coming Soon</h5>
+<p>Generics in Class Declarations.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @class Container&lt;Object elemType&gt;
+    A container of arbitrarily-typed references.
+@function #get
+    @argument/String elemName
+        The name of the element to get.
+    @returns/%elemType|null
+        The requested element, or `null`.
+*/</span>
+</code></pre>
+<h2 id="license">LICENSE</h2>
+<p>The MIT License (MIT)</p>
+<p>Copyright (c) 2014 Kevin &quot;Schmidty&quot; Smith</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+</span>
+                <div class="clear"></div>
+        </div>
+<div class="children">
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">12:40pm</span> on <span class="date">Monday, November 17, 2014</span>
+    </div>
+</body>
+</html>
