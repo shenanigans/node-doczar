@@ -49,55 +49,7 @@
         <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if signatures}}
             {{#signatures}}
-                <div class="secondarySig">
-                    <span class="signature">
-                        {{#flags}}
-                            <div class="flag {{.}}">{{.}}</div>
-                        {{/flags}}
-                        {{#if valtype}}
-                            <span>{{#valtype}}
-                                <span class="valsep">|</span>
-                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                                {{#if generics}}
-                                    [
-                                    <span>{{#generics}}
-                                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                                        <span class="valsep">,</span>
-                                    {{/generics}}</span>
-                                    ]
-                                {{/if}}
-                            {{/valtype}}</span>
-                        {{/if}}
-                        <a href="{{softlink ../path}}" class="title">
-                            {{../name}}
-                        </a>
-                        (
-                            <span>{{#sigargs}}
-                                <a class="argname" href="{{softlink path}}">{{name}}</a>
-                                <span class="valsep">,</span>
-                            {{/sigargs}}</span>
-                        ) {
-                    </span>
-                    {{#if isInherited}}
-                        <div class="source super">
-                            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
-                        </div>
-                    {{else}}
-                        {{#override}}
-                            <div class="source super">
-                                Overrides <a class="super" href="{{link path}}">{{pathstr}}</a>
-                            </div>
-                        {{/override}}
-                    {{/if}}
-                    {{#satisfies}}
-                        <div class="source interface">
-                            Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>
-                        </div>
-                    {{/satisfies}}
-                    <div class="info">
-                        <span class="markdown">{{{markdown summaryDoc}}}</span>
-                    </div>
-                </div>
+{{> signature}}
             {{/signatures}}
         {{/if}}
         {{#if arguments}}
@@ -105,72 +57,7 @@
             <div class="section arguments">
                 {{#arguments}}
                     <div class="child argument {{#if isCallback}}callback{{/if}}" id="{{elemID}}">
-                        <span class="signature">
-                            {{#flags}}
-                                <div class="flag {{.}}">{{.}}</div>
-                            {{/flags}}
-                            {{#if isCallback}}
-                                <span class="ctype">callback</span>
-                                {{#if returns}}
-                                    <span>{{#returns}}
-                                        <span class="valsep">,</span>
-                                        <span>{{#valtype}}
-                                            <span class="valsep">|</span>
-                                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                                            {{#if generics}}
-                                                [
-                                                <span>{{#generics}}
-                                                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                    <span class="valsep">,</span>
-                                                {{/generics}}</span>
-                                                ]
-                                            {{/if}}
-                                        {{/valtype}}</span>
-                                    {{/returns}}</span>
-                                {{/if}}
-                            {{/if}}
-                            {{#if isKwarg}}
-                                <a class="title" href="{{link path}}">
-                                    {{name}}
-                                </a>
-                                =
-                                <span>{{#valtype}}
-                                    <span class="valsep">|</span>
-                                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                                    {{#if generics}}
-                                        [
-                                        <span>{{#generics}}
-                                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                                            <span class="valsep">,</span>
-                                        {{/generics}}</span>
-                                        ]
-                                    {{/if}}
-                                {{/valtype}}</span>
-                            {{else}}
-                                <span>{{#valtype}}
-                                    <span class="valsep">|</span>
-                                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                                    {{#if generics}}
-                                        [
-                                        <span>{{#generics}}
-                                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                                            <span class="valsep">,</span>
-                                        {{/generics}}</span>
-                                        ]
-                                    {{/if}}
-                                {{/valtype}}</span>
-                                <a class="title" href="{{link path}}">
-                                    {{name}}
-                                </a>
-                            {{/if}}
-                        {{#if isCallback}}
-                            (
-                            {{#arguments}}
-                                {{> argument}}
-                            {{/arguments}}
-                            ) {
-                        {{/if}}
-                        </span>
+{{> argumentSignature}}
                         {{#if isInherited}}
                             <div class="source super">
                                 Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>

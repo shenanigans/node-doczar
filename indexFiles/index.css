@@ -39,11 +39,11 @@ h1, h2, h3, h4, h5, h6 {
     text-align: left;
     margin: 0.5em 0 0.5em 0;
     padding-left: 1em;
+    color: #C813B1;
 }
 
 .delimiter {
     margin: 0 0.1em;
-    color: #C813B1;
 }
 
 .ctype {
@@ -66,6 +66,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .info h2 {
     font-size: 1em;
+}
+
+.breadcrumbs .delimiter {
 }
 
 .breadcrumbs .delimiter:first-child {
@@ -163,9 +166,6 @@ p {
     font-size: 85%;
     color: #5F87BA;
     font-weight:100;
-}
-.valsep {
-    color: #C813B1;
 }
 /* skip terminal pipes for valtype lists */
 .valsep:first-child {

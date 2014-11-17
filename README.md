@@ -4,14 +4,15 @@ doczar
 ----|-------------------------------
   1 | [Installation](#installation)
   2 | [Shell Usage](#shell-usage)
-  3 | [Comment Syntax](#comment-syntax)
-  4 | [Components, Types and Paths](#components-types-and-paths)
-  5 | [Documents and Spares](#documents-and-spares)
-  6 | [Functions](#functions)
-  7 | [Inheritence](#inheritence)
-  8 | [Events and Errors](#events-and-errors)
-  9 | [Generics](#generics)
- 10 | [License](#license)
+  3 | [Development](#development)
+  4 | [Comment Syntax](#comment-syntax)
+  5 | [Components, Types and Paths](#components-types-and-paths)
+  6 | [Documents and Spares](#documents-and-spares)
+  7 | [Functions](#functions)
+  8 | [Inheritence](#inheritence)
+  9 | [Events and Errors](#events-and-errors)
+ 10 | [Generics](#generics)
+ 11 | [License](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
 ruby, java and other languages which support c-like block comments.
@@ -29,15 +30,15 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * semi-automatic crosslinking
  * callbacks and events
  * multiple return values and keyword arguments
+ * function signatures
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
 ####Coming Soon
+ * `@file` Components to encode file structure information
+ * `@import` to mount java modules on more crosslink-friendly local paths
  * standard libs for javascript, node, the browser, java, ruby, and python
 
-####Development
-`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
-broke and unemployed. If you want to see continued development on `doczar`, please help me
-[pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+
 
 Installation
 ------------
@@ -62,6 +63,14 @@ j, js, jsmod    | Loads the filename with [required](https://github.com/defunctz
 dev             | Display Components marked with the @development flag.
 api             | Display **only** Components marked with the @api flag.
 v, verbose      | Output detailed information about the documentation process.
+
+
+
+Development
+-----------
+`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
+broke and unemployed. If you want to see continued development on `doczar`, please help me
+[pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
 
 
@@ -99,6 +108,19 @@ Ruby users may use `=begin` and `=end` with the same rules.
 
 Indentation of a markdown section is automagically normalized to the least-indented line and you may
 include any number of tab and space characters before any Declaration.
+
+
+####Modules
+The `@module` Declaration has an infectious scope. Every Declaration after it is scoped to the
+module Component, as are locally-rooted value types. (see [crosslinking](#crosslinking))
+```c
+/**     @module Foo
+    The Foo module.
+*/
+/**     @class Bar
+    The Foo.Bar class.
+*/
+```
 
 
 ####Value Types
@@ -230,7 +252,7 @@ The default delimiter is `"."`, for `@property`.
 You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
 
-Furthermore, every defined Component is also a valid type, and the same rule applies to starting a
+Furthermore, every defined Component is also a valid type, and the same rule applies when starting a
 type path with a delimiter.
 ```c
 /**     @module MyModule
@@ -427,6 +449,9 @@ are only displayed in the documentation (and crosslinked).
 @signature (Number content)
     Convert the number to ascii text and send, followed
     by `STOP`.
+@signature (Array[String] content)
+    Send each message, delimited and terminated with
+    `STOP`.
 */
 ```
 

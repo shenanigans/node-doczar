@@ -1,0 +1,61 @@
+<div class="secondarySig" id="{{elemID}}">
+    <span class="signature">
+        {{#flags}}
+            <div class="flag {{.}}">{{.}}</div>
+        {{/flags}}
+        {{#if valtype}}
+            <span>{{#valtype}}
+                <span class="valsep">|</span>
+                <a class="valtype" href="{{link path}}">{{name}}</a>
+                {{#if generics}}
+                    [
+                    <span>{{#generics}}
+                        <a class="valtype" href="{{link path}}">{{name}}</a>
+                        <span class="valsep">,</span>
+                    {{/generics}}</span>
+                    ]
+                {{/if}}
+            {{/valtype}}</span>
+        {{/if}}
+        <a href="{{softlink ../path}}" class="title">
+            {{../name}}
+        </a>
+        (
+            <span>{{#sigargs}}
+                <span>{{#valtype}}
+                    <span class="valsep">|</span>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    {{#if generics}}
+                        [
+                        <span>{{#generics}}
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                            <span class="valsep">,</span>
+                        {{/generics}}</span>
+                        ]
+                    {{/if}}
+                {{/valtype}}</span>
+                <a class="argname" href="{{softlink path}}">{{name}}</a>
+                <span class="valsep">,</span>
+            {{/sigargs}}</span>
+        ) {
+    </span>
+    {{#if isInherited}}
+        <div class="source super">
+            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+        </div>
+    {{else}}
+        {{#override}}
+            <div class="source super">
+                Overrides <a class="super" href="{{link path}}">{{pathstr}}</a>
+            </div>
+        {{/override}}
+    {{/if}}
+    {{#satisfies}}
+        <div class="source interface">
+            Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/satisfies}}
+    <div class="info">
+        <span class="markdown">{{{markdown summaryDoc}}}</span>
+    </div>
+</div>

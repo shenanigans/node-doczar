@@ -1,0 +1,56 @@
+<span class="signature">
+    {{#flags}}
+        <div class="flag {{.}}">{{.}}</div>
+    {{/flags}}
+    {{#if isCallback}}{{#unless name}}
+    <span class="ctype">callback</span>
+    {{/unless}}{{/if}}
+    {{#if isKwarg}}
+        <a class="title" href="{{link path}}">
+            {{name}}
+        </a>
+        =
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+            {{#if generics}}
+                [
+                <span>{{#generics}}
+                    <a class="valtype" href="{{softlink path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                ]
+            {{/if}}
+        {{/valtype}}</span>
+    {{else}}
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+            {{#if generics}}
+                [
+                <span>{{#generics}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                ]
+            {{/if}}
+        {{/valtype}}</span>
+        <a class="title" href="{{link path}}">
+            {{name}}
+        </a>
+    {{/if}}
+    {{#if isInherited}}
+        <div class="source">
+            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+        </div>
+    {{/if}}
+    {{#if isCallback}}
+        <span class="signature">
+            (
+            {{#arguments}}
+{{> argument}}
+            {{/arguments}}
+            ) {
+        </span>
+    {{/if}}
+</span>
