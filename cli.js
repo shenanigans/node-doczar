@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 /**     @module doczar
-
+    Select, load and parse source files for `doczar`-format documentation comments. Render html
+    output to a configured disk location.
+@spare README
+    @load
+        ./README.md
 */
 
 var path = require ('path');

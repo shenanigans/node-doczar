@@ -1,21 +1,21 @@
 doczar
 ======
-    | Table Of Contents
-----|-------------------------------
-  1 | [Installation](#installation)
-  2 | [Shell Usage](#shell-usage)
-  3 | [Development](#development)
-  4 | [Comment Syntax](#comment-syntax)
-  5 | [Components, Types and Paths](#components-types-and-paths)
-  6 | [Documents and Spares](#documents-and-spares)
-  7 | [Functions](#functions)
-  8 | [Inheritence](#inheritence)
-  9 | [Events and Errors](#events-and-errors)
- 10 | [Generics](#generics)
- 11 | [License](#license)
+|    | Table Of Contents
+|----|-------------------------------
+|  1 | [Installation](#installation)
+|  2 | [Shell Usage](#shell-usage)
+|  3 | [Development](#development)
+|  4 | [Comment Syntax](#comment-syntax)
+|  5 | [Components, Types and Paths](#components-types-and-paths)
+|  6 | [Documents and Spares](#documents-and-spares)
+|  7 | [Functions](#functions)
+|  8 | [Inheritence](#inheritence)
+|  9 | [Events and Errors](#events-and-errors)
+| 10 | [Generics](#generics)
+| 11 | [LICENSE](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
-ruby, java and other languages which support c-like block comments.
+ruby, java, c-like languages, and others.
 
 Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
@@ -34,6 +34,7 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
 ####Coming Soon
+ * special `@spare` path for documenting a constructor separately from its class.
  * `@file` Components to encode file structure information
  * `@import` to mount java modules on more crosslink-friendly local paths
  * standard libs for javascript, node, the browser, java, ruby, and python
@@ -570,7 +571,7 @@ Generics in Class Declarations.
 
 
 
-License
+LICENSE
 -------
 The MIT License (MIT)
 

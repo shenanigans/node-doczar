@@ -90,7 +90,7 @@ h1, h2, h3, h4, h5, h6 {
 .markdown {
     font-size: 115%;
     font-family: georgia, serif;
-    color: #575757;
+    color: #454545;
 }
 .markdown:empty {
     display: none;
@@ -239,7 +239,6 @@ p {
 
 #footer {
     padding: 0.8em 0 0.6em 1em;
-
     font-size: 80%;
     color: #6F6F6F;
     border-top: 1px solid #DADADA;
@@ -253,5 +252,50 @@ p {
 
 #footer .time {
     color: #1B1B1B;
+}
 
+.markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6, .markdown th {
+    font-family: sans-serif;
+    margin: 1.5em 0 0.3em 0;
+}
+
+.markdown a code {
+    color: #476EBE;
+}
+
+.markdown code {
+    padding: 0 0.4em;
+    background-color: #F1F1F5;
+    border: 1px solid #E5E6E8;
+    border-radius: 3px;
+    color: #000;
+    display: inline-block;
+}
+
+.markdown pre {
+    padding: 0.5em 0.5em 0.5em 0.4em;
+    background-color: #EFEFF4;
+    border-left: 3px solid #C0CAE0;
+}
+
+.markdown pre code {
+    padding: 0;
+    background-color: transparent;
+}
+
+.markdown > *:first-child {
+    margin-top: 0;
+}
+
+.markdown table {
+    border-spacing: 0 0.2em;
+}
+
+.markdown tr:nth-child(even) {
+    background-color: #F2F2F9;
+}
+
+.markdown td {
+    padding: 0.2em 0.5em;
+    border-left: 1px solid #eee;
 }

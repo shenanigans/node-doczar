@@ -108,7 +108,7 @@
                                     <div class="section returns">
                                         {{#returns}}
                                             <div class="return">
-    {{> child}}
+{{> child}}
                                             </div>
                                         {{/returns}}
                                     </div>

@@ -51,14 +51,16 @@
                 <h2 class="signature">
                     {{name}} (
                         {{#arguments}}
-    {{> argument}}
+{{> argument}}
                         {{/arguments}}
                     ) {
                 </h3>
             {{/if}}
             <!-- basic document info -->
             <div id="details">
-    {{> TOC}}
+                {{#unless isSpare}}
+{{> TOC}}
+                {{/unless}}
                 {{#if doc}}
                     <span class="markdown">{{{markdown doc}}}</span>
                 {{else}}
@@ -76,7 +78,7 @@
                 {{/if}}
                 {{#if signatures}}
                     {{#signatures}}
-        {{> signature}}
+{{> signature}}
                     {{/signatures}}
                 {{/if}}
                 {{#if isClasslike}}
@@ -86,7 +88,7 @@
                     <h3 class="signature">
                         {{name}} (
                             {{#arguments}}
-    {{> argument}}
+{{> argument}}
                             {{/arguments}}
                         ) {
                     </h3>
@@ -96,7 +98,7 @@
                         <div class="section arguments">
                             {{#arguments}}
                                 <div class="child argument" id="{{elemID}}">
-    {{> argumentSignature}}
+{{> argumentSignature}}
                                     <div class="info">
                                         <span class="markdown">{{{markdown summaryDoc}}}</span>
                                         {{#if isCallback}}
@@ -104,7 +106,7 @@
                                             <div class="section arguments">
                                                 {{#arguments}}
                                                     <div class="child argument" id="{{elemID}}">
-    {{> argumentSignature}}
+{{> argumentSignature}}
                                                         <div class="info">
                                                             <span class="markdown">{{{markdown summaryDoc}}}</span>
                                                         <div class="tail"></div></div>
@@ -122,7 +124,7 @@
                         <div class="section returns">
                             {{#returns}}
                                 <div class="return">
-    {{> child}}
+{{> child}}
                                 </div>
                             {{/returns}}
                         </div>
@@ -132,7 +134,7 @@
                         <h2 class="header">Thrown Exceptions</h2>
                         <div id="throws" class="section throws">
                             {{#throws}}
-    {{> child}}
+{{> child}}
                             {{/throws}}
                         </div>
                     {{/if}}
