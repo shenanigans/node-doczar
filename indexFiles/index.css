@@ -273,7 +273,7 @@ p {
 }
 
 .markdown pre {
-    padding: 0.5em 0.5em 0.5em 0.4em;
+    padding: 0.7em 0.5em 0.7em 0.4em;
     background-color: #EFEFF4;
     border-left: 3px solid #C0CAE0;
 }
@@ -281,6 +281,7 @@ p {
 .markdown pre code {
     padding: 0;
     background-color: transparent;
+    border: none;
 }
 
 .markdown > *:first-child {
@@ -288,14 +289,17 @@ p {
 }
 
 .markdown table {
-    border-spacing: 0 0.2em;
+    border-collapse: collapse;
 }
 
 .markdown tr:nth-child(even) {
     background-color: #F2F2F9;
 }
 
+.markdown td, .markdown th {
+    padding: 0.4em 0.5em 0.3em 0.5em;
+}
+
 .markdown td {
-    padding: 0.2em 0.5em;
     border-left: 1px solid #eee;
 }

@@ -1,7 +1,7 @@
 doczar
 ======
 |    | Table Of Contents
-|----|-------------------------------
+|---:|-------------------------------
 |  1 | [Installation](#installation)
 |  2 | [Shell Usage](#shell-usage)
 |  3 | [Development](#development)
@@ -57,7 +57,7 @@ $ doczar --in=src/**/*.c --out docz
 $ doczar --jsmod ./main # outputs to ./docs
 ```
 option          | description
-----------------|---------------------------------
+---------------:|---------------------------------
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
 i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob).
 j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
@@ -84,7 +84,7 @@ the comment, a Declaration and as many spaces and tabs as you want. On the next 
 describing this unit of code with
 [github-flavored markdown](https://help.github.com/articles/github-flavored-markdown/).
 
-In "c-like" languages, it looks like this:
+In languages with c-like block comments (don't forget css) it looks like this:
 ```c
 /**     @class MyClass
     For compatibility purposes, c-like comments support any
@@ -107,8 +107,54 @@ Ruby users may use `=begin` and `=end` with the same rules.
 =end
 ```
 
+Finally, HTML comments are also supported.
+```html
+<!--    @module SplashPage
+    Guest user landing page with corporate logo and account login/registration tools.
+-->
+```
+
 Indentation of a markdown section is automagically normalized to the least-indented line and you may
-include any number of tab and space characters before any Declaration.
+include any number of tab and space characters before any Declaration. Yes, the de-indenter is
+clever enough to handle this scenario:
+```c
+/** @member/int foo
+    A contracted document with
+    little available horizontal
+    space that needs a [link]
+    (http://google.com) to a
+    search engine.
+*/
+```
+
+To add a child with a standalone doc comment, simply specify a
+[complex path](#components-types-and-paths) of any length.
+```c
+/**     @class FooClass
+    A simple class.
+*/
+/**     @property/Function FooClass.getDefault
+    Get a new default instance of FooClass.
+*/
+/**     @returns/FooClass FooClass.getDefault)defaultInstance
+    Returns a new instance with the default configuration.
+*/
+```
+
+
+####Inner Declarations
+Once you have opened a declaration, you may write additional declarations which will all be scoped
+to the enclosing comment.
+
+```c
+/**     @class MyClass
+    A simple class.
+@property/Function getAllInstances
+    A static Function that returns all instances of MyClass.
+@member/Function doSomethingCool
+    A member Function on each instance of MyClass.
+*/
+```
 
 
 ####Modules
@@ -133,21 +179,6 @@ character.
 */
 /**     @property/Number|undefined result
     This property may be either a Number or `undefined`.
-*/
-```
-
-
-####Inner Declarations
-Once you have opened a declaration, you may write additional declarations which will all be scoped
-to the enclosing comment.
-
-```c
-/**     @class MyClass
-    A simple class.
-@property/Function getAllInstances
-    A static Function that returns all instances of MyClass.
-@member/Function doSomethingCool
-    A member Function on each instance of MyClass.
 */
 ```
 
@@ -249,6 +280,7 @@ The default delimiter is `"."`, for `@property`.
 */
 ```
 
+
 #####Crosslinking
 You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
@@ -284,6 +316,25 @@ the order in which it is loaded.
     Some (more) information about MyClass.
 */
 ```
+
+Available exclusively as an Inner Declaration, `@load` allows you to pull in an external markdown
+document. Because in loaded docs it's valuable to support html hash links , i.e.
+`[more info](#more-info)`, it is impossible to properly support localized paths when using `@load`.
+Your links will be scoped to the global namespace and any type link starting with a delimiter will
+be rejected.
+
+This example is taken directly from the `doczar` doc comments.
+```c
+/**     @module doczar
+    Select, load and parse source files for `doczar`-format documentation comments. Render html
+    output to a configured disk location.
+@spare README
+    *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
+    @load
+        ./README.md
+*/
+```
+
 
 In the first stage of rendering, the markdown document(s) on a Component are moved into new `@spare`
 instances. The normal documentation appearing after a Declaration is moved to the path `~summary`.
