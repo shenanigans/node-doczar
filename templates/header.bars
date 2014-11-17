@@ -7,248 +7,135 @@
     <script type="text/javascript" src="{{{baseTagPath}}}index.js"></script>
 </head>
 <body class="{{ctype}}" id="{{elemID}}">
-    <div id="header">
-        {{#if chain}}
-            {{#chain}}
-                <a class="super" href="{{link path}}">{{name}}</a>
-            {{/chain}}
-        {{/if}}
-        {{#if isFinal}}<div class="flag final">final</div>{{/if}}
-        {{#if isVolatile}}<div class="flag volatile">volatile</div>{{/if}}
-        {{#if isPublic}}<div class="flag public">public</div>{{/if}}
-        {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
-        {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
-        <a class="ctype" href="{{{baseTagPath}}}index.html">{{ctype}}</a>
-        <span>{{#valtype}}
-            <a class="valtype" href="{{link path}}">{{name}}</a>
-            {{#if generics}}
-                [
-                    <span>{{#generics}}
-                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                        <span class="valsep">,</span>
-                    {{/generics}}</span>
-                ]
+    <div id="outer">
+        <div id="header">
+            {{#if chain}}
+                {{#chain}}
+                    <a class="super" href="{{link path}}">{{name}}</a>
+                {{/chain}}
             {{/if}}
-            <span class="valsep">|</span>
-        {{/valtype}}</span>
-        <span class="breadcrumbs">
-            {{#breadcrumbs}}<span class="delimiter">{{delimiter}}</span><a href="{{link path}}" class="breadcrumb {{ctype}}">{{name}}</a>{{/breadcrumbs}}
-        </span>
-        {{#superClasses}}
-            <div class="source super">
-                Inherits from <a class="super" href="{{link path}}">{{pathstr}}</a>
-            </div>
-        {{/superClasses}}
-        {{#interfaces}}
-            <div class="source interface">
-                Implements <a class="super" href="{{link path}}">{{pathstr}}</a>
-            </div>
-        {{/interfaces}}
-    </div>
-    <br />
-    <div id="content">
-        {{#if isFunction}}
-            <h2 class="signature">
-                {{name}} (
-                    {{#arguments}}
-                        {{> argument}}
-                    {{/arguments}}
-                ) {
-            </h3>
-        {{/if}}
-        <!-- basic document info -->
-        <div id="details">
-            <div id="TOC">
-                <h3>Table of Contents</h3>
-                {{#if modules}}
-                    <div class="section">
-                        <h4 class="header"><a href="#modules">Modules</a></h4>
-                        {{#modules}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/modules}}
-                    </div>
+            {{#if isFinal}}<div class="flag final">final</div>{{/if}}
+            {{#if isVolatile}}<div class="flag volatile">volatile</div>{{/if}}
+            {{#if isPublic}}<div class="flag public">public</div>{{/if}}
+            {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
+            {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
+            <a class="ctype" href="{{{baseTagPath}}}index.html">{{ctype}}</a>
+            <span>{{#valtype}}
+                <a class="valtype" href="{{link path}}">{{name}}</a>
+                {{#if generics}}
+                    [
+                        <span>{{#generics}}
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                            <span class="valsep">,</span>
+                        {{/generics}}</span>
+                    ]
                 {{/if}}
-                {{#if isFunction}}
-                    {{#if arguments}}
-                        <div class="section">
-                            <h4 class="header"><a href="#arguments">Arguments</a></h4>
-                            {{#arguments}}
-                                <a href="{{softlink path}}">{{name}}</a><br />
-                            {{/arguments}}
-                        </div>
-                    {{/if}}
-                {{/if}}
-                {{#if enums}}
-                    <div class="section">
-                        <h4 class="header"><a href="#enums">Enumerations</a></h4>
-                        {{#enums}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/enums}}
-                    </div>
-                {{/if}}
-                {{#if names}}
-                    <div class="section">
-                        <h4 class="header"><a href="#names">Names</a></h4>
-                        {{#names}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/names}}
-                    </div>
-                {{/if}}
-                {{#if events}}
-                    <div class="section">
-                        <h4 class="header"><a href="#events">Events</a></h4>
-                        {{#events}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/events}}
-                    </div>
-                {{/if}}
-                {{#if statics}}
-                    <div class="section">
-                        <h4 class="header"><a href="#statics">Static Properties</a></h4>
-                        {{#statics}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/statics}}
-                    </div>
-                {{/if}}
-                {{#if functions}}
-                    <div class="section">
-                        <h4 class="header"><a href="#functions">Static Functions</a></h4>
-                        {{#functions}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/functions}}
-                    </div>
-                {{/if}}
-                {{#if members}}
-                    <div class="section">
-                        <h4 class="header"><a href="#members">Instance Properties</a></h4>
-                        {{#members}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/members}}
-                    </div>
-                {{/if}}
-                {{#if methods}}
-                    <div class="section">
-                        <h4 class="header"><a href="#methods">Instance Methods</a></h4>
-                        {{#methods}}
-                            <a href="{{softlink path}}">{{name}}</a><br />
-                        {{/methods}}
-                    </div>
-                {{/if}}
-            </div>
-            <span class="markdown">{{{markdown details}}}</span>
-            <br class="clear" />
-            {{#if signatures}}
-                {{#signatures}}
-{{> signature}}
-                {{/signatures}}
-            {{/if}}
+                <span class="valsep">|</span>
+            {{/valtype}}</span>
+            <span class="breadcrumbs">
+                {{#breadcrumbs}}<span class="delimiter">{{delimiter}}</span><a href="{{link path}}" class="breadcrumb {{ctype}}">{{name}}</a>{{/breadcrumbs}}
+            </span>
+            {{#superClasses}}
+                <div class="source super">
+                    Inherits from <a class="super" href="{{link path}}">{{name}}</a>
+                </div>
+            {{/superClasses}}
+            {{#interfaces}}
+                <div class="source interface">
+                    Implements <a class="super" href="{{link path}}">{{name}}</a>
+                </div>
+            {{/interfaces}}
         </div>
-        {{#if spares}}
-            <!-- extra document info -->
-            <div id="spares" class="section">
-                <h2>More Information</h2>
-                {{#spares}}
-                    <div class="spare" id="{{elemID}}">
-                        <a href="spare/{{name}}/index.html">{{name}}</a>
-                        <div class="markdown">{{{markdown doc}}}</div>
-                    </div>
-                {{/spares}}
-            </div>
-        {{/if}}
-        {{#if isClasslike}}
-            <!-- constructor function -->
-            <h1>Constructor</h1>
-            <div id="constructor" class="section constructor">
-                <h3 class="signature">
+        <div id="content">
+            {{#if isFunction}}
+                <h2 class="signature">
                     {{name}} (
                         {{#arguments}}
-                            {{> argument}}
+    {{> argument}}
                         {{/arguments}}
                     ) {
                 </h3>
-                <div class="markdown">{{{markdown doc}}}</div>
-                {{#if arguments}}
-                    <h4>Arguments</h4>
-                    <div class="section arguments">
-                        {{#arguments}}
-                            <div class="child argument" id="{{elemID}}">
-{{> argumentSignature}}
-                                <div class="info">
-                                    <span class="markdown">{{{markdown summaryDoc}}}</span>
-                                    {{#if isCallback}}
-                                        <h5>Arguments</h5>
-                                        <div class="section arguments">
-                                            {{#arguments}}
-                                                <div class="child {{ctype}}" id="{{elemID}}">
-                                                    <span class="signature">
-                                                        {{#if isOptional}}
-                                                            <div class="flag optional">optional</div>
-                                                        {{/if}}
-                                                        {{#if isKwarg}}
-                                                            <a class="title" href="{{link path}}">
-                                                                {{name}}
-                                                            </a>
-                                                            =
-                                                            <span>{{#valtype}}
-                                                                <span class="valsep">|</span>
-                                                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                                {{#if generics}}
-                                                                    [
-                                                                    <span>{{#generics}}
-                                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                                        <span class="valsep">,</span>
-                                                                    {{/generics}}</span>
-                                                                    ]
-                                                                {{/if}}
-                                                            {{/valtype}}</span>
-                                                        {{else}}
-                                                            <span>{{#valtype}}
-                                                                <span class="valsep">|</span>
-                                                                <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                                {{#if generics}}
-                                                                    [
-                                                                    <span>{{#generics}}
-                                                                        <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                                        <span class="valsep">,</span>
-                                                                    {{/generics}}</span>
-                                                                    ]
-                                                                {{/if}}
-                                                            {{/valtype}}</span>
-                                                            <a class="title" href="{{link path}}">
-                                                                {{name}}
-                                                            </a>
-                                                        {{/if}}
-                                                    </span>
-                                                    <div class="info">
-                                                        <span class="markdown">{{{markdown summaryDoc}}}</span>
-                                                    <div class="tail"></div></div>
-                                                </div>
-                                            {{/arguments}}
-                                        </div>
-                                    {{/if}}
-                                <div class="tail"></div></div>
-                            </div>
-                        {{/arguments}}
+            {{/if}}
+            <!-- basic document info -->
+            <div id="details">
+    {{> TOC}}
+                {{#if doc}}
+                    <span class="markdown">{{{markdown doc}}}</span>
+                {{else}}
+                    <span class="markdown">{{{markdown details}}}</span>
+                {{/if}}
+                <div class="clear"></div>
+                {{#if spares}}
+                    <!-- extra document info -->
+                    <h2>Additional Documentation Pages</h2>
+                    <div id="spares" class="section spares">
+                        {{#spares}}
+                            <a class="spare" id="{{elemID}}" href="spare/{{name}}/index.html">{{name}}</a>
+                        {{/spares}}
                     </div>
                 {{/if}}
-                {{#if returns}}
-                    <h4>returns</h4>
-                    <div class="section returns">
-                        {{#returns}}
-                            <div class="return">
-{{> child}}
-                            </div>
-                        {{/returns}}
-                    </div>
+                {{#if signatures}}
+                    {{#signatures}}
+        {{> signature}}
+                    {{/signatures}}
                 {{/if}}
-                {{#if throws}}
-                    <!-- exception cases -->
-                    <h2 class="header">Thrown Exceptions</h2>
-                    <div id="throws" class="section throws">
-                        {{#throws}}
-{{> child}}
-                        {{/throws}}
-                    </div>
-                {{/if}}
-            </div>
-        {{/if}}
+                {{#if isClasslike}}
+                <!-- constructor function -->
+                <h1>Constructor</h1>
+                <div id="constructor" class="section constructor">
+                    <h3 class="signature">
+                        {{name}} (
+                            {{#arguments}}
+    {{> argument}}
+                            {{/arguments}}
+                        ) {
+                    </h3>
+                    <div class="markdown">{{{markdown doc}}}</div>
+                    {{#if arguments}}
+                        <h4>Arguments</h4>
+                        <div class="section arguments">
+                            {{#arguments}}
+                                <div class="child argument" id="{{elemID}}">
+    {{> argumentSignature}}
+                                    <div class="info">
+                                        <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                        {{#if isCallback}}
+                                            <h5>Arguments</h5>
+                                            <div class="section arguments">
+                                                {{#arguments}}
+                                                    <div class="child argument" id="{{elemID}}">
+    {{> argumentSignature}}
+                                                        <div class="info">
+                                                            <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                        <div class="tail"></div></div>
+                                                    </div>
+                                                {{/arguments}}
+                                            </div>
+                                        {{/if}}
+                                    <div class="tail"></div></div>
+                                </div>
+                            {{/arguments}}
+                        </div>
+                    {{/if}}
+                    {{#if returns}}
+                        <h4>returns</h4>
+                        <div class="section returns">
+                            {{#returns}}
+                                <div class="return">
+    {{> child}}
+                                </div>
+                            {{/returns}}
+                        </div>
+                    {{/if}}
+                    {{#if throws}}
+                        <!-- exception cases -->
+                        <h2 class="header">Thrown Exceptions</h2>
+                        <div id="throws" class="section throws">
+                            {{#throws}}
+    {{> child}}
+                            {{/throws}}
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>

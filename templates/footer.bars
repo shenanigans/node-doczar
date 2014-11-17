@@ -1,6 +1,9 @@
+        </div>
     </div>
     <div id="footer">
-
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">{{time}}</span> on <span class="date">{{date}}</span>
     </div>
 </body>
 </html>

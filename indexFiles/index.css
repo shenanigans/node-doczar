@@ -2,17 +2,29 @@
 html {
     background-color: #fff;
     color: #2f2f2f;
+    height: 100%;
 }
 
 body {
     font-family: sans-serif;
     overflow-x: hidden;
     overflow-y: scroll;
+    margin: 0;
+    height: 100%;
+}
+
+#outer {
+    min-height: 100%;
 }
 
 a {
     text-decoration: none;
-    color: #4264AA;
+    color: #476EBE;
+}
+
+.section.spares a.spare {
+    font-size: 150%;
+    font-weight: 900;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -26,20 +38,20 @@ h1, h2, h3, h4, h5, h6 {
 #content {
     margin: auto;
     min-width: 33em;
-    padding: 1em 2em 10em 2em;
+    padding: 0.3em 2em 3em 2em;
     display: inline-block;
     text-align: left;
-    border-top: 1px solid #D6D6D6;
 }
 
 #header {
-    display: inline-block;
+    /* display: inline-block; */
     min-width: 18em;
     font-size: 210%;
     text-align: left;
-    margin: 0.5em 0 0.5em 0;
-    padding-left: 1em;
+    padding: 0.5em 0 0.5em 0.7em;
     color: #C813B1;
+    border-bottom: 1px solid #D6D6D6;
+    background-color: #F2F2F2;
 }
 
 .delimiter {
@@ -59,9 +71,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .source {
-    color: #5E6B52;
+    color: #939393;
     font-size: 90%;
-    margin: 0.2em 0 0.3em 0.3em;
+    margin: 0.1em 0 0 0.4em;
 }
 
 .info h2 {
@@ -78,7 +90,7 @@ h1, h2, h3, h4, h5, h6 {
 .markdown {
     font-size: 115%;
     font-family: georgia, serif;
-    color: #2F2F2F;
+    color: #575757;
 }
 .markdown:empty {
     display: none;
@@ -97,7 +109,7 @@ p {
     padding: 0.7em 1em 1em 1em;
     border: 0.1em solid #D8D8D8;
     border-radius: 0.2em;
-    margin: 0.3em 1.3em 1em 0;
+    margin: 0.2em 1.2em 1em 0;
 }
 #TOC.reveal {
     position: fixed;
@@ -167,6 +179,10 @@ p {
     color: #5F87BA;
     font-weight:100;
 }
+
+.valsep {
+    font-size: 130%
+}
 /* skip terminal pipes for valtype lists */
 .valsep:first-child {
     display: none;
@@ -198,14 +214,11 @@ p {
 }
 
 .comma {
-    font-size: 150%
+    font-size: 130%
 }
 /* hide comma after final argument */
 *:last-child > .comma {
     display: none;
-}
-
-.tail {
 }
 
 .flag {
@@ -222,4 +235,23 @@ p {
     background-color: #DAE6FF;
     border-radius: 0.5em;
     margin-top: 2em;
+}
+
+#footer {
+    padding: 0.8em 0 0.6em 1em;
+
+    font-size: 80%;
+    color: #6F6F6F;
+    border-top: 1px solid #DADADA;
+    background-color: #F2F2F2;
+}
+
+#footer .date {
+    color: #1B1B1B;
+
+}
+
+#footer .time {
+    color: #1B1B1B;
+
 }

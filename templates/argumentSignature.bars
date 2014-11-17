@@ -44,13 +44,11 @@
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
-    {{#if isCallback}}
-        <span class="signature">
-            (
-            {{#arguments}}
+    {{#if isCallback}}<span>
+        (
+        {{#arguments}}
 {{> argument}}
-            {{/arguments}}
-            ) {
-        </span>
-    {{/if}}
+        {{/arguments}}
+        ) {
+    </span>{{/if}}
 </span>
