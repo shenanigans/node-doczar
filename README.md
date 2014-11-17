@@ -65,6 +65,8 @@ dev             | Display Components marked with the @development flag.
 api             | Display **only** Components marked with the @api flag.
 v, verbose      | Output detailed information about the documentation process.
 
+The documentation for `doczar` is generated with `$ doczar --jsmod ./cli`.
+
 
 
 Development
@@ -326,10 +328,13 @@ be rejected.
 This example is taken directly from the `doczar` doc comments.
 ```c
 /**     @module doczar
-    Select, load and parse source files for `doczar`-format documentation comments. Render html
-    output to a configured disk location.
+    Select, load and parse source files for `doczar`-format
+    documentation comments. Render html output to a
+    configured disk location.
 @spare README
-    *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
+    This is the rendered output of the `doczar` source
+    documentation. *View the [source]
+    (https://github.com/shenanigans/node-doczar) on GitHub!*
     @load
         ./README.md
 */
