@@ -1,4 +1,4 @@
-<div id="{{ctype}}_{{name}}" class="child function">
+<div id="{{elemID}}" class="child function">
     <span class="signature">
         {{#flags}}
             <div class="flag {{.}}">{{.}}</div>
@@ -73,7 +73,7 @@
                         </a>
                         (
                             <span>{{#sigargs}}
-                                <a class="argname" href="{{softlink target}}">{{.}}</a>
+                                <a class="argname" href="{{softlink path}}">{{name}}</a>
                                 <span class="valsep">,</span>
                             {{/sigargs}}</span>
                         ) {
@@ -104,7 +104,7 @@
             <h4>Arguments</h4>
             <div class="section arguments">
                 {{#arguments}}
-                    <div class="child argument {{#if isCallback}}callback{{/if}}">
+                    <div class="child argument {{#if isCallback}}callback{{/if}}" id="{{elemID}}">
                         <span class="signature">
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
@@ -183,7 +183,7 @@
                                     <h5>Arguments</h5>
                                     <div class="section arguments">
                                         {{#arguments}}
-                                            <div class="child {{ctype}}">
+                                            <div class="child {{ctype}}" id="{{elemID}}">
                                                 <span class="signature">
                                                     {{#if isKwarg}}
                                                         <a class="title" href="{{link path}}">

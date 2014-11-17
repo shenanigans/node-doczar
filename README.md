@@ -386,6 +386,9 @@ Although I've never seen this pattern used, it is possible to document multiple 
 If you're writing an overloaded function with multiple signatures or need to document special
 permutations of optional arguments, `@signature` is there for you. It redefines the return value and
 argument signature and documents the signature separately.
+
+When you create a `@signature` with an Inner Declaration, the scope rules for Functions and
+`@argument` Components apply.
 ```c
 /**     @property/Function writeBuffer
     Interprets the contents of a Buffer as UTF-8
@@ -404,8 +407,16 @@ argument signature and documents the signature separately.
 */
 ```
 
+Signatures may be declared in their own comments.
+```c
+/**     @signature writeBuffer (content, bytes)
+    Write up to `bytes` bytes of text from `content`.
+    If there is content remaining, returns the number
+    of unwritten bytes.
+```
+
 You may also define a signature with value types. These types have no additional implications, they
-are only displayed in the documentation.
+are only displayed in the documentation (and crosslinked).
 ```c
 /**     @property/Function write
     Output information through the Morse telegram interface.
@@ -468,7 +479,41 @@ Java interfaces are also supported, with `@interface` and `@implements`.
 
 Events and Errors
 -----------------
+Document events with the `@event` declaration. Pass information with your Event by attaching
+`@argument` Components.
+```c
+/**     @class Element
+    An HTML DOM Element.
+@event click
+    Sent when a user presses down and releases the
+    same mouse button within the bounding box of this
+    Element, without exceeding the host browser's
+    minimum threshold for [drag](Element+drag) events.
+    Unless cancelled, this event bubbles upward and
+    occurs in parent Elements until the `document` is
+    reached.
+    @argument/MouseEvent
+        The originating mouse event.
+*/
+```
 
+Cases which cause exceptions to be thrown may be documented with the simple Declaration `@throws`.
+You may name your exception cases, or not.
+```python
+class dict:
+    """     @class dict
+        A hash map of Strings to untyped references.
+    """
+    def get (self, key):
+        """     @member/function dict#get
+            Retrieve a reference.
+        @throws/KeyError notFound
+            Failure to find a key results in an exception.
+        @throws/TypeError
+            If the key reference does not implement
+            `__hash__`, a TypeError is raised.
+        """
+```
 
 
 

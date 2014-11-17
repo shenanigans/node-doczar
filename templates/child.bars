@@ -1,4 +1,4 @@
-<div id="{{ctype}}_{{name}}" class="child {{ctype}}">
+<div id="{{elemID}}" class="child {{ctype}}">
     <span class="signature">
         {{#flags}}
             <div class="flag {{.}}">{{.}}</div>

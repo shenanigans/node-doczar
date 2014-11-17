@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="{{{baseTagPath}}}highlight.css" />
     <script type="text/javascript" src="{{{baseTagPath}}}index.js"></script>
 </head>
-<body class="{{ctype}}">
+<body class="{{ctype}}" id="{{elemID}}">
     <div id="header">
         {{#if chain}}
             {{#chain}}
@@ -58,7 +58,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#modules">Modules</a></h4>
                         {{#modules}}
-                            <a href="#module_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/modules}}
                     </div>
                 {{/if}}
@@ -67,7 +67,7 @@
                         <div class="section">
                             <h4 class="header"><a href="#arguments">Arguments</a></h4>
                             {{#arguments}}
-                                <a href="#event_{{name}}">{{name}}</a><br />
+                                <a href="{{softlink path}}">{{name}}</a><br />
                             {{/arguments}}
                         </div>
                     {{/if}}
@@ -76,7 +76,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#enums">Enumerations</a></h4>
                         {{#enums}}
-                            <a href="#enum_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/enums}}
                     </div>
                 {{/if}}
@@ -84,7 +84,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#names">Names</a></h4>
                         {{#names}}
-                            <a href="#named_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/names}}
                     </div>
                 {{/if}}
@@ -92,7 +92,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#events">Events</a></h4>
                         {{#events}}
-                            <a href="#event_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/events}}
                     </div>
                 {{/if}}
@@ -100,7 +100,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#statics">Static Properties</a></h4>
                         {{#statics}}
-                            <a href="#property_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/statics}}
                     </div>
                 {{/if}}
@@ -108,7 +108,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#functions">Static Functions</a></h4>
                         {{#functions}}
-                            <a href="#property_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/functions}}
                     </div>
                 {{/if}}
@@ -116,7 +116,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#members">Instance Properties</a></h4>
                         {{#members}}
-                            <a href="#member_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/members}}
                     </div>
                 {{/if}}
@@ -124,7 +124,7 @@
                     <div class="section">
                         <h4 class="header"><a href="#methods">Instance Methods</a></h4>
                         {{#methods}}
-                            <a href="#member_{{name}}">{{name}}</a><br />
+                            <a href="{{softlink path}}">{{name}}</a><br />
                         {{/methods}}
                     </div>
                 {{/if}}
@@ -157,7 +157,7 @@
                             </a>
                             (
                                 <span>{{#sigargs}}
-                                    <a class="argname">{{.}}</a>
+                                    <a class="argname" href="{{softlink path}}">{{name}}</a>
                                     <span class="valsep">,</span>
                                 {{/sigargs}}</span>
                             ) {
@@ -190,7 +190,7 @@
             <div id="spares" class="section">
                 <h2>More Information</h2>
                 {{#spares}}
-                    <div class="spare">
+                    <div class="spare" id="{{elemID}}">
                         <a href="spare/{{name}}/index.html">{{name}}</a>
                         <div class="markdown">{{{markdown doc}}}</div>
                     </div>
@@ -213,7 +213,7 @@
                     <h4>Arguments</h4>
                     <div class="section arguments">
                         {{#arguments}}
-                            <div class="child argument">
+                            <div class="child argument" id="{{elemID}}">
                                 <span class="signature">
                                     {{#flags}}
                                         <div class="flag {{.}}">{{.}}</div>
@@ -232,7 +232,7 @@
                                             {{#if generics}}
                                                 [
                                                 <span>{{#generics}}
-                                                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                                                    <a class="valtype" href="{{softlink path}}">{{name}}</a>
                                                     <span class="valsep">,</span>
                                                 {{/generics}}</span>
                                                 ]
@@ -276,7 +276,7 @@
                                         <h5>Arguments</h5>
                                         <div class="section arguments">
                                             {{#arguments}}
-                                                <div class="child {{ctype}}">
+                                                <div class="child {{ctype}}" id="{{elemID}}">
                                                     <span class="signature">
                                                         {{#if isOptional}}
                                                             <div class="flag optional">optional</div>
@@ -333,7 +333,7 @@
                     <div class="section returns">
                         {{#returns}}
                             <div class="return">
-                                {{> child}}
+{{> child}}
                             </div>
                         {{/returns}}
                     </div>
@@ -343,7 +343,7 @@
                     <h2 class="header">Thrown Exceptions</h2>
                     <div id="throws" class="section throws">
                         {{#throws}}
-                            {{> child}}
+{{> child}}
                         {{/throws}}
                     </div>
                 {{/if}}

@@ -1,4 +1,4 @@
-<div id="event_{{name}}" class="child event">
+<div id="{{elemID}}" class="child event">
     {{#if isInherited}}
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
@@ -36,7 +36,7 @@
         {{#if arguments}}
             <div class="section arguments">
                 {{#arguments}}
-                    <div class="child argument">
+                    <div class="child argument" id="{{elemID}}">
                         <span class="signature">
                             {{#flags}}
                                 <div class="flag {{.}}">{{.}}</div>
@@ -94,7 +94,7 @@
                                 <h5>Arguments</h5>
                                 <div class="section arguments">
                                     {{#arguments}}
-                                        <div class="child {{ctype}}">
+                                        <div class="child {{ctype}}" id="{{elemID}}">
                                             <span class="signature">
                                                 {{#if isInherited}}
                                                     <div class="source">

@@ -1,7 +1,7 @@
-<div class="argument">
+<div class="argument" id="{{elemID}}">
     {{#if isOptional}}[{{/if}}
     {{#if isKwarg}}
-        <a class="title" href="{{link path}}">
+        <a class="title" href="{{softlink path}}">
             {{name}}
         </a>
         =
@@ -30,7 +30,7 @@
                 ]
             {{/if}}
         {{/valtype}}
-        <a class="title" href="{{link path}}">
+        <a class="title" href="{{softlink path}}">
             {{name}}
         </a>
     {{/if}}

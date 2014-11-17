@@ -5,7 +5,7 @@
                 <h2>Arguments</h2>
                 <div class="section arguments">
                     {{#arguments}}
-                        <div class="child argument">
+                        <div class="child argument" id="{{elemID}}">
                             <span class="signature">
                                 {{#valtype}}
                                     <span class="valsep">|</span>
