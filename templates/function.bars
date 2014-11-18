@@ -8,7 +8,7 @@
                 <span class="valsep">,</span>
                 <span>{{#valtype}}
                     <span class="valsep">|</span>
-                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
                     {{#if generics}}
                         [
                         <span>{{#generics}}

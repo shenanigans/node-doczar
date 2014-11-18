@@ -1,6 +1,6 @@
 {
   "name": "doczar",
-  "version": "0.0.1",
+  "version": "0.1.2",
   "description": "A highly flexible comments-only documentation generator.",
   "keywords": [
     "documentation",
@@ -23,8 +23,8 @@
     "epydoc",
     "naturaldocs"
   ],
-  "homepage": "https://github.com/shenanigans/doczar",
-  "bugs": "https://github.com/shenanigans/doczar/issues",
+  "homepage": "https://github.com/shenanigans/node-doczar",
+  "bugs": "https://github.com/shenanigans/node-doczar/issues",
   "license": "MIT",
   "author": "Kevin \"Schmidty\" Smith",
   "bin": {

@@ -69,7 +69,6 @@ api             | Display **only** Components marked with the `@api` modifier.
 
 
 
-
 Development
 -----------
 `doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. I am currently
@@ -230,6 +229,7 @@ Let's look at all the Components we have available.
 These are the only Components which may be used to open a new document comment.
  * `@module` organizational Component
  * `@class` instantiable class objects
+ * `@struct` c-like structures
  * `@interface` Java interface
  * `@spare` bare markdown document
  * `@property` static property
@@ -280,6 +280,19 @@ The default delimiter is `"."`, for `@property`.
     environment is configured incorrectly.
 @String (uniqueID
     A unique identifier to instantiate with.
+*/
+```
+
+Feel free to document a type as being a pointer or array.
+```c
+/**     @struct Node
+    A linked list node.
+@member/Node* previous
+    Previous Node in the chain.
+@member/Node* next
+    Next Node in the chain.
+@member/String[] payload
+    Data stored by this node in the chain.
 */
 ```
 
