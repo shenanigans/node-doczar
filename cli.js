@@ -172,6 +172,8 @@ function includeLib (libname) {
 if (argv.in)
     if (isArray (argv.in))
         for (var i in argv.in) {
+            if (argv.in[i].match (/^".*"$/))
+                argv.in[i] = argv.in[i].slice (1, -1);
             try {
                 if (fs.statSync (path.resolve (process.cwd(), argv.in[i])).isDirectory()) {
                     console.log ('cannot process input selector '.red+argv.in[i]);
@@ -183,6 +185,8 @@ if (argv.in)
             appendArr (sourcefiles, glob.sync (argv.in[i]));
         }
     else {
+        if (argv.in.match (/^".*"$/))
+            argv.in = argv.in.slice (1, -1);
         try {
             if (fs.statSync (path.resolve (process.cwd(), argv.in)).isDirectory()) {
                 console.log ('cannot process input selector '.red+argv.in);
