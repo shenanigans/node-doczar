@@ -1,6 +1,6 @@
 {
   "name": "doczar",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A highly flexible comments-only documentation generator.",
   "keywords": [
     "documentation",

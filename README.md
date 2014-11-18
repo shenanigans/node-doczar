@@ -94,6 +94,11 @@ In languages with c-like block comments (don't forget css) it looks like this:
 */
 ```
 
+The final newline is not required.
+```c
+int myInt = 42; /* @property/int myInt */
+```
+
 In python, any "triple" string literal that meets the first-line requirements is a document comment.
 ```python
 def referenceMontyPython (skit):

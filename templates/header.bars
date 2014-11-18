@@ -21,7 +21,8 @@
             {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
             <a class="ctype" href="{{{baseTagPath}}}index.html">{{ctype}}</a>
             <span>{{#valtype}}
-                <a class="valtype" href="{{link path}}">{{name}}</a>
+                <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
+                {{#if isArray}}[ ]{{/if}}
                 {{#if generics}}
                     [
                         <span>{{#generics}}
