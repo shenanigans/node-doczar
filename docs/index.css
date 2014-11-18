@@ -56,6 +56,9 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid #D6D6D6;
     background-color: #F2F2F2;
 }
+#header .star {
+    font-size: inherit;
+}
 
 .delimiter {
     margin: 0 0.1em;
@@ -210,6 +213,7 @@ p {
 
 .star {
     font-size: 130%;
+    line-height: 0.1em;
 }
 
 .argument .arguments {
@@ -221,7 +225,8 @@ p {
 }
 
 .comma {
-    font-size: 130%
+    font-size: 130%;
+    line-height: 0.1em;
 }
 /* hide comma after final argument */
 *:last-child > .comma {
