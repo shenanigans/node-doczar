@@ -208,6 +208,10 @@ p {
     display: inline-block;
 }
 
+.star {
+    font-size: 130%;
+}
+
 .argument .arguments {
     padding-left: 0.75em;
 }
