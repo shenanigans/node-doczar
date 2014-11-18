@@ -272,6 +272,7 @@ keywords in a contrasting color.</p>
 <ul>
 <li><code>@module</code> organizational Component</li>
 <li><code>@class</code> instantiable class objects</li>
+<li><code>@struct</code> c-like structures</li>
 <li><code>@interface</code> Java interface</li>
 <li><code>@spare</code> bare markdown document</li>
 <li><code>@property</code> static property</li>
@@ -320,6 +321,17 @@ entirely optional feature. My personal recommendation is to use it only for <cod
     environment is configured incorrectly.
 @String (uniqueID
     A unique identifier to instantiate with.
+*/</span>
+</code></pre>
+<p>Feel free to document a type as being a pointer or array.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @struct Node
+    A linked list node.
+@member/Node* previous
+    Previous Node in the chain.
+@member/Node* next
+    Next Node in the chain.
+@member/String[] payload
+    Data stored by this node in the chain.
 */</span>
 </code></pre>
 <h5 id="crosslinking">Crosslinking</h5>
@@ -629,7 +641,7 @@ SOFTWARE.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">3:19pm</span> on <span class="date">Monday, November 17, 2014</span>
+        at <span class="time">2:44am</span> on <span class="date">Tuesday, November 18, 2014</span>
     </div>
 </body>
 </html>
