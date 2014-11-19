@@ -128,7 +128,7 @@ $ doczar --jsmod ./main # outputs to ./docs
 </tr>
 <tr>
 <td style="text-align:right">i, in</td>
-<td>Selects files to document. Parses nix-like wildcards using <a href="https://github.com/isaacs/node-glob">glob</a>.</td>
+<td>Selects files to document. Parses nix-like wildcards using <a href="https://github.com/isaacs/node-glob">glob</a>. <code>doczar</code> does not parse directories - you must select files.</td>
 </tr>
 <tr>
 <td style="text-align:right">j, js, jsmod</td>
@@ -203,7 +203,7 @@ clever enough to handle this scenario:</p>
     Returns a new instance with the default configuration.
 */</span>
 </code></pre>
-<h4 id="inner-declarations">Inner Declarations</h4>
+<h3 id="inner-declarations">Inner Declarations</h3>
 <p>Once you have opened a declaration, you may write additional declarations which will all be scoped
 to the enclosing comment.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
@@ -214,7 +214,7 @@ to the enclosing comment.</p>
     A member Function on each instance of MyClass.
 */</span>
 </code></pre>
-<h4 id="modules">Modules</h4>
+<h3 id="modules">Modules</h3>
 <p>The <code>@module</code> Declaration has an infectious scope. Every Declaration after it is scoped to the
 module Component, as are locally-rooted value types. (see <a href="#crosslinking">crosslinking</a>)</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @module Foo
@@ -224,7 +224,7 @@ module Component, as are locally-rooted value types. (see <a href="#crosslinking
     The Foo.Bar class.
 */</span>
 </code></pre>
-<h4 id="value-types">Value Types</h4>
+<h3 id="value-types">Value Types</h3>
 <p>A value type is declared with a forward slash. Multiple value types are declared with the pipe <code>|</code>
 character.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @property/String foobar
@@ -234,7 +234,7 @@ character.</p>
     This property may be either a Number or `undefined`.
 */</span>
 </code></pre>
-<h4 id="modifiers-and-flags">Modifiers and Flags</h4>
+<h3 id="modifiers-and-flags">Modifiers and Flags</h3>
 <p>Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags just render literally as helpful
@@ -251,7 +251,7 @@ keywords in a contrasting color.</p>
 */</span>
 </code></pre>
 <p>Here is a list of the available Modifiers and Flags</p>
-<h5 id="modifiers">Modifiers</h5>
+<h4 id="modifiers">Modifiers</h4>
 <ul>
 <li><code>@development</code> hides this Component unless the --dev flag is used</li>
 <li><code>@api</code> reveals this Component and its ancestors when the --api flag is used</li>
@@ -259,7 +259,7 @@ keywords in a contrasting color.</p>
 <li><code>@super</code> inherits from a superclass</li>
 <li><code>@implements</code> associates an implemented Java interface</li>
 </ul>
-<h5 id="flags">Flags</h5>
+<h4 id="flags">Flags</h4>
 <ul>
 <li><code>@public</code></li>
 <li><code>@protected</code></li>
@@ -270,7 +270,7 @@ keywords in a contrasting color.</p>
 </ul>
 <h2 id="components-types-and-paths">Components, Types and Paths</h2>
 <p>Let&#39;s look at all the Components we have available.</p>
-<h5 id="primary-components">Primary Components</h5>
+<h4 id="primary-components">Primary Components</h4>
 <p>These are the only Components which may be used to open a new document comment.</p>
 <ul>
 <li><code>@module</code> organizational Component</li>
@@ -284,7 +284,7 @@ keywords in a contrasting color.</p>
 <li><code>@throws</code> conditions causing an exception to be thrown</li>
 <li><code>@enum</code> list of named values</li>
 </ul>
-<h5 id="inner-components">Inner Components</h5>
+<h4 id="inner-components">Inner Components</h4>
 <p>These may only appear inside a document comment opened by a Primary Component Declaration.</p>
 <ul>
 <li><code>@argument</code> optionally-named function or event argument</li>
@@ -296,7 +296,7 @@ keywords in a contrasting color.</p>
 </ul>
 <p>Many of these Component types have their own special path delimiters. This lets us reference more
 things as paths than in any other document generator. Here they are:</p>
-<h5 id="special-delimiters">Special Delimiters</h5>
+<h4 id="special-delimiters">Special Delimiters</h4>
 <ul>
 <li><code>~</code> <code>@spare</code></li>
 <li><code>.</code> <code>@property</code></li>
@@ -337,7 +337,7 @@ entirely optional feature. My personal recommendation is to use it only for <cod
     Data stored by this node in the chain.
 */</span>
 </code></pre>
-<h5 id="crosslinking">Crosslinking</h5>
+<h4 id="crosslinking">Crosslinking</h4>
 <p>You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.</p>
 <p>Furthermore, every defined Component is also a valid type, and the same rule applies when starting a
@@ -444,7 +444,7 @@ your arguments and return values, or not.</p>
     Type of parrot to joke about.
 */</span>
 </code></pre>
-<h5 id="callback-functions">Callback Functions</h5>
+<h3 id="callback-functions">Callback Functions</h3>
 <p>The <code>@callback</code> Declaration expands the <code>@argument</code> scope in order to document the callback
 Function&#39;s arguments. You may reclose this scope with any unnamed <code>@returns</code> Declaration. You may
 name your callbacks, or not.</p>
@@ -484,7 +484,7 @@ name your callbacks, or not.</p>
         Maximum level of jigginess achieved.
 */</span>
 </code></pre>
-<h5 id="function-signatures">Function Signatures</h5>
+<h3 id="function-signatures">Function Signatures</h3>
 <p>If you&#39;re writing an overloaded function with multiple signatures or need to document special
 permutations of optional arguments, <code>@signature</code> is there for you. It redefines the return value and
 argument signature and documents the signature separately.</p>
@@ -605,7 +605,7 @@ pipes <code>|</code>.</p>
     An Array of Strings, or undefined.
 */</span>
 </code></pre>
-<h5 id="coming-soon">Coming Soon</h5>
+<h3 id="coming-soon">Coming Soon</h3>
 <p>Generics in Class Declarations.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @class Container&lt;Object elemType&gt;
     A container of arbitrarily-typed references.
@@ -644,7 +644,7 @@ SOFTWARE.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">1:59am</span> on <span class="date">Wednesday, November 19, 2014</span>
+        at <span class="time">11:14am</span> on <span class="date">Wednesday, November 19, 2014</span>
     </div>
 </body>
 </html>
