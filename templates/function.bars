@@ -67,7 +67,7 @@
                             <span class="markdown">{{{markdown summaryDoc}}}</span>
                             {{#if isCallback}}
                                 {{#if arguments}}
-                                    <h5>Arguments</h5>
+                                    <h4>Arguments</h4>
                                     <div class="section arguments">
                                         {{#arguments}}
                                             <div class="child {{ctype}}" id="{{elemID}}">

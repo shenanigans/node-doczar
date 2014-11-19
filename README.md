@@ -62,7 +62,7 @@ The documentation for `doczar` is generated with `$ doczar --jsmod ./cli`.
 option          | description
 ---------------:|---------------------------------
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
-i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob).
+i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
 j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
 dev             | Display Components marked with the `@development` modifier.
 api             | Display **only** Components marked with the `@api` modifier.
@@ -149,7 +149,7 @@ To add a child with a standalone doc comment, simply specify a
 ```
 
 
-####Inner Declarations
+###Inner Declarations
 Once you have opened a declaration, you may write additional declarations which will all be scoped
 to the enclosing comment.
 
@@ -164,7 +164,7 @@ to the enclosing comment.
 ```
 
 
-####Modules
+###Modules
 The `@module` Declaration has an infectious scope. Every Declaration after it is scoped to the
 module Component, as are locally-rooted value types. (see [crosslinking](#crosslinking))
 ```c
@@ -177,7 +177,7 @@ module Component, as are locally-rooted value types. (see [crosslinking](#crossl
 ```
 
 
-####Value Types
+###Value Types
 A value type is declared with a forward slash. Multiple value types are declared with the pipe `|`
 character.
 ```c
@@ -190,7 +190,7 @@ character.
 ```
 
 
-####Modifiers and Flags
+###Modifiers and Flags
 Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags just render literally as helpful
@@ -209,14 +209,14 @@ keywords in a contrasting color.
 ```
 
 Here is a list of the available Modifiers and Flags
-#####Modifiers
+####Modifiers
  * `@development` hides this Component unless the --dev flag is used
  * `@api` reveals this Component and its ancestors when the --api flag is used
  * `@optional` indicates something which need not exist (usually an argument)
  * `@super` inherits from a superclass
  * `@implements` associates an implemented Java interface
 
-#####Flags
+####Flags
  * `@public`
  * `@protected`
  * `@private`
@@ -230,7 +230,7 @@ Components, Types and Paths
 ---------------------------
 Let's look at all the Components we have available.
 
-#####Primary Components
+####Primary Components
 These are the only Components which may be used to open a new document comment.
  * `@module` organizational Component
  * `@class` instantiable class objects
@@ -244,7 +244,7 @@ These are the only Components which may be used to open a new document comment.
  * `@enum` list of named values
 
 
-#####Inner Components
+####Inner Components
 These may only appear inside a document comment opened by a Primary Component Declaration.
  * `@argument` optionally-named function or event argument
  * `@kwarg` python-style keyword argument
@@ -256,7 +256,7 @@ These may only appear inside a document comment opened by a Primary Component De
 Many of these Component types have their own special path delimiters. This lets us reference more
 things as paths than in any other document generator. Here they are:
 
-#####Special Delimiters
+####Special Delimiters
  * `~` `@spare`
  * `.` `@property`
  * `#` `@member`
@@ -302,7 +302,7 @@ Feel free to document a type as being a pointer or array.
 ```
 
 
-#####Crosslinking
+####Crosslinking
 You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
 
@@ -435,7 +435,7 @@ Keyword arguments are as easy as replacing `@argument` with `@kwarg`.
 ```
 
 
-#####Callback Functions
+###Callback Functions
 The `@callback` Declaration expands the `@argument` scope in order to document the callback
 Function's arguments. You may reclose this scope with any unnamed `@returns` Declaration. You may
 name your callbacks, or not.
@@ -480,7 +480,7 @@ Although I've never seen this pattern used, it is possible to document multiple 
 ```
 
 
-#####Function Signatures
+###Function Signatures
 If you're writing an overloaded function with multiple signatures or need to document special
 permutations of optional arguments, `@signature` is there for you. It redefines the return value and
 argument signature and documents the signature separately.
@@ -631,7 +631,7 @@ pipes `|`.
 */
 ```
 
-#####Coming Soon
+###Coming Soon
 Generics in Class Declarations.
 ```c
 /**     @class Container<Object elemType>
