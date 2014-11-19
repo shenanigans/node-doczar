@@ -86,16 +86,16 @@
                 <!-- constructor function -->
                 <h1>Constructor</h1>
                 <div id="constructor" class="section constructor">
-                    <h3 class="signature">
+                    <h2 class="signature">
                         {{name}} (
                             {{#arguments}}
 {{> argument}}
                             {{/arguments}}
                         ) {
-                    </h3>
+                    </h2>
                     <div class="markdown">{{{markdown doc}}}</div>
                     {{#if arguments}}
-                        <h4>Arguments</h4>
+                        <h3>Arguments</h3>
                         <div class="section arguments">
                             {{#arguments}}
                                 <div class="child argument" id="{{elemID}}">
@@ -103,7 +103,7 @@
                                     <div class="info">
                                         <span class="markdown">{{{markdown summaryDoc}}}</span>
                                         {{#if isCallback}}
-                                            <h5>Arguments</h5>
+                                            <h4>Arguments</h4>
                                             <div class="section arguments">
                                                 {{#arguments}}
                                                     <div class="child argument" id="{{elemID}}">

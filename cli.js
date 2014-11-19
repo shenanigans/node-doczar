@@ -169,13 +169,34 @@ function includeLib (libname) {
 //             sourcefiles.push (path.join (stdDir, argv.with, files[i]));
 //     }
 // }
-
 if (argv.in)
     if (isArray (argv.in))
-        for (var i in argv.in)
+        for (var i in argv.in) {
+            if (argv.in[i].match (/^".*"$/))
+                argv.in[i] = argv.in[i].slice (1, -1);
+            try {
+                if (fs.statSync (path.resolve (process.cwd(), argv.in[i])).isDirectory()) {
+                    console.log ('cannot process input selector '.red+argv.in[i]);
+                    console.log ('directory loading is not supported'.red);
+                    console.log ('failed'.red);
+                    return process.exit (1);
+                }
+            } catch (err) { /* just the All's Well Alarm */ }
             appendArr (sourcefiles, glob.sync (argv.in[i]));
-    else
+        }
+    else {
+        if (argv.in.match (/^".*"$/))
+            argv.in = argv.in.slice (1, -1);
+        try {
+            if (fs.statSync (path.resolve (process.cwd(), argv.in)).isDirectory()) {
+                console.log ('cannot process input selector '.red+argv.in);
+                console.log ('directory loading is not supported'.red);
+                console.log ('failed'.red);
+                return process.exit (1);
+            }
+        } catch (err) { /* just the All's Well Alarm */ }
         appendArr (sourcefiles, glob.sync (argv.in));
+    }
 
 if (!argv.jsmod)
     return processSource();
