@@ -1,5 +1,6 @@
 <div class="argument" id="{{elemID}}">
     {{#if isOptional}}[{{/if}}
+    <span class="comma">,</span>
     {{#if isKwarg}}
         <a class="title" href="{{softlink path}}">
             {{name}}
@@ -37,5 +38,4 @@
         </a>
     {{/if}}
     {{#if isOptional}}]{{/if}}
-    <span class="comma">,</span>
 </div>
