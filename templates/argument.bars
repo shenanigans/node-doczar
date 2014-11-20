@@ -1,4 +1,4 @@
-<div class="argument" id="{{elemID}}">
+<div class="argument">
     {{#if isOptional}}[{{/if}}
     <span class="comma">,</span>
     {{#if isKwarg}}
