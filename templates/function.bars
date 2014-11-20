@@ -24,9 +24,9 @@
             {{name}}
         </a>
         (
-            {{#arguments}}
-                {{> argument}}
-            {{/arguments}}
+            <span>{{#arguments}}
+{{> argument}}
+            {{/arguments}}</span>
         ) {
     </span>
     {{#if isInherited}}
