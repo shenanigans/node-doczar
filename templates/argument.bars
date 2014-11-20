@@ -20,7 +20,7 @@
             {{/if}}
         {{/valtype}}</span>
     {{else}}
-        {{#valtype}}
+        <span>{{#valtype}}
             <span class="valsep">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
             {{#if isArray}}[ ]{{/if}}
@@ -32,7 +32,7 @@
                 {{/generics}}</span>
                 ]
             {{/if}}
-        {{/valtype}}
+        {{/valtype}}</span>
         <a class="title" href="{{softlink path}}">
             {{name}}
         </a>
