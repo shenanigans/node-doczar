@@ -233,7 +233,7 @@ p {
     line-height: 0.1em;
 }
 /* hide comma after final argument */
-*:last-child > .comma {
+*:first-child > .comma {
     display: none;
 }
 
