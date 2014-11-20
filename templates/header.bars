@@ -55,7 +55,7 @@
 {{> argument}}
                         {{/arguments}}
                     ) {
-                </h3>
+                </h2>
             {{/if}}
             <!-- basic document info -->
             <div id="details">
@@ -70,7 +70,7 @@
                 <div class="clear"></div>
                 {{#if spares}}
                     <!-- extra document info -->
-                    <h2>Additional Documentation Pages</h2>
+                    <h1>Additional Documentation Pages</h1>
                     <div id="spares" class="section spares">
                         {{#spares}}
                             <a class="spare" id="{{elemID}}" href="spare/{{name}}/index.html">{{name}}</a>

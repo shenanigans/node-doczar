@@ -25,9 +25,8 @@ a:hover {
     text-decoration: underline;
 }
 
-.section.spares a.spare {
+.section.spares .spare {
     font-size: 150%;
-    font-weight: 900;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -66,15 +65,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .ctype {
-    color: #7FBC38;
-}
-
-.child .ctype {
-    color: #376902;
+    color: #619327;
 }
 
 .children {
-    display: inline-block;
 }
 
 .source {
@@ -143,9 +137,7 @@ p {
 }
 
 .child {
-    padding: 0 0 0 0;
     margin-bottom: 2em;
-    /* border-bottom: 1px solid #D8D8D8; */
     border-radius: 0 0 1em 0;
     min-height: 2em;
 }
@@ -164,11 +156,23 @@ p {
 .info {
     margin: 0 0 0 0;
     padding: 0 0 0 1.5em;
-    /* overflow: auto; */
+    border-left: 2px solid #E5E5E5;
+    background-color: #fff;
+}
+.child:target > .info {
+    border-color: #E5AFDE;
+    box-shadow: -0.5em 0 1em -0.5em #E5AFDE;
+    transition:         border-color 0.5s linear, box-shadow 0.5s linear;
+    -webkit-transition: border-color 0.5s linear, box-shadow 0.5s linear;
+    -moz-transition:    border-color 0.5s linear, box-shadow 0.5s linear;
+    -o-transition:      border-color 0.5s linear, box-shadow 0.5s linear;
 }
 
 #details {
     margin: 1em 0 0 0;
+    padding: 0 0 1.5em 0;
+    margin: 0 0 1.5em 0;
+    border-bottom: 2px solid #E5E5E5;
 }
 
 #details p {
@@ -239,14 +243,18 @@ p {
 }
 
 .child.throws {
-    background-color: #FFF980;
+    background-color: #FFFFC8;
+    padding-left: 0.5em;
+    border-radius: 0.5em;
+    border-left: 2px solid #FFEE42;
 }
 
 .secondarySig {
-    padding: 0.5em 1.3em 2px 1.8em;
-    background-color: #DAE6FF;
+    border-left: 2px solid #9CB3E2;
+    padding: 0 0 0 0.5em;
+    margin: 1em 0 1em -0.5em;
+    background-color: #ECF2FF;
     border-radius: 0.5em;
-    margin-top: 2em;
 }
 
 #footer {
@@ -259,7 +267,6 @@ p {
 
 #footer .date {
     color: #1B1B1B;
-
 }
 
 #footer .time {
@@ -319,5 +326,17 @@ p {
 
 .markdown thead {
     background-color: #F2F2F9;
+}
 
+.secondarySig .info {
+    border: none;
+    margin-top: 0.2em;
+    margin-left: -0.5em;
+    padding-left: 2em;
+}
+
+.child.throws .info {
+    border: none;
+    margin-left: -0.5em;
+    padding-left: 2em;
 }
