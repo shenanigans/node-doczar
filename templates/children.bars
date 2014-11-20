@@ -47,8 +47,8 @@
     {{/unless}}
     {{#if enums}}
         <!-- enums -->
-        <h1 class="header">Enumerations</h1>
-        <div id="enums" class="section members">
+        <h1 id="enums" class="header">Enumerations</h1>
+        <div class="section members">
             {{#enums}}
 {{> child}}
             {{/enums}}
@@ -56,8 +56,8 @@
     {{/if}}
     {{#if events}}
         <!-- events -->
-        <h1 class="header">Events</h1>
-        <div id="events" class="section members">
+        <h1 id="events" class="header">Events</h1>
+        <div class="section members">
             {{#events}}
 {{> event}}
             {{/events}}
@@ -65,8 +65,8 @@
     {{/if}}
     {{#if names}}
         <!-- names -->
-        <h1 class="header">Names</h1>
-        <div id="names" class="section names">
+        <h1 id="names" class="header">Names</h1>
+        <div class="section names">
             {{#names}}
 {{> child}}
             {{/names}}
@@ -74,8 +74,8 @@
     {{/if}}
     {{#if modules}}
         <!-- modules -->
-        <h1 class="header">Modules</h1>
-        <div id="modules" class="section modules">
+        <h1 id="modules" class="header">Modules</h1>
+        <div class="section modules">
             {{#modules}}
 {{> child}}
             {{/modules}}
@@ -83,8 +83,8 @@
     {{/if}}
     {{#if statics}}
         <!-- static properties -->
-        <h1 class="header">Static Properties</h1>
-        <div id="statics" class="section properties">
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
             {{#statics}}
 {{> child}}
             {{/statics}}
@@ -92,8 +92,8 @@
     {{/if}}
     {{#if functions}}
         <!-- static functions -->
-        <h1 class="header">Static Functions</h1>
-        <div id="functions" class="section properties">
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
             {{#functions}}
 {{> function}}
             {{/functions}}
@@ -101,8 +101,8 @@
     {{/if}}
     {{#if members}}
         <!-- instance properties -->
-        <h1 class="header">Instance Properties</h1>
-        <div id="members" class="section members">
+        <h1 id="members" class="header">Instance Properties</h1>
+        <div class="section members">
             {{#members}}
 {{> child}}
             {{/members}}
@@ -110,8 +110,8 @@
     {{/if}}
     {{#if methods}}
         <!-- instance methods -->
-        <h1 class="header">Instance Methods</h1>
-        <div id="methods" class="section members">
+        <h1 id="methods" class="header">Instance Methods</h1>
+        <div class="section members">
             {{#methods}}
 {{> function}}
             {{/methods}}

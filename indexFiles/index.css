@@ -138,8 +138,11 @@ p {
 
 .child {
     margin-bottom: 2em;
-    border-radius: 0 0 1em 0;
-    min-height: 2em;
+    min-height: 1.6em;
+    transition:         border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
+    -webkit-transition: border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
+    -moz-transition:    border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
+    -o-transition:      border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
 }
 .child.callback {
 }
@@ -154,18 +157,17 @@ p {
 }
 
 .info {
-    margin: 0 0 0 0;
+    margin: 0.1em 0 0 0;
     padding: 0 0 0 1.5em;
     border-left: 2px solid #E5E5E5;
     background-color: #fff;
 }
+.child:target {
+    background-color: #FFDFFB;
+    box-shadow: -0.5em 0.5em 1em -0.4em #FFE5FC;
+}
 .child:target > .info {
-    border-color: #E5AFDE;
-    box-shadow: -0.5em 0 1em -0.5em #E5AFDE;
-    transition:         border-color 0.5s linear, box-shadow 0.5s linear;
-    -webkit-transition: border-color 0.5s linear, box-shadow 0.5s linear;
-    -moz-transition:    border-color 0.5s linear, box-shadow 0.5s linear;
-    -o-transition:      border-color 0.5s linear, box-shadow 0.5s linear;
+    border-color: #FFD2F9;
 }
 
 #details {
@@ -201,6 +203,7 @@ p {
     color: #C813B1;
     font-weight: 700;
     margin: 0;
+    padding-left: 0.3em;
 }
 .child .signature {
     font-size: 110%;
