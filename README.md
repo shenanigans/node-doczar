@@ -99,6 +99,19 @@ The final newline is not required.
 int myInt = 42; /* @property/int myInt */
 ```
 
+A special markdown caveat: you will need *two* newlines to terminate a bullet list.
+```c
+/**     @property/Function doTheThings
+    Does all the things. It does:
+     * the hottest things
+     * the coolest things
+     * all the things you could ever
+        possibly imagine
+
+    And it does them fast!
+*/
+```
+
 In python, any "triple" string literal that meets the first-line requirements is a document comment.
 ```python
 def referenceMontyPython (skit):

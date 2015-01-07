@@ -52,13 +52,13 @@
         {{/unless}}
         <div id="content">
             {{#if isFunction}}
-                <h2 class="signature">
+                <h1 class="signature">
                     {{name}} (
                         {{#arguments}}
 {{> argument}}
                         {{/arguments}}
                     ) {
-                </h2>
+                </h1>
             {{/if}}
             <!-- basic document info -->
             <div id="details">

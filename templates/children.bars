@@ -117,4 +117,22 @@
             {{/methods}}
         </div>
     {{/if}}
+    {{#if localValues}}
+        <!-- instance properties -->
+        <h1 id="localValues" class="header">Local Variables</h1>
+        <div class="section localValues">
+            {{#localValues}}
+{{> child}}
+            {{/localValues}}
+        </div>
+    {{/if}}
+    {{#if localFunctions}}
+        <!-- instance properties -->
+        <h1 id="localFunctions" class="header">Local Functions</h1>
+        <div class="section localFunctions">
+            {{#localFunctions}}
+{{> function}}
+            {{/localFunctions}}
+        </div>
+    {{/if}}
 </div>

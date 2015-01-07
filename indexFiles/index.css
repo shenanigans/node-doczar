@@ -215,6 +215,9 @@ p {
 .signature .argument {
     display: inline-block;
 }
+h1.signature {
+    margin-top: 0.7em;
+}
 
 .star {
     font-size: 130%;
