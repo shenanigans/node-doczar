@@ -47,6 +47,9 @@
                 </div>
             {{/interfaces}}
         </div>
+        {{#unless isSpare}}
+{{> TOC}}
+        {{/unless}}
         <div id="content">
             {{#if isFunction}}
                 <h2 class="signature">
@@ -59,13 +62,12 @@
             {{/if}}
             <!-- basic document info -->
             <div id="details">
-                {{#unless isSpare}}
-{{> TOC}}
-                {{/unless}}
                 {{#if doc}}
-                    <span class="markdown">{{{markdown doc}}}</span>
+                    <div class="markdown">{{{markdown doc}}}</div>
                 {{else}}
-                    <span class="markdown">{{{markdown details}}}</span>
+                    {{#if details}}
+                        <div class="markdown">{{{markdown details}}}</div>
+                    {{/if}}
                 {{/if}}
                 <div class="clear"></div>
                 {{#if spares}}

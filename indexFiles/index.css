@@ -41,13 +41,13 @@ h1, h2, h3, h4, h5, h6 {
 #content {
     margin: auto;
     min-width: 33em;
-    padding: 0.3em 2em 3em 2em;
+    padding: 0 2em 3em 2em;
     display: inline-block;
     text-align: left;
+    border-left: 1px solid #D6D6D6;
 }
 
 #header {
-    /* display: inline-block; */
     min-width: 18em;
     font-size: 210%;
     text-align: left;
@@ -55,6 +55,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #C813B1;
     border-bottom: 1px solid #D6D6D6;
     background-color: #F2F2F2;
+    box-shadow: 0 -0.3em 0.3em 0.3em #D8D8D8;
 }
 #header .star {
     font-size: inherit;
@@ -92,6 +93,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 115%;
     font-family: georgia, serif;
     color: #454545;
+    margin-top: 1em;
 }
 .markdown:empty {
     display: none;
@@ -107,10 +109,8 @@ p {
 #TOC {
     display: inline-block;
     float: left;
-    padding: 0.7em 1em 1em 1em;
-    border: 0.1em solid #D8D8D8;
-    border-radius: 0.2em;
-    margin: 0.2em 1.2em 1em 0;
+    padding: 1.3em 0.7em 5em 0.7em;
+    max-width: 14em;
 }
 #TOC.reveal {
     position: fixed;
@@ -171,9 +171,7 @@ p {
 }
 
 #details {
-    margin: 1em 0 0 0;
     padding: 0 0 1.5em 0;
-    margin: 0 0 1.5em 0;
     border-bottom: 2px solid #E5E5E5;
 }
 
