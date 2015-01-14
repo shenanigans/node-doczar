@@ -23,7 +23,7 @@
         <div id="content">
             <!-- basic document info -->
             <div id="details">
-                    <span class="markdown"><p>This is the rendered output of the <code>doczar</code> source documentation.
+                    <div class="markdown"><p>This is the rendered output of the <code>doczar</code> source documentation.
 <em>View the <a href="https://github.com/shenanigans/node-doczar">source</a> on GitHub!</em></p>
 <h1 id="doczar">doczar</h1>
 <table>
@@ -145,9 +145,8 @@ $ doczar --jsmod ./main # outputs to ./docs
 </tbody>
 </table>
 <h2 id="development">Development</h2>
-<p><code>doczar</code> is developed and maintained by Kevin &quot;Schmidty&quot; Smith under the MIT license. I am currently
-broke and unemployed. If you want to see continued development on <code>doczar</code>, please help me
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=PN6C2AZTS2FP8&amp;lc=US&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">pay my bills!</a></p>
+<p><code>doczar</code> is developed and maintained by Kevin &quot;Schmidty&quot; Smith under the MIT license. If you want to
+see continued development on <code>doczar</code>, please help me <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=PN6C2AZTS2FP8&amp;lc=US&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">pay my bills!</a></p>
 <h2 id="comment-syntax">Comment Syntax</h2>
 <h3 id="declarations">Declarations</h3>
 <p>The simplest form of documentation is a single Declaration in its own block comment with an
@@ -163,6 +162,17 @@ describing this unit of code with
 </code></pre>
 <p>The final newline is not required.</p>
 <pre><code class="lang-c"><span class="hljs-keyword">int</span> myInt = <span class="hljs-number">42</span>; <span class="hljs-comment">/* @property/int myInt */</span>
+</code></pre>
+<p>A special markdown caveat: you will need <em>two</em> newlines to terminate a bullet list.</p>
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function doTheThings
+    Does all the things. It does:
+     * the hottest things
+     * the coolest things
+     * all the things you could ever
+        possibly imagine
+
+    And it does them fast!
+*/</span>
 </code></pre>
 <p>In python, any &quot;triple&quot; string literal that meets the first-line requirements is a document comment.</p>
 <pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">referenceMontyPython</span> <span class="hljs-params">(skit)</span>:</span>
@@ -634,7 +644,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
-</span>
+</div>
                 <div class="clear"></div>
         </div>
 <div class="children">
@@ -644,7 +654,7 @@ SOFTWARE.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">7:4pm</span> on <span class="date">Wednesday, November 19, 2014</span>
+        at <span class="time">1:25pm</span> on <span class="date">Wednesday, January 14, 2015</span>
     </div>
 </body>
 </html>
