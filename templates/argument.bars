@@ -1,6 +1,6 @@
 <div class="argument">
-    {{#if isOptional}}[{{/if}}
     <span class="comma">,</span>
+    {{#if isOptional}}[{{/if}}
     {{#if isKwarg}}
         <a class="title" href="{{softlink path}}">
             {{name}}

@@ -1,5 +1,5 @@
 <div id="TOC">
-    <h3>Table of Contents</h3>
+    <!--<h3>Table of Contents</h3>-->
     {{#if modules}}
         <div class="section">
             <h4 class="header"><a href="#modules">Modules</a></h4>

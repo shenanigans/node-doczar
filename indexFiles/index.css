@@ -12,6 +12,13 @@ body {
     margin: 0;
     height: 100%;
 }
+body.spare #content {
+    margin-left: 1em;
+    padding-left: 4em;
+}
+body.spare .markdown {
+    color: #2f2f2f;
+}
 
 #outer {
     min-height: 100%;
@@ -39,7 +46,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #content {
-    margin: auto;
     min-width: 33em;
     padding: 0 2em 3em 2em;
     display: inline-block;
@@ -109,8 +115,8 @@ p {
 #TOC {
     display: inline-block;
     float: left;
-    padding: 1.3em 0.7em 5em 0.7em;
-    max-width: 14em;
+    padding: 0 0.7em 5em 0.7em;
+    width: 13em;
 }
 #TOC.reveal {
     position: fixed;
