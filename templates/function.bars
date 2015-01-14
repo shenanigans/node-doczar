@@ -6,16 +6,16 @@
         {{#if returns}}
             <span>{{#returns}}
                 <span class="valsep">,</span>
-                <span>{{#valtype}}
-                    <span class="valsep">|</span>
+                <span class="types">{{#valtype}}
+                    <span class="valsep punctuation">|</span>
                     <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
                     {{#if generics}}
-                        [
+                        <span class="punctuation">[</span>
                         <span>{{#generics}}
                             <a class="valtype" href="{{link path}}">{{name}}</a>
                             <span class="valsep">,</span>
                         {{/generics}}</span>
-                        ]
+                        <span class="punctuation">]</span>
                     {{/if}}
                 {{/valtype}}</span>
             {{/returns}}</span>
@@ -25,7 +25,7 @@
         </a>
         (
             <span>{{#arguments}}
-{{> argument}}
+{{> lightArgument}}
             {{/arguments}}</span>
         ) {
     </span>

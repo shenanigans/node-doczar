@@ -1,41 +1,41 @@
 <div class="argument">
     <span class="comma">,</span>
-    {{#if isOptional}}[{{/if}}
+    {{#if isOptional}}<span class="optionBracket">[</span>{{/if}}
     {{#if isKwarg}}
         <a class="title" href="{{softlink path}}">
             {{name}}
         </a>
-        =
+        <span class="punctuation">=</span>
         <span>{{#valtype}}
-            <span class="valsep">|</span>
+            <span class="valsep punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>
             {{#if isArray}}[ ]{{/if}}
             {{#if generics}}
-                [
+                <span class="punctuation">[</span>
                 <span>{{#generics}}
                     <a class="valtype" href="{{link path}}">{{name}}</a>
-                    <span class="valsep">,</span>
+                    <span class="valsep punctuation">,</span>
                 {{/generics}}</span>
-                ]
+                <span class="punctuation">]</span>
             {{/if}}
         {{/valtype}}</span>
     {{else}}
         <span>{{#valtype}}
-            <span class="valsep">|</span>
+            <span class="valsep punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
             {{#if isArray}}[ ]{{/if}}
             {{#if generics}}
-                [
+                <span class="punctuation">[</span>
                 <span>{{#generics}}
                     <a class="valtype" href="{{link path}}">{{name}}</a>
-                    <span class="valsep">,</span>
+                    <span class="valsep punctuation">,</span>
                 {{/generics}}</span>
-                ]
+                <span class="punctuation">]</span>
             {{/if}}
         {{/valtype}}</span>
         <a class="title" href="{{softlink path}}">
             {{name}}
         </a>
     {{/if}}
-    {{#if isOptional}}]{{/if}}
+    {{#if isOptional}}<span class="optionBracket">]</span>{{/if}}
 </div>

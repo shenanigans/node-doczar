@@ -22,6 +22,7 @@ body.spare .markdown {
 
 #outer {
     min-height: 100%;
+    min-width: 65em;
 }
 
 a {
@@ -46,7 +47,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #content {
-    min-width: 33em;
+    min-width: 26em;
+    max-width: 42em;
     padding: 0 2em 3em 2em;
     display: inline-block;
     text-align: left;
@@ -202,15 +204,18 @@ p {
 .valsep:last-child {
     display: none;
 }
-
+.punctuation {
+    color: #E837D2;
+    font-weight: 300;
+}
 .signature {
     color: #C813B1;
     font-weight: 700;
     margin: 0;
     padding-left: 0.3em;
 }
-.child .signature {
-    font-size: 110%;
+.child > .signature {
+    font-size: 120%;
 }
 .child .child .signature {
     font-size: inherit;
@@ -220,9 +225,25 @@ p {
 }
 .signature .argument {
     display: inline-block;
+    /*margin-left: 2em;*/
+    font-size: 90%;
+}
+.child .argument > .title {
+    font-weight: 300;
+    font-size: 110%
+}
+h1.signature .argument {
+    display: block;
+    margin-left: 1em;
+    font-size: 80%;
 }
 h1.signature {
     margin-top: 0.7em;
+}
+
+.optionBracket {
+    color: #FA8CEC;
+    font-weight: 300;
 }
 
 .star {
@@ -243,7 +264,7 @@ h1.signature {
     line-height: 0.1em;
 }
 /* hide comma after final argument */
-*:first-child > .comma {
+*:first-of-type > .comma {
     display: none;
 }
 
@@ -349,4 +370,8 @@ h1.signature {
     border: none;
     margin-left: -0.5em;
     padding-left: 2em;
+}
+
+h1 .types {
+    font-size: 80%;
 }
