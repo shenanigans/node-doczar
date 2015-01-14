@@ -26,6 +26,11 @@
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
     {{/if}}
+    {{#if aliasTo}}
+        <div class="source alias">
+            Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
+        </div>
+    {{/if}}
     {{#superClasses}}
         <div class="source super">
             Subclass of <a class="super" href="{{link path}}">{{pathstr}}</a>
@@ -39,7 +44,7 @@
     <div class="info">
 <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if isInline}}
-            {{> children}}
+{{> children}}
         {{/if}}
     </div>
 </div>

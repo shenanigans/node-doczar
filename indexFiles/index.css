@@ -12,9 +12,17 @@ body {
     margin: 0;
     height: 100%;
 }
+body.spare #content {
+    margin-left: 1em;
+    padding-left: 4em;
+}
+body.spare .markdown {
+    color: #2f2f2f;
+}
 
 #outer {
     min-height: 100%;
+    min-width: 65em;
 }
 
 a {
@@ -39,15 +47,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #content {
-    margin: auto;
-    min-width: 33em;
-    padding: 0.3em 2em 3em 2em;
+    min-width: 26em;
+    max-width: 42em;
+    padding: 0 2em 3em 2em;
     display: inline-block;
     text-align: left;
+    border-left: 1px solid #D6D6D6;
 }
 
 #header {
-    /* display: inline-block; */
     min-width: 18em;
     font-size: 210%;
     text-align: left;
@@ -55,6 +63,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #C813B1;
     border-bottom: 1px solid #D6D6D6;
     background-color: #F2F2F2;
+    box-shadow: 0 -0.3em 0.3em 0.3em #D8D8D8;
 }
 #header .star {
     font-size: inherit;
@@ -92,6 +101,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 115%;
     font-family: georgia, serif;
     color: #454545;
+    margin-top: 1em;
 }
 .markdown:empty {
     display: none;
@@ -107,10 +117,8 @@ p {
 #TOC {
     display: inline-block;
     float: left;
-    padding: 0.7em 1em 1em 1em;
-    border: 0.1em solid #D8D8D8;
-    border-radius: 0.2em;
-    margin: 0.2em 1.2em 1em 0;
+    padding: 0 0.7em 5em 0.7em;
+    width: 13em;
 }
 #TOC.reveal {
     position: fixed;
@@ -171,9 +179,7 @@ p {
 }
 
 #details {
-    margin: 1em 0 0 0;
     padding: 0 0 1.5em 0;
-    margin: 0 0 1.5em 0;
     border-bottom: 2px solid #E5E5E5;
 }
 
@@ -198,15 +204,18 @@ p {
 .valsep:last-child {
     display: none;
 }
-
+.punctuation {
+    color: #E837D2;
+    font-weight: 300;
+}
 .signature {
     color: #C813B1;
     font-weight: 700;
     margin: 0;
     padding-left: 0.3em;
 }
-.child .signature {
-    font-size: 110%;
+.child > .signature {
+    font-size: 120%;
 }
 .child .child .signature {
     font-size: inherit;
@@ -216,6 +225,25 @@ p {
 }
 .signature .argument {
     display: inline-block;
+    /*margin-left: 2em;*/
+    font-size: 90%;
+}
+.child .argument > .title {
+    font-weight: 300;
+    font-size: 110%
+}
+h1.signature .argument {
+    display: block;
+    margin-left: 1em;
+    font-size: 80%;
+}
+h1.signature {
+    margin-top: 0.7em;
+}
+
+.optionBracket {
+    color: #FA8CEC;
+    font-weight: 300;
 }
 
 .star {
@@ -236,7 +264,7 @@ p {
     line-height: 0.1em;
 }
 /* hide comma after final argument */
-*:first-child > .comma {
+*:first-of-type > .comma {
     display: none;
 }
 
@@ -342,4 +370,8 @@ p {
     border: none;
     margin-left: -0.5em;
     padding-left: 2em;
+}
+
+h1 .types {
+    font-size: 80%;
 }

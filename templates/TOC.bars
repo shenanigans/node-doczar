@@ -1,5 +1,5 @@
 <div id="TOC">
-    <h3>Table of Contents</h3>
+    <!--<h3>Table of Contents</h3>-->
     {{#if modules}}
         <div class="section">
             <h4 class="header"><a href="#modules">Modules</a></h4>
@@ -72,6 +72,22 @@
             {{#methods}}
                 <a href="{{softlink path}}">{{name}}</a><br />
             {{/methods}}
+        </div>
+    {{/if}}
+    {{#if localValues}}
+        <div class="section">
+            <h4 class="header"><a href="#localValues">Local Values</a></h4>
+            {{#localValues}}
+                <a href="{{softlink path}}">{{name}}</a><br />
+            {{/localValues}}
+        </div>
+    {{/if}}
+    {{#if localFunctions}}
+        <div class="section">
+            <h4 class="header"><a href="#localFunctions">Local Functions</a></h4>
+            {{#localFunctions}}
+                <a href="{{softlink path}}">{{name}}</a><br />
+            {{/localFunctions}}
         </div>
     {{/if}}
 </div>
