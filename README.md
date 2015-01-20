@@ -67,12 +67,10 @@ dev             | Display Components marked with the `@development` modifier.
 api             | Display **only** Components marked with the `@api` modifier.
 
 
-
 Development
 -----------
 `doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. If you want to
 see continued development on `doczar`, please help me [pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
-
 
 
 Comment Syntax
