@@ -85,7 +85,6 @@ ruby, java, c-like languages, and others.</p>
 <p>Rather than attempting to document the source code itself, doczar <strong>only</strong> uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
 large, complex entities easy.</p>
-<p>Doczar itself is fully cross-platform, open source, and <em>totally sweet</em>.</p>
 <h4 id="features">Features</h4>
 <ul>
 <li>describe modules and object-oriented structures</li>
@@ -97,15 +96,9 @@ large, complex entities easy.</p>
 <li>function signatures</li>
 <li>automatic Node.js <a href="https://github.com/defunctzombie/node-required">dependency graph</a> documentation</li>
 </ul>
-<h4 id="coming-soon">Coming Soon</h4>
-<ul>
-<li>special <code>@spare</code> path for documenting a constructor separately from its class.</li>
-<li><code>@file</code> Components to encode file structure information</li>
-<li><code>@import</code> to mount java modules on more crosslink-friendly local paths</li>
-<li>standard libs for javascript, node, the browser, java, ruby, and python</li>
-</ul>
 <h2 id="installation">Installation</h2>
-<p>You will need <a href="http://nodejs.org/">node.js and npm</a>.</p>
+<p>There is currently no work-around for case-insensitive filesystems. That means you can&#39;t generate
+documentation on Windows (yet).</p>
 <pre><code class="lang-shell">$ sudo npm install -g doczar
 </code></pre>
 <p>The binary <code>doczar</code> is now on your executable path.</p>
@@ -113,7 +106,6 @@ large, complex entities easy.</p>
 <pre><code class="lang-shell">$ doczar --in=src/**/*.c --out docz
 $ doczar --jsmod ./main # outputs to ./docs
 </code></pre>
-<p>The documentation for <code>doczar</code> is generated with <code>$ doczar --jsmod ./cli</code>.</p>
 <table>
 <thead>
 <tr>
@@ -191,8 +183,8 @@ describing this unit of code with
 --&gt;</span>
 </code></pre>
 <p>Indentation of a markdown section is automagically normalized to the least-indented line and you may
-include any number of tab and space characters before any Declaration. Yes, the de-indenter is
-clever enough to handle this scenario:</p>
+include any number of tab and space characters before any Declaration. You can even break in the
+middle of a link definition.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/** @member/int foo
     A contracted document with
     little available horizontal
@@ -628,7 +620,7 @@ pipes <code>|</code>.</p>
 </code></pre>
 <h2 id="license">LICENSE</h2>
 <p>The MIT License (MIT)</p>
-<p>Copyright (c) 2014 Kevin &quot;Schmidty&quot; Smith</p>
+<p>Copyright (c) 2015 Kevin &quot;Schmidty&quot; Smith</p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the &quot;Software&quot;), to deal
 in the Software without restriction, including without limitation the rights
@@ -654,7 +646,7 @@ SOFTWARE.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">1:25pm</span> on <span class="date">Wednesday, January 14, 2015</span>
+        at <span class="time">2:36am</span> on <span class="date">Wednesday, January 21, 2015</span>
     </div>
 </body>
 </html>
