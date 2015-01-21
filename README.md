@@ -21,8 +21,6 @@ Rather than attempting to document the source code itself, doczar **only** uses 
 comment format has been designed for legibility and uses a simple scope model to make documenting
 large, complex entities easy.
 
-Doczar itself is fully cross-platform, open source, and *totally sweet*.
-
 ####Features
  * describe modules and object-oriented structures
  * inheritence, multiple inheritence and Java `interface`
@@ -33,16 +31,11 @@ Doczar itself is fully cross-platform, open source, and *totally sweet*.
  * function signatures
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
 
-####Coming Soon
- * special `@spare` path for documenting a constructor separately from its class.
- * `@file` Components to encode file structure information
- * `@import` to mount java modules on more crosslink-friendly local paths
- * standard libs for javascript, node, the browser, java, ruby, and python
-
 
 Installation
 ------------
-You will need [node.js and npm](http://nodejs.org/).
+There is currently no work-around for case-insensitive filesystems. That means you can't generate
+documentation on Windows (yet).
 ```shell
 $ sudo npm install -g doczar
 ```
@@ -56,8 +49,6 @@ $ doczar --in=src/**/*.c --out docz
 $ doczar --jsmod ./main # outputs to ./docs
 ```
 
-The documentation for `doczar` is generated with `$ doczar --jsmod ./cli`.
-
 option          | description
 ---------------:|---------------------------------
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
@@ -67,12 +58,10 @@ dev             | Display Components marked with the `@development` modifier.
 api             | Display **only** Components marked with the `@api` modifier.
 
 
-
 Development
 -----------
 `doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. If you want to
 see continued development on `doczar`, please help me [pay my bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
-
 
 
 Comment Syntax
@@ -133,8 +122,8 @@ Finally, HTML comments are also supported.
 ```
 
 Indentation of a markdown section is automagically normalized to the least-indented line and you may
-include any number of tab and space characters before any Declaration. Yes, the de-indenter is
-clever enough to handle this scenario:
+include any number of tab and space characters before any Declaration. You can even break in the
+middle of a link definition.
 ```c
 /** @member/int foo
     A contracted document with
@@ -661,7 +650,7 @@ LICENSE
 -------
 The MIT License (MIT)
 
-Copyright (c) 2014 Kevin "Schmidty" Smith
+Copyright (c) 2015 Kevin "Schmidty" Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
