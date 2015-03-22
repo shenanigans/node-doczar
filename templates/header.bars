@@ -92,7 +92,8 @@
                     <h1>Additional Documentation Pages</h1>
                     <div id="spares" class="section spares">
                         {{#spares}}
-                            <a class="spare" id="{{elemID}}" href="spare/{{name}}/index.html">{{name}}</a>
+                            <a class="spare" id="{{elemID}}" href="{{link path}}">{{name}}</a>
+                            <br />
                         {{/spares}}
                     </div>
                 {{/if}}
