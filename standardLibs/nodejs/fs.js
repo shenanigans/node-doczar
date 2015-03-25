@@ -1,0 +1,151 @@
+
+/**     @module fs
+@spare `Library Documentation`
+    @remote `https://nodejs.org/api/fs.html#fs_file_system`
+@class Stats
+    @remote `https://nodejs.org/api/fs.html#class_fs_stats`
+@class ReadStream
+    @remote `https://nodejs.org/api/fs.html#class_fs_readstream`
+@class WriteStream
+    @remote `https://nodejs.org/api/fs.html#class_fs_writestream`
+@class FSWatcher
+    @remote `https://nodejs.org/api/fs.html#class_fs_fswatcher`
+@Function rename
+    @remote `https://nodejs.org/api/fs.html#fs_rename_oldpath_newpath_callback`
+@Function renameSync
+    @remote `https://nodejs.org/api/fs.html#fs_renamesync_oldpath_newpath`
+@Function ftruncate
+    @remote `https://nodejs.org/api/fs.html#fs_ftruncate_fd_len_callback`
+@Function ftruncateSync
+    @remote `https://nodejs.org/api/fs.html#fs_ftruncatesync_fd_len`
+@Function truncate
+    @remote `https://nodejs.org/api/fs.html#fs_truncate_path_len_callback`
+@Function truncateSync
+    @remote `https://nodejs.org/api/fs.html#fs_truncatesync_path_len`
+@Function chown
+    @remote `https://nodejs.org/api/fs.html#fs_chown_path_uid_gid_callback`
+@Function chownSync
+    @remote `https://nodejs.org/api/fs.html#fs_chownsync_path_uid_gid`
+@Function fchown
+    @remote `https://nodejs.org/api/fs.html#fs_fchown_fd_uid_gid_callback`
+@Function fchownSync
+    @remote `https://nodejs.org/api/fs.html#fs_fchownsync_fd_uid_gid`
+@Function lchown
+    @remote `https://nodejs.org/api/fs.html#fs_lchown_path_uid_gid_callback`
+@Function lchownSync
+    @remote `https://nodejs.org/api/fs.html#fs_lchownsync_path_uid_gid`
+@Function chmod
+    @remote `https://nodejs.org/api/fs.html#fs_chmod_path_mode_callback`
+@Function chmodSync
+    @remote `https://nodejs.org/api/fs.html#fs_chmodsync_path_mode`
+@Function fchmod
+    @remote `https://nodejs.org/api/fs.html#fs_fchmod_fd_mode_callback`
+@Function fchmodSync
+    @remote `https://nodejs.org/api/fs.html#fs_fchmodsync_fd_mode`
+@Function lchmod
+    @remote `https://nodejs.org/api/fs.html#fs_lchmod_path_mode_callback`
+@Function lchmodSync
+    @remote `https://nodejs.org/api/fs.html#fs_lchmodsync_path_mode`
+@Function stat
+    @remote `https://nodejs.org/api/fs.html#fs_stat_path_callback`
+@Function lstat
+    @remote `https://nodejs.org/api/fs.html#fs_lstat_path_callback`
+@Function fstat
+    @remote `https://nodejs.org/api/fs.html#fs_fstat_fd_callback`
+@Function statSync
+    @remote `https://nodejs.org/api/fs.html#fs_statsync_path`
+@Function lstatSync
+    @remote `https://nodejs.org/api/fs.html#fs_lstatsync_path`
+@Function fstatSync
+    @remote `https://nodejs.org/api/fs.html#fs_fstatsync_fd`
+@Function link
+    @remote `https://nodejs.org/api/fs.html#fs_link_srcpath_dstpath_callback`
+@Function linkSync
+    @remote `https://nodejs.org/api/fs.html#fs_linksync_srcpath_dstpath`
+@Function symlink
+    @remote `https://nodejs.org/api/fs.html#fs_symlink_srcpath_dstpath_type_callback`
+@Function symlinkSync
+    @remote `https://nodejs.org/api/fs.html#fs_symlinksync_srcpath_dstpath_type`
+@Function readlink
+    @remote `https://nodejs.org/api/fs.html#fs_readlink_path_callback`
+@Function readlinkSync
+    @remote `https://nodejs.org/api/fs.html#fs_readlinksync_path`
+@Function realpath
+    @remote `https://nodejs.org/api/fs.html#fs_realpath_path_cache_callback`
+@Function realpathSync
+    @remote `https://nodejs.org/api/fs.html#fs_realpathsync_path_cache`
+@Function unlink
+    @remote `https://nodejs.org/api/fs.html#fs_unlink_path_callback`
+@Function unlinkSync
+    @remote `https://nodejs.org/api/fs.html#fs_unlinksync_path`
+@Function rmdir
+    @remote `https://nodejs.org/api/fs.html#fs_rmdir_path_callback`
+@Function rmdirSync
+    @remote `https://nodejs.org/api/fs.html#fs_rmdirsync_path`
+@Function mkdir
+    @remote `https://nodejs.org/api/fs.html#fs_mkdir_path_mode_callback`
+@Function mkdirSync
+    @remote `https://nodejs.org/api/fs.html#fs_mkdirsync_path_mode`
+@Function readdir
+    @remote `https://nodejs.org/api/fs.html#fs_readdir_path_callback`
+@Function readdirSync
+    @remote `https://nodejs.org/api/fs.html#fs_readdirsync_path`
+@Function close
+    @remote `https://nodejs.org/api/fs.html#fs_close_fd_callback`
+@Function closeSync
+    @remote `https://nodejs.org/api/fs.html#fs_closesync_fd`
+@Function open
+    @remote `https://nodejs.org/api/fs.html#fs_open_path_flags_mode_callback`
+@Function openSync
+    @remote `https://nodejs.org/api/fs.html#fs_opensync_path_flags_mode`
+@Function utimes
+    @remote `https://nodejs.org/api/fs.html#fs_utimes_path_atime_mtime_callback`
+@Function utimesSync
+    @remote `https://nodejs.org/api/fs.html#fs_utimessync_path_atime_mtime`
+@Function futimes
+    @remote `https://nodejs.org/api/fs.html#fs_futimes_fd_atime_mtime_callback`
+@Function futimesSync
+    @remote `https://nodejs.org/api/fs.html#fs_futimessync_fd_atime_mtime`
+@Function fsync
+    @remote `https://nodejs.org/api/fs.html#fs_fsync_fd_callback`
+@Function fsyncSync
+    @remote `https://nodejs.org/api/fs.html#fs_fsyncsync_fd`
+@Function write
+    @remote `https://nodejs.org/api/fs.html#fs_write_fd_buffer_offset_length_position_callback`
+@Function writeSync
+    @remote `https://nodejs.org/api/fs.html#fs_writesync_fd_buffer_offset_length_position`
+@Function read
+    @remote `https://nodejs.org/api/fs.html#fs_read_fd_buffer_offset_length_position_callback`
+@Function readSync
+    @remote `https://nodejs.org/api/fs.html#fs_readsync_fd_buffer_offset_length_position`
+@Function readFile
+    @remote `https://nodejs.org/api/fs.html#fs_readfile_filename_options_callback`
+@Function readFileSync
+    @remote `https://nodejs.org/api/fs.html#fs_readfilesync_filename_options`
+@Function writeFile
+    @remote `https://nodejs.org/api/fs.html#fs_writefile_filename_data_options_callback`
+@Function writeFileSync
+    @remote `https://nodejs.org/api/fs.html#fs_writefilesync_filename_data_options`
+@Function appendFile
+    @remote `https://nodejs.org/api/fs.html#fs_appendfile_filename_data_options_callback`
+@Function appendFileSync
+    @remote `https://nodejs.org/api/fs.html#fs_appendfilesync_filename_data_options`
+@Function watchFile
+    @remote `https://nodejs.org/api/fs.html#fs_watchfile_filename_options_listener`
+@Function unwatchFile
+    @remote `https://nodejs.org/api/fs.html#fs_unwatchfile_filename_listener`
+@Function watch
+    @remote `https://nodejs.org/api/fs.html#fs_watch_filename_options_listener`
+@Function exists
+    @remote `https://nodejs.org/api/fs.html#fs_exists_path_callback`
+@Function existsSync
+    @remote `https://nodejs.org/api/fs.html#fs_existssync_path`
+@Function access
+    @remote `https://nodejs.org/api/fs.html#fs_access_path_mode_callback`
+@Function accessSync
+    @remote `https://nodejs.org/api/fs.html#fs_accesssync_path_mode`
+@Function createReadStream
+    @remote `https://nodejs.org/api/fs.html#fs_createreadstream_path_options`
+@Function createWriteStream
+    @remote `https://nodejs.org/api/fs.html#fs_createwritestream_path_options`
+*/

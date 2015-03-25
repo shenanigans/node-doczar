@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**     @module doczar
-    Select, load and parse source files for `doczar`-format documentation comments. Render html
+    Select, load and parse source files for `doczar` format documentation comments. Render html
     output to a configured disk location.
 @spare `README.md`
     This is the rendered output of the `doczar` source documentation.
@@ -163,15 +163,13 @@ function includeLib (libname) {
         sourcefiles.push (path.join (stdDir, libname, files[i]));
 }
 
-// if (argv.with) {
-//     if (isArray (argv.with))
-//         for (var i in argv.with) includeLib (argv.with[i]);
-//     else {
-//         var files = fs.readdirSync (path.join (stdDir, argv.with))
-//         for (var i in files)
-//             sourcefiles.push (path.join (stdDir, argv.with, files[i]));
-//     }
-// }
+if (argv.with) {
+    if (isArray (argv.with))
+        for (var i in argv.with) includeLib (argv.with[i]);
+    else
+        includeLib (argv.with);
+}
+
 if (argv.in)
     if (isArray (argv.in))
         for (var i in argv.in) {

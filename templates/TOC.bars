@@ -42,6 +42,14 @@
             {{/events}}
         </div>
     {{/if}}
+    {{#if globals}}
+        <div class="section">
+            <h4 class="header"><a href="#globals">Globals</a></h4>
+            {{#globals}}
+                <a href="{{softlink path}}">{{name}}</a><br />
+            {{/globals}}
+        </div>
+    {{/if}}
     {{#if statics}}
         <div class="section">
             <h4 class="header"><a href="#statics">Static Properties</a></h4>

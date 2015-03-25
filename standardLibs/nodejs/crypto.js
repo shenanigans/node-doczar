@@ -1,0 +1,69 @@
+
+/**     @module Crypto
+@spare `Library Documentation`
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto`
+@class Hash
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_hash`
+@class Hmac
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_hmac`
+@class Cipher
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_cipher`
+@class Decipher
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_decipher`
+@class Sign
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_sign`
+@class Verify
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_verify`
+@class DiffieHellman
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_diffiehellman`
+@class ECDH
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_ecdh`
+@class Certificate
+    @remote `https://nodejs.org/api/crypto.html#crypto_class_certificate`
+@Function setEngine
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_setengine_engine_flags`
+@Function getCiphers
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_getciphers_`
+@Function getHashes
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_gethashes_`
+@Function createCredentials
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createcredentials_details`
+@Function createHash
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createhash_algorithm`
+@Function createHmac
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createhmac_algorithm_key`
+@Function createCipher
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createcipher_algorithm_password`
+@Function createCipheriv
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createcipheriv_algorithm_key_iv`
+@Function createDecipher
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createdecipher_algorithm_password`
+@Function createDecipheriv
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createdecipheriv_algorithm_key_iv`
+@Function createSign
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createsign_algorithm`
+@Function createVerify
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createverify_algorithm`
+@Function createDiffieHellman
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_creatediffiehellman_prime_length_generator`
+@Function createDiffieHellman
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_creatediffiehellman_prime_prime_encoding_generator_generator_encoding`
+@Function getDiffieHellman
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_getdiffiehellman_group_name`
+@Function createECDH
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_createecdh_curve_name`
+@Function pbkdf2
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2_password_salt_iterations_keylen_digest_callback`
+@Function pbkdf2Sync
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest`
+@Function randomBytes
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback`
+@Function pseudoRandomBytes
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_pseudorandombytes_size_callback`
+@Function publicEncrypt
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_publicencrypt_public_key_buffer`
+@Function privateDecrypt
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_privatedecrypt_private_key_buffer`
+@String DEFAULT_ENCODING
+    @remote `https://nodejs.org/api/crypto.html#crypto_crypto_default_encoding`
+*/
