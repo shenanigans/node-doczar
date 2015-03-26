@@ -30,6 +30,7 @@
   "bin": {
     "doczar": "./cli.js"
   },
+  "main": "main.js",
   "dependencies": {
     "marked": "^0.3.2",
     "minimist": "^1.1.0",
