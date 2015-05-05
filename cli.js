@@ -14,7 +14,7 @@
 */
 
 var path = require ('path');
-var fs = require ('fs');
+var fs = require ('graceful-fs');
 var async = require ('async');
 var required = require ('required');
 var resolve = require ('resolve');
