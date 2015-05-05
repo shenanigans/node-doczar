@@ -20,7 +20,7 @@ var required = require ('required');
 var resolve = require ('resolve');
 var glob = require ('glob');
 require ('colors');
-var bunyan = require ('bunyan');
+// var bunyan = require ('bunyan');
 var Parser = require ('./lib/Parser');
 var ComponentCache = require ('./lib/ComponentCache');
 
