@@ -78,7 +78,8 @@ var HIGHLIGHT_STYLES = {
 var DEFAULT_HIGHLIGHT_STYLE = 'github';
 
 var STDLIBS = {
-    javascript: true,
+    es5:        true,
+    es6:        true,
     nodejs:     true,
     browser:    true
 };
@@ -86,8 +87,8 @@ var STDLIBS = {
 var argv = require ('minimist') (process.argv, {
     default:        { out:'docs' },
     boolean:        [ 'verbose', 'dev', 'api' ],
-    // string:         [ 'jsmod', 'in', 'with', 'code' ],
-    string:         [ 'jsmod', 'in', 'code' ],
+    string:         [ 'jsmod', 'in', 'with', 'code' ],
+    // string:         [ 'jsmod', 'in', 'code' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
 function isArray (a) { return a.__proto__ === Array.prototype; }
@@ -139,17 +140,43 @@ function processSource(){
 }
 
 var libsIncluded = {};
-var DEPENDENCIES = {
-    nodejs:     [ 'javascript' ],
-    browser:    [ 'javascript' ]
+var LIB_SYNONYMS = {
+    javascript:     'es5',
+    ES5:            'es5',
+    ES6:            'es6',
+    Node:           'nodejs',
+    'Node.js':      'nodejs',
+    'node.js':      'nodejs',
+    'IO.js':        'iojs',
+    'Browser':      'browser',
+    'ie':           'browser',
+    'IE':           'browser',
+    'firefox':      'browser',
+    'Firefox':      'browser',
+    'chrome':       'browser',
+    'Chrome':       'browser',
+    'opera':        'browser',
+    'Opera':        'browser',
+    strict:         'browser-strict',
+    'use-strict':   'browser-strict'
+};
+var LIB_DEPENDENCIES = {
+    nodejs:             [ 'es5' ],
+    iojs:               [ 'nodejs', 'es5', 'es6' ],
+    browser:            [ 'es5' ],
+    'browser-strict':   [ 'es5', 'es6' ],
+    es6:                [ 'es5' ]
 };
 var stdDir = path.join (__dirname, 'standardLibs');
 function includeLib (libname) {
+    if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
+        libname = LIB_SYNONYMS[libname];
+
     if (Object.hasOwnProperty.call (libsIncluded, libname))
         return; // already included
 
-    if (Object.hasOwnProperty.call (DEPENDENCIES, libname)) {
-        var deps = DEPENDENCIES[libname];
+    if (Object.hasOwnProperty.call (LIB_DEPENDENCIES, libname)) {
+        var deps = LIB_DEPENDENCIES[libname];
         for (var i in deps)
             if (!Object.hasOwnProperty.call (libsIncluded, deps[i]))
                 includeLib (deps[i]);
@@ -202,8 +229,6 @@ if (argv.in)
 
 if (!argv.jsmod)
     return processSource();
-
-// includeLib ('nodejs');
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];

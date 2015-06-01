@@ -3,8 +3,22 @@
         {{#flags}}
             <div class="flag {{.}}">{{.}}</div>
         {{/flags}}
-        {{#if returns}}
-            <span>{{#returns}}
+        {{#if hasReturns}}
+            <span>{{#returnsSymbols}}
+                <span class="valsep">,</span>
+                <span class="types">{{#valtype}}
+                    <span class="valsep punctuation">|</span>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
+                    {{#if generics}}
+                        <span class="punctuation">[</span>
+                        <span>{{#generics}}
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                            <span class="valsep">,</span>
+                        {{/generics}}</span>
+                        <span class="punctuation">]</span>
+                    {{/if}}
+                {{/valtype}}</span>
+            {{/returnsSymbols}}{{#returns}}
                 <span class="valsep">,</span>
                 <span class="types">{{#valtype}}
                     <span class="valsep punctuation">|</span>
@@ -103,9 +117,38 @@
                                         {{/arguments}}
                                     </div>
                                 {{/if}}
-                                {{#if returns}}
+                                {{#args}}
+                                    <span class="signature">
+                                        , ...
+                                        <span>{{#valtype}}
+                                            <span class="valsep">|</span>
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                        {{/valtype}}</span>
+                                        <a class="title" href="{{link path}}">
+                                            {{name}}
+                                        </a>
+                                    </span>
+                                {{/args}}
+                                {{#kwargs}}
+                                    <span class="signature">
+                                        , ...
+                                        <span>{{#valtype}}
+                                            <span class="valsep">|</span>
+                                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                                        {{/valtype}}</span>
+                                        **<a class="title" href="{{link path}}">
+                                            {{name}}
+                                        </a>
+                                    </span>
+                                {{/kwargs}}
+                                {{#if hasReturns}}
                                     <h5>Returns</h5>
                                     <div class="section returns">
+                                        {{#returnsSymbols}}
+                                            <div class="return symbol">
+{{> symbolChild}}
+                                            </div>
+                                        {{/returnsSymbols}}
                                         {{#returns}}
                                             <div class="return">
 {{> child}}
@@ -119,9 +162,14 @@
                 {{/arguments}}
             </div>
         {{/if}}
-        {{#if returns}}
+        {{#if hasReturns}}
             <h4>Returns</h4>
             <div class="section returns">
+                {{#returnsSymbols}}
+                    <div class="return symbol">
+{{> symbolChild}}
+                    </div>
+                {{/returnsSymbols}}
                 {{#returns}}
                     <div class="return">
 {{> child}}

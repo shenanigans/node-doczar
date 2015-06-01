@@ -90,6 +90,15 @@
             {{/statics}}
         </div>
     {{/if}}
+    {{#if propertySymbols}}
+        <!-- static symbols -->
+        <h1 id="staticSymbols" class="header">Static Symbols</h1>
+        <div class="section properties">
+            {{#propertySymbols}}
+{{> symbolChild}}
+            {{/propertySymbols}}
+        </div>
+    {{/if}}
     {{#if functions}}
         <!-- static functions -->
         <h1 id="functions" class="header">Static Functions</h1>
@@ -100,17 +109,26 @@
         </div>
     {{/if}}
     {{#if members}}
-        <!-- instance properties -->
-        <h1 id="members" class="header">Instance Properties</h1>
+        <!-- member properties -->
+        <h1 id="members" class="header">Member Properties</h1>
         <div class="section members">
             {{#members}}
 {{> child}}
             {{/members}}
         </div>
     {{/if}}
+    {{#if memberSymbols}}
+        <!-- member symbols -->
+        <h1 id="memberSymbols" class="header">Member Symbols</h1>
+        <div class="section memberSymbols">
+            {{#memberSymbols}}
+{{> symbolChild}}
+            {{/memberSymbols}}
+        </div>
+    {{/if}}
     {{#if methods}}
-        <!-- instance methods -->
-        <h1 id="methods" class="header">Instance Methods</h1>
+        <!-- methods -->
+        <h1 id="methods" class="header">Methods</h1>
         <div class="section members">
             {{#methods}}
 {{> function}}

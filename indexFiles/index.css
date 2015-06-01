@@ -204,6 +204,10 @@ p {
 .valsep:last-child {
     display: none;
 }
+.symbol .title .valsep {
+    display: inline !important;
+    font-weight: 700;
+}
 .punctuation {
     color: #E837D2;
     font-weight: 300;
@@ -261,6 +265,10 @@ h1.signature, h1.signature {
 
 .child .title {
     font-weight: 900;
+}
+
+.title img {
+    height: 1em;
 }
 
 .comma {

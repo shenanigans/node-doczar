@@ -618,8 +618,6 @@ class dict:
 
 
 
-
-
 Generics
 --------
 Type paths support generics (java), templates (c++) and arrays-of-things (javascript). You may
@@ -641,6 +639,64 @@ Generics in Class Declarations.
         The name of the element to get.
     @returns/%elemType|null
         The requested element, or `null`.
+*/
+```
+
+
+
+Javascript ES6 Features
+-----------------------
+There is standard library coverage for ES6. Call `doczar` with the `--with es6` option.
+Additionally, the `browser-strict` and `iojs` standard libraries will pull in ES6 documentation.
+
+Several additional tricks were added to `doczar` itself to support the documentation of `ES6`
+scripts.
+
+###Symbols
+Symbols are supported inline everywhere normal paths are supported. You may use either absolute or
+locally rooted paths in Symbols.
+```c
+/**     @module MainPackage */
+
+/**     @class FooList
+    An Iterable collection of Foos.
+@member/Function [Symbol.iterator]
+    Create an [Iterator]() that lists all our Foos.
+@property/Symbol staticSymbol
+    A Symbol stored statically on the FooList class.
+*/
+
+/**     @member/String FooList#[.FooList.staticSymbol]
+    A String stored on FooList instances, mapped to a
+    static symbol.
+*/
+```
+
+![The History Channel Presents: Ancient Symbols](http://i.imgur.com/0hZXyFo.jpg)
+```c
+/**     @class Foo
+    @root
+@property/Symbol alfa
+    A static Symbol mapped to a String.
+@property/Symbol [.alfa]
+    A static Symbol mapped to a static Symbol.
+@property/Symbol [.[.alfa]]
+    Another static Symbol mapped to a static Symbol.
+@member/String [.[.[.alfa]]]
+    A String mapped to a static Symbol.
+*/
+```
+
+###Rest and Spread
+To document use of the `rest` keyword or "spread" syntax to accept arbitrary numbers of arguments,
+use the `@args` declaration.
+```c
+/**     @member/Function Foo#methodAlfa
+    A method that takes at least one argument.
+@argument/String firstArgument
+    The first, mandatory argument.
+@args/Number restArguments
+    An arbitrary number of additional arguments.
 */
 ```
 
