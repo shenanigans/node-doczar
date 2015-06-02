@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>.doczar documentation</title>
+    <title>doczar documentation</title>
     <link rel="stylesheet" type="text/css" href="../../index.css" />
     <link rel="stylesheet" type="text/css" href="../../highlight.css" />
     <script type="text/javascript" src="../../index.js"></script>
 </head>
-<body class="module" id="component_319">
+<body class="module" id="component_572">
     <div id="outer">
         <div id="header">
             
@@ -23,71 +23,34 @@
 <div id="TOC">
     <!--<h3>Table of Contents</h3>-->
         <div class="section">
-            <h4 class="header"><a href="#modules">Modules</a></h4>
-                <a href="#component_19">Parser</a><br />
-                <a href="#component_85">ComponentCache</a><br />
-                <a href="#component_136">Patterns</a><br />
-                <a href="#component_292">Component</a><br />
-                <a href="#component_316">Templates</a><br />
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_547">Component</a><br />
+                <a href="#component_340">ComponentCache</a><br />
+                <a href="#component_274">Parser</a><br />
+                <a href="#component_391">Patterns</a><br />
         </div>
 </div>
         <div id="content">
             <!-- basic document info -->
             <div id="details">
-                        <div class="markdown"><p>Select, load and parse source files for <code>doczar</code>-format documentation comments. Render html
+                        <div class="markdown"><p>Select, load and parse source files for <code>doczar</code> format documentation comments. Render html
 output to a configured disk location.</p>
 </div>
                 <div class="clear"></div>
                     <!-- extra document info -->
                     <h1>Additional Documentation Pages</h1>
                     <div id="spares" class="section spares">
-                            <a class="spare" id="" href="spare/README/index.html">README</a>
+                            <a class="spare" id="component_242" href="https://github.com/shenanigans/node-doczar">GitHub.com Repository</a>
+                            <br />
+                            <a class="spare" id="component_241" href="spare/README.md/index.html">README.md</a>
+                            <br />
                     </div>
-        </div>
+            </div>
 <div class="children">
-        <!-- modules -->
-        <h1 id="modules" class="header">Modules</h1>
-        <div class="section modules">
-<div id="component_19" class="child module">
-    <span class="signature">
-        <span></span>
-        
-        <a class="title" href="property/Parser/index.html">Parser</a>
-    </span>
-    <div class="info">
-<span class="markdown"><p>Digs document comments out of source files, splits them into Declarations and Modifiers, then
-reports everything it finds to a <a href="property/ComponentCache/index.html"><code>ComponentCache</code></a> instance.</p>
-</span>
-    </div>
-</div>
-<div id="component_85" class="child module">
-    <span class="signature">
-        <span>
-            <span class="valsep">|</span>
-            <a class="valtype" href="javascript:return false;">class</a>
-            
-        </span>
-        
-        <a class="title" href="property/ComponentCache/index.html">ComponentCache</a>
-    </span>
-    <div class="info">
-<span class="markdown"><p>Roots a tree of <a href="property/Component/index.html"><code>Component</code></a> instances and centralizations the document
-creation and output process.</p>
-</span>
-    </div>
-</div>
-<div id="component_136" class="child module">
-    <span class="signature">
-        <span></span>
-        
-        <a class="title" href="property/Patterns/index.html">Patterns</a>
-    </span>
-    <div class="info">
-<span class="markdown"><p>Syntax information and regular expressions used throughout doczar.</p>
-</span>
-    </div>
-</div>
-<div id="component_292" class="child module">
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_547" class="child module">
     <span class="signature">
         <span>
             <span class="valsep">|</span>
@@ -104,15 +67,42 @@ functionality. The ultimate goal is to produce and render a <a href="property/Co
 </span>
     </div>
 </div>
-<div id="component_316" class="child module">
+<div id="component_340" class="child module">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="javascript:return false;">class</a>
+            
+        </span>
+        
+        <a class="title" href="property/ComponentCache/index.html">ComponentCache</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Roots a tree of <a href="property/Component/index.html"><code>Component</code></a> instances and centralizations the document
+creation and output process.</p>
+</span>
+    </div>
+</div>
+<div id="component_274" class="child module">
     <span class="signature">
         <span></span>
         
-        <a class="title" href="property/Templates/index.html">Templates</a>
+        <a class="title" href="property/Parser/index.html">Parser</a>
     </span>
     <div class="info">
-<span class="markdown"><p>Loads and prepares the Marked and Handlebars renderers. Encapsulates a state mechanism to root
-links to the <a href="property/Component/index.html"><code>Component</code></a> being rendered.</p>
+<span class="markdown"><p>Digs document comments out of source files, splits them into Declarations and Modifiers, then
+reports everything it finds to a <a href="property/ComponentCache/index.html"><code>ComponentCache</code></a> instance.</p>
+</span>
+    </div>
+</div>
+<div id="component_391" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="property/Patterns/index.html">Patterns</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Syntax information and regular expressions used throughout doczar.</p>
 </span>
     </div>
 </div>
@@ -123,7 +113,7 @@ links to the <a href="property/Component/index.html"><code>Component</code></a> 
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">2:36am</span> on <span class="date">Wednesday, January 21, 2015</span>
+        at <span class="time">10:08pm</span> on <span class="date">6/1/2015</span>
     </div>
 </body>
 </html>
