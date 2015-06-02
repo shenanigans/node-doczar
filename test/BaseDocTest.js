@@ -13,8 +13,6 @@ require ('SecondDocTest');
     This is the explicit `@spare summary`.
 @constructor
     Automagic conversion of `@constructor` to `@spare constructor`.
-@preconstructor
-    Automagic conversion of `@preconstructor` to `@spare preconstructor`.
 @property/Symbol able
     Simple [Symbol]() class prop.
 @property/Symbol baker
@@ -83,4 +81,26 @@ require ('SecondDocTest');
     Another static Symbol mapped to a static Symbol.
 @member/String [Test.Bar.[Test.Bar.[Test.Bar.alfa]]]
     A String mapped to a static Symbol.
+*/
+
+/**     @class CaseClass
+    This Class tests sanitization of links by case. It's a Windows thing.
+    * [casePropAlfa](.CaseClass.casePropAlfa)
+    * [CasePropAlfa](.CaseClass.CasePropAlfa)
+    * [CasepropAlfa](.CaseClass.CasepropAlfa)
+    * [casepropAlfa](.CaseClass.casepropAlfa)
+    * [casepropalfa](.CaseClass.casepropalfa)
+    * [CASEPROPALFA](.CaseClass.CASEPROPALFA)
+@property/String casePropAlfa
+    The first `@property` is only separated from its siblings by case.
+@property/String CasePropAlfa
+    The second `@property` is only separated from its siblings by case.
+@property/String CasepropAlfa
+    The third `@property` is only separated from its siblings by case.
+@property/String casepropAlfa
+    The fourth `@property` is only separated from its siblings by case.
+@property/String casepropalfa
+    The fifth `@property` is only separated from its siblings by case.
+@property/String CASEPROPALFA
+    The sixth `@property` is only separated from its siblings by case.
 */
