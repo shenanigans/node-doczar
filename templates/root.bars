@@ -11,7 +11,7 @@
         <div id="header">
             Documentation Root
         </div>
-        <br />
+{{> TOC}}
         <div id="content">
             {{#if modules}}
                 <!-- modules -->
@@ -22,13 +22,13 @@
                     {{/modules}}
                 </div>
             {{/if}}
-            {{#if properties}}
+            {{#if globals}}
                 <!-- static properties -->
                 <h2 class="header">Globals</h2>
-                <div id="statics" class="section properties">
-                    {{#properties}}
+                <div id="globals" class="section globals">
+                    {{#globals}}
                         {{> child}}
-                    {{/properties}}
+                    {{/globals}}
                 </div>
             {{/if}}
 {{> footer}}

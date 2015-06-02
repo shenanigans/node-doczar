@@ -1,0 +1,57 @@
+<div id="{{elemID}}" class="symbol child {{ctype}}">
+    <span class="signature">
+        {{#flags}}
+            <div class="flag {{.}}">{{.}}</div>
+        {{/flags}}
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
+            {{#if isArray}}[ ]{{/if}}
+            {{#if generics}}
+                [
+                <span>{{#generics}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                ]
+            {{/if}}
+        {{/valtype}}</span>
+        {{#unless valtype}}{{#unless hideCtype}}
+            <span class="ctype">{{ctype}}</span>
+        {{/unless}}{{/unless}}
+        <span class="title">
+            <span class="valsep">[</span>
+            <a href="{{symbolLink path}}">{{trimSymbolName name}}</a>
+            <span class="valsep">]</span>
+            {{#if hasChildren}}
+                <a href="{{link path}}"><img src="{{{getBaseTagPath path}}}symbolLink.png" /></a>
+            {{/if}}
+        </span>
+    </span>
+    {{#if isInherited}}
+        <div class="source super">
+            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+        </div>
+    {{/if}}
+    {{#if aliasTo}}
+        <div class="source alias">
+            Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
+        </div>
+    {{/if}}
+    {{#superClasses}}
+        <div class="source super">
+            Subclass of <a class="super" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/superClasses}}
+    {{#interfaces}}
+        <div class="source interface">
+            Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/interfaces}}
+    <div class="info">
+<span class="markdown">{{{markdown summaryDoc}}}</span>
+        {{#if isInline}}
+{{> children}}
+        {{/if}}
+    </div>
+</div>

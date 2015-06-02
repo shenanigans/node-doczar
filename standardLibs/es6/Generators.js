@@ -1,0 +1,5 @@
+
+/**     @class Generator
+    @super Iterator
+
+*/

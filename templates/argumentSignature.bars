@@ -1,4 +1,5 @@
 <span class="signature">
+    {{#if isMultiArg}}<span class="punctuation">...</span>{{/if}}
     {{#flags}}
         <div class="flag {{.}}">{{.}}</div>
     {{/flags}}
@@ -10,7 +11,7 @@
             {{name}}
         </a>
         <span class="punctuation">=</span>
-        <span>{{#valtype}}
+        <span>{{#if valtype}}{{#valtype}}
             <span class="valsep punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>
             {{#if isArray}}[ ]{{/if}}
@@ -22,7 +23,7 @@
                 {{/generics}}</span>
                 <span class="punctuation">]</span>
             {{/if}}
-        {{/valtype}}</span>
+        {{/valtype}}{{else}}*{{/if}}</span>
     {{else}}
         <span>{{#valtype}}
             <span class="valsep punctuation punctuation">|</span>

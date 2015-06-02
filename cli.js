@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 
 /**     @module doczar
-    Select, load and parse source files for `doczar`-format documentation comments. Render html
+    Select, load and parse source files for `doczar` format documentation comments. Render html
     output to a configured disk location.
-@spare README
+@spare `README.md`
     This is the rendered output of the `doczar` source documentation.
     *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
     @load
         ./README.md
 */
+/**     @spare `GitHub.com Repository`
+    @remote `https://github.com/shenanigans/node-doczar`
+*/
 
 var path = require ('path');
-var fs = require ('fs');
+var fs = require ('graceful-fs');
 var async = require ('async');
 var required = require ('required');
 var resolve = require ('resolve');
 var glob = require ('glob');
 require ('colors');
+// var bunyan = require ('bunyan');
 var Parser = require ('./lib/Parser');
 var ComponentCache = require ('./lib/ComponentCache');
 
@@ -74,7 +78,8 @@ var HIGHLIGHT_STYLES = {
 var DEFAULT_HIGHLIGHT_STYLE = 'github';
 
 var STDLIBS = {
-    javascript: true,
+    es5:        true,
+    es6:        true,
     nodejs:     true,
     browser:    true
 };
@@ -82,8 +87,8 @@ var STDLIBS = {
 var argv = require ('minimist') (process.argv, {
     default:        { out:'docs' },
     boolean:        [ 'verbose', 'dev', 'api' ],
-    // string:         [ 'jsmod', 'in', 'with', 'code' ],
-    string:         [ 'jsmod', 'in', 'code' ],
+    string:         [ 'jsmod', 'in', 'with', 'code' ],
+    // string:         [ 'jsmod', 'in', 'code' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
 function isArray (a) { return a.__proto__ === Array.prototype; }
@@ -135,17 +140,43 @@ function processSource(){
 }
 
 var libsIncluded = {};
-var DEPENDENCIES = {
-    nodejs:     [ 'javascript' ],
-    browser:    [ 'javascript' ]
+var LIB_SYNONYMS = {
+    javascript:     'es5',
+    ES5:            'es5',
+    ES6:            'es6',
+    Node:           'nodejs',
+    'Node.js':      'nodejs',
+    'node.js':      'nodejs',
+    'IO.js':        'iojs',
+    'Browser':      'browser',
+    'ie':           'browser',
+    'IE':           'browser',
+    'firefox':      'browser',
+    'Firefox':      'browser',
+    'chrome':       'browser',
+    'Chrome':       'browser',
+    'opera':        'browser',
+    'Opera':        'browser',
+    strict:         'browser-strict',
+    'use-strict':   'browser-strict'
+};
+var LIB_DEPENDENCIES = {
+    nodejs:             [ 'es5' ],
+    iojs:               [ 'nodejs', 'es5', 'es6' ],
+    browser:            [ 'es5' ],
+    'browser-strict':   [ 'es5', 'es6' ],
+    es6:                [ 'es5' ]
 };
 var stdDir = path.join (__dirname, 'standardLibs');
 function includeLib (libname) {
+    if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
+        libname = LIB_SYNONYMS[libname];
+
     if (Object.hasOwnProperty.call (libsIncluded, libname))
         return; // already included
 
-    if (Object.hasOwnProperty.call (DEPENDENCIES, libname)) {
-        var deps = DEPENDENCIES[libname];
+    if (Object.hasOwnProperty.call (LIB_DEPENDENCIES, libname)) {
+        var deps = LIB_DEPENDENCIES[libname];
         for (var i in deps)
             if (!Object.hasOwnProperty.call (libsIncluded, deps[i]))
                 includeLib (deps[i]);
@@ -160,15 +191,13 @@ function includeLib (libname) {
         sourcefiles.push (path.join (stdDir, libname, files[i]));
 }
 
-// if (argv.with) {
-//     if (isArray (argv.with))
-//         for (var i in argv.with) includeLib (argv.with[i]);
-//     else {
-//         var files = fs.readdirSync (path.join (stdDir, argv.with))
-//         for (var i in files)
-//             sourcefiles.push (path.join (stdDir, argv.with, files[i]));
-//     }
-// }
+if (argv.with) {
+    if (isArray (argv.with))
+        for (var i in argv.with) includeLib (argv.with[i]);
+    else
+        includeLib (argv.with);
+}
+
 if (argv.in)
     if (isArray (argv.in))
         for (var i in argv.in) {
@@ -200,8 +229,6 @@ if (argv.in)
 
 if (!argv.jsmod)
     return processSource();
-
-// includeLib ('nodejs');
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
