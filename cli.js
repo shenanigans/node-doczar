@@ -19,10 +19,11 @@ var async = require ('async');
 var required = require ('required');
 var resolve = require ('resolve');
 var glob = require ('glob');
-require ('colors');
-// var bunyan = require ('bunyan');
+var bunyan = require ('bunyan');
+var bunyanFormat = require ('bunyan-format');
 var Parser = require ('./lib/Parser');
 var ComponentCache = require ('./lib/ComponentCache');
+require ('colors');
 
 var HIGHLIGHT_STYLES = {
     arta:                       true,
@@ -85,19 +86,45 @@ var STDLIBS = {
 };
 
 var argv = require ('minimist') (process.argv, {
-    default:        { out:'docs' },
-    boolean:        [ 'verbose', 'dev', 'api' ],
-    string:         [ 'jsmod', 'in', 'with', 'code' ],
-    // string:         [ 'jsmod', 'in', 'code' ],
+    default:        { out:'docs', verbose:'info' },
+    boolean:        [ 'dev', 'api' ],
+    string:         [ 'verbose', 'jsmod', 'in', 'with', 'code' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
 function isArray (a) { return a.__proto__ === Array.prototype; }
 function appendArr (a, b) { a.push.apply (a, b); }
 
+var outputStream = bunyanFormat ({ outputMode:'short' });
+var COLORS = { 10:'blue', 20:'cyan', 30:'green', 40:'yellow', 50:'red', 60:'magenta' };
+var BG_COLORS = { 10:'blueBG', 20:'cyanBG', 30:'greenBG', 40:'yellowBG', 50:'redBG', 60:'magentaBG' };
+var LVL_NAME = { 10:'trace   ', 20:'debug   ', 30:'info    ', 40:'warning ', 50:'error   ', 60:'fatal   ' };
+var RESERVED = { v:true, level:true, name:true, hostname:true, pid:true, time:true, msg:true, src:true };
+var logger = bunyan.createLogger ({
+    name:       "doczar",
+    streams:    [ { level:argv.verbose, type:'raw', stream:{ write:function (doc) {
+        var color = COLORS[doc.level];
+        var bgColor = BG_COLORS[doc.level];
+        var msg = (' '+LVL_NAME[doc.level])[bgColor].black+' '+doc.msg[color];
+        var finalStr;
+        for (var key in doc)
+            if (!Object.hasOwnProperty.call (RESERVED, key)) {
+                var item = doc[key];
+                if (key == 'err' && item.stack)
+                    finalStr = '  ' + item.stack;
+                else {
+                    var itemStr = typeof doc[key] == 'string' ? item : JSON.stringify (doc[key]);
+                    msg += ( '  ' + key + '=' + itemStr ).grey;
+                }
+            }
+        if (finalStr)
+            msg += finalStr;
+        console.log (msg);
+    } } } ]
+});
+
 if (argv.code && !Object.hasOwnProperty (HIGHLIGHT_STYLES, argv.code)) {
-    console.log (('unknown code highlighting style "'+argv.code+'"').red);
-    console.log ('failed'.red);
-    return process.exit (1);
+    logger.error ('unknown code highlighting style "'+argv.code+'"');
+    delete argv.code;
 }
 
 var sourcefiles = [];
@@ -108,32 +135,27 @@ var options = {
     verbose:    argv.verbose
 };
 function processSource(){
-    var context = new ComponentCache();
+    var context = new ComponentCache (logger);
     async.eachSeries (sourcefiles, function (fname, callback) {
-        Parser.parseFile (fname, context, callback);
+        Parser.parseFile (fname, context, logger, callback);
     }, function (err) {
         if (err) {
-            console.log ((''+err).red);
+            logger.fatal (err, 'unexpected error');
             return process.exit (1);
         }
         context.finalize (options, function (warnings) {
-            console.log ('parsing complete\n'.green);
+            logger.info ('parsing complete');
+            logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
 
             context.writeFiles (argv.out, options, function (err) {
                 if (err) {
-                    console.log ('unexpected error during output'.red);
-                    console.log ((''+err).red);
-                    console.log ('some filesystem changes may have occured'.red);
-                    console.log ('failed');
+                    logger.error (err, 'unexpected filesystem output error');
                     return process.exit (1);
                 }
 
-                console.log ('finished writing to filesystem\n'.green);
-
-                for (var i in warnings)
-                    console.log (('warning - ' + JSON.stringify (warnings[i]) + '\n').yellow);
-
-                console.log ('done'.green);
+                logger.info ('filesystem output complete');
+                logger.info ('done');
+                return process.exit (0);
             });
         });
     });
@@ -169,6 +191,8 @@ var LIB_DEPENDENCIES = {
 };
 var stdDir = path.join (__dirname, 'standardLibs');
 function includeLib (libname) {
+    logger.info ({ lib:libname }, 'loading standard library');
+
     if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
         libname = LIB_SYNONYMS[libname];
 
@@ -205,26 +229,25 @@ if (argv.in)
                 argv.in[i] = argv.in[i].slice (1, -1);
             try {
                 if (fs.statSync (path.resolve (process.cwd(), argv.in[i])).isDirectory()) {
-                    console.log ('cannot process input selector '.red+argv.in[i]);
-                    console.log ('directory loading is not supported'.red);
-                    console.log ('failed'.red);
-                    return process.exit (1);
+                    logger.error ({ filename:argv.in[i] }, 'input path is a directory');
+                    continue;
                 }
             } catch (err) { /* just the All's Well Alarm */ }
+            logger.debug ({ filename:argv.in[i] }, 'loading path');
             appendArr (sourcefiles, glob.sync (argv.in[i]));
         }
     else {
         if (argv.in.match (/^".*"$/))
             argv.in = argv.in.slice (1, -1);
+        var doProcess = true;
         try {
             if (fs.statSync (path.resolve (process.cwd(), argv.in)).isDirectory()) {
-                console.log ('cannot process input selector '.red+argv.in);
-                console.log ('directory loading is not supported'.red);
-                console.log ('failed'.red);
-                return process.exit (1);
+                logger.error ({ filename:argv.in[i], error:'directory' }, 'cannot process path');
+                doProcess = false;
             }
         } catch (err) { /* just the All's Well Alarm */ }
-        appendArr (sourcefiles, glob.sync (argv.in));
+        if (doProcess)
+            appendArr (sourcefiles, glob.sync (argv.in));
     }
 
 if (!argv.jsmod)
@@ -233,8 +256,14 @@ if (!argv.jsmod)
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
-    mod = resolve.sync (mod, { basedir:process.cwd() });
+    try {
+        mod = resolve.sync (mod, { basedir:process.cwd() });
+    } catch (err) {
+        logger.error ({ env:'javascript', path:mod }, 'cannot process path');
+        return callback();
+    }
     dfnames.push (mod);
+    logger.trace ({ filename:mod }, 'resolve javascript dependencies');
     required (mod, { ignoreMissing:true, silent:true }, function (err, deps) {
         if (err) return callback (err);
         var toProcess = deps;
@@ -248,6 +277,7 @@ async.eachSeries (modules, function (mod, callback) {
                 if (Object.hasOwnProperty.call (done, dep.filename))
                     continue;
                 done[dep.filename] = true;
+                logger.debug ({ source:mod, filename:dep.filename }, 'add resolved javascript module');
                 dfnames.push (dep.filename);
                 next.push.apply (next, dep.deps)
             }
@@ -259,12 +289,8 @@ async.eachSeries (modules, function (mod, callback) {
         callback();
     });
 }, function (err) {
-    if (err) {
-        console.log ('could not parse dependency tree\n'.red);
-        console.log ((''+err).red+'\n');
-        console.log ('failed'.red);
+    if (err)
         return process.nextTick (1);
-    }
 
     processSource();
 });
