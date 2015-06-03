@@ -93,7 +93,6 @@ var argv = require ('minimist') (process.argv, {
 function isArray (a) { return a.__proto__ === Array.prototype; }
 function appendArr (a, b) { a.push.apply (a, b); }
 
-var outputStream = bunyanFormat ({ outputMode:'short' });
 var COLORS = { 10:'blue', 20:'cyan', 30:'green', 40:'yellow', 50:'red', 60:'magenta' };
 var BG_COLORS = { 10:'blueBG', 20:'cyanBG', 30:'greenBG', 40:'yellowBG', 50:'redBG', 60:'magentaBG' };
 var LVL_NAME = { 10:'trace   ', 20:'debug   ', 30:'info    ', 40:'warning ', 50:'error   ', 60:'fatal   ' };
