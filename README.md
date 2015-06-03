@@ -34,12 +34,13 @@ large, complex entities easy.
 
 Installation
 ------------
-There is currently no work-around for case-insensitive filesystems. That means you can't generate
-documentation on Windows (yet).
+`doczar` is cross-platform. Because pathnames are sanitized differently on Windows, documentation is
+best viewed and/or hosted on the same machine where it was generated.
+
+To add the binary `doczar` to your executable path:
 ```shell
 $ sudo npm install -g doczar
 ```
-The binary `doczar` is now on your executable path.
 
 
 Shell Usage
