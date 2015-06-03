@@ -1,5 +1,5 @@
 
-require ('SecondDocTest');
+var test = require ('./SecondDocTest');
 
 /**     @module Test
     This is the implicit `@spare summary`.
@@ -7,6 +7,7 @@ require ('SecondDocTest');
     These are the explicit `@spare details`.
 */
 
+var a = 4;
 /**     @class Foo
     These are the implicit `@spare details`.
 @spare summary
@@ -40,6 +41,7 @@ require ('SecondDocTest');
 @spare #[Test.Foo.able]~extra
     An extra document attached to a Symbol member with an inner declaration.
 */
+var a = 4;
 
 /**     @member/Function Foo#alfaMethod
     A method.
@@ -59,6 +61,7 @@ require ('SecondDocTest');
     More last keyword arguments, using the default name again.
 */
 
+var a = 4;
 /**     @spare Foo.[Test.Foo.able]~fullExtra
     Another extra document attached to a Symbol member with a full declaration.
 */
@@ -71,6 +74,7 @@ require ('SecondDocTest');
     A class property on a [Symbol]() that is on a recursively symbolic path.
 */
 
+var a = 4;
 /**     @class Bar
     @root
 @property/Symbol alfa
@@ -83,6 +87,7 @@ require ('SecondDocTest');
     A String mapped to a static Symbol.
 */
 
+var a = 4;
 /**     @class CaseClass
     This Class tests sanitization of links by case. It's a Windows thing.
     * [casePropAlfa](.CaseClass.casePropAlfa)
@@ -104,3 +109,4 @@ require ('SecondDocTest');
 @property/String CASEPROPALFA
     The sixth `@property` is only separated from its siblings by case.
 */
+var a = 4;
