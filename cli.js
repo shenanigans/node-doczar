@@ -182,47 +182,57 @@ var LIB_SYNONYMS = {
 };
 var LIB_DEPENDENCIES = {
     nodejs:             [ 'es5' ],
-    iojs:               [ 'nodejs', 'es5', 'es6' ],
+    iojs:               [ 'nodejs', 'es6' ],
     browser:            [ 'es5' ],
-    'browser-strict':   [ 'es5', 'es6' ],
+    'browser-strict':   [ 'browser', 'es6' ],
     es6:                [ 'es5' ]
 };
+var LIB_BLANK = {
+    'browser-strict':   'browser'
+}
 var stdDir = path.join (__dirname, 'standardLibs');
 function includeLib (libname) {
-    logger.info ({ lib:libname }, 'loading standard library');
-
     if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
         libname = LIB_SYNONYMS[libname];
 
     if (Object.hasOwnProperty.call (libsIncluded, libname))
         return; // already included
+    libsIncluded[libname] = true;
 
     if (Object.hasOwnProperty.call (LIB_DEPENDENCIES, libname)) {
         var deps = LIB_DEPENDENCIES[libname];
-        for (var i in deps)
+        for (var i=0, j=deps.length; i<j; i++)
             if (!Object.hasOwnProperty.call (libsIncluded, deps[i]))
                 includeLib (deps[i]);
     }
 
+    // some libnames are just containers for their dependencies and should not be loaded
+    if (Object.hasOwnProperty.call (LIB_BLANK, libname))
+        return;
+
     try {
         var files = fs.readdirSync (path.join (stdDir, libname))
     } catch (err) {
-        throw new Error ('unknown library "' + libname + '"');
+        logger.error ({ lib:libname }, 'unknown standard library');
+        return process.exit (1);
     }
-    for (var i in files)
+    logger.info ({ lib:libname }, 'loaded standard library');
+    for (var i=0, j=files.length; i<j; i++)
         sourcefiles.push (path.join (stdDir, libname, files[i]));
 }
 
 if (argv.with) {
     if (isArray (argv.with))
-        for (var i in argv.with) includeLib (argv.with[i]);
+        for (var i=0, j=argv.with.length; i<j; i++)
+            includeLib (argv.with[i]);
     else
         includeLib (argv.with);
 }
 
 if (argv.in)
     if (isArray (argv.in))
-        for (var i in argv.in) {
+        for (var i=0, j=argv.in.length; i<j; i++) {
+            logger.trace ({ filename:argv.in[i] }, 'checking selector');
             if (argv.in[i].match (/^".*"$/))
                 argv.in[i] = argv.in[i].slice (1, -1);
             try {
@@ -231,8 +241,9 @@ if (argv.in)
                     continue;
                 }
             } catch (err) { /* just the All's Well Alarm */ }
-            logger.debug ({ filename:argv.in[i] }, 'loading path');
-            appendArr (sourcefiles, glob.sync (argv.in[i]));
+            var files = glob.sync (argv.in[i]);
+            logger.debug ({ selector:argv.in, files:files }, 'globbed selector');
+            appendArr (sourcefiles, files);
         }
     else {
         if (argv.in.match (/^".*"$/))
@@ -240,12 +251,14 @@ if (argv.in)
         var doProcess = true;
         try {
             if (fs.statSync (path.resolve (process.cwd(), argv.in)).isDirectory()) {
-                logger.error ({ filename:argv.in[i], error:'directory' }, 'cannot process path');
+                logger.error ({ filename:argv.in, error:'directory' }, 'cannot process path');
                 doProcess = false;
             }
         } catch (err) { /* just the All's Well Alarm */ }
+        var files = glob.sync (argv.in);
+        logger.debug ({ selector:argv.in, files:files }, 'globbed selector');
         if (doProcess)
-            appendArr (sourcefiles, glob.sync (argv.in));
+            appendArr (sourcefiles, files);
     }
 
 if (!argv.jsmod)

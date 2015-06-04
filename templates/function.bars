@@ -50,7 +50,7 @@
     {{else}}
         {{#override}}
             <div class="source super">
-                Overrides <a class="super" href="{{link path}}">{{pathstr}}</a>
+                Overrides <a class="super" href="{{link path}}">{{name}}</a>
             </div>
         {{/override}}
     {{/if}}

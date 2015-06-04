@@ -1,0 +1,55 @@
+
+/**     @class Element
+    @super Node
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element`
+@member/NamedNodeMap attributes
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.attributes`
+@member/Number childElementCount
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/ParentNode.childElementCount`
+@member/HTMLCollection children
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/ParentNode.children`
+@member/DOMTokenList classList
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.classList`
+@member/String className
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.className`
+@member/Number clientHeight
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.clientHeight`
+@member/Number clientLeft
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.clientLeft`
+@member/Number clientTop
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.clientTop`
+@member/Number clientWidth
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.clientWidth`
+@member/|undefined firstElementChild
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/ParentNode.firstElementChild`
+@member/String|undefined id
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.id`
+@member/String innerHTML
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.innerHTML`
+@member/|undefined lastElementChild
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/ParentNode.lastElementChild`
+@member/String name
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.name`
+@member/|undefined nextElementSibling
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/NonDocumentTypeChildNode.nextElementSibling`
+@member/Function|undefined onwheel
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.onwheel`
+@member/String outerHTML
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.outerHTML`
+@member/|undefined previousElementSibling
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/NonDocumentTypeChildNode.previousElementSibling`
+@member/Number scrollHeight
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollHeight`
+@member/Number scrollLeft
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollLeft`
+@member/Number scrollLeftMax
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollLeftMax`
+@member/Number scrollTop
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollTop`
+@member/Number scrollTopMax
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollTopMax`
+@member/Number scrollWidth
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.scrollWidth`
+@member/String tagName
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element/Element.tagName  `
+*/

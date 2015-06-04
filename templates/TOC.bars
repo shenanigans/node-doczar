@@ -13,7 +13,7 @@
             <div class="section">
                 <h4 class="header"><a href="#arguments">Arguments</a></h4>
                 {{#arguments}}
-                    <a href="{{softlink path}}">{{name}}</a><br />
+                    <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
                 {{/arguments}}
             </div>
         {{/if}}
@@ -22,7 +22,7 @@
         <div class="section">
             <h4 class="header"><a href="#enums">Enumerations</a></h4>
             {{#enums}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/enums}}
         </div>
     {{/if}}
@@ -30,7 +30,7 @@
         <div class="section">
             <h4 class="header"><a href="#names">Names</a></h4>
             {{#names}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/names}}
         </div>
     {{/if}}
@@ -38,7 +38,7 @@
         <div class="section">
             <h4 class="header"><a href="#events">Events</a></h4>
             {{#events}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/events}}
         </div>
     {{/if}}
@@ -46,7 +46,7 @@
         <div class="section">
             <h4 class="header"><a href="#globals">Globals</a></h4>
             {{#globals}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/globals}}
         </div>
     {{/if}}
@@ -54,7 +54,7 @@
         <div class="section">
             <h4 class="header"><a href="#statics">Static Properties</a></h4>
             {{#statics}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/statics}}
         </div>
     {{/if}}
@@ -62,7 +62,7 @@
         <div class="section">
             <h4 class="header"><a href="#propertySymbols">Static Symbols</a></h4>
             {{#propertySymbols}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/propertySymbols}}
         </div>
     {{/if}}
@@ -70,7 +70,7 @@
         <div class="section">
             <h4 class="header"><a href="#functions">Static Functions</a></h4>
             {{#functions}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/functions}}
         </div>
     {{/if}}
@@ -78,7 +78,7 @@
         <div class="section">
             <h4 class="header"><a href="#members">Member Properties</a></h4>
             {{#members}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/members}}
         </div>
     {{/if}}
@@ -86,7 +86,7 @@
         <div class="section">
             <h4 class="header"><a href="#memberSymbols">Member Symbols</a></h4>
             {{#memberSymbols}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/memberSymbols}}
         </div>
     {{/if}}
@@ -94,7 +94,7 @@
         <div class="section">
             <h4 class="header"><a href="#methods">Methods</a></h4>
             {{#methods}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/methods}}
         </div>
     {{/if}}
@@ -102,7 +102,7 @@
         <div class="section">
             <h4 class="header"><a href="#localValues">Local Values</a></h4>
             {{#localValues}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/localValues}}
         </div>
     {{/if}}
@@ -110,7 +110,7 @@
         <div class="section">
             <h4 class="header"><a href="#localFunctions">Local Functions</a></h4>
             {{#localFunctions}}
-                <a href="{{softlink path}}">{{name}}</a><br />
+                <a href="{{softlink path}}"{{#if isInherited}} class="inherited"{{/if}}>{{name}}</a><br />
             {{/localFunctions}}
         </div>
     {{/if}}
