@@ -12,7 +12,8 @@ doczar
 |  8 | [Inheritence](#inheritence)
 |  9 | [Events and Errors](#events-and-errors)
 | 10 | [Generics](#generics)
-| 11 | [LICENSE](#license)
+| 11 | [Javascript ES6](#javascript-es6)
+| 12 | [LICENSE](#license)
 
 Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
 ruby, java, c-like languages, and others.
@@ -645,8 +646,8 @@ Generics in Class Declarations.
 
 
 
-Javascript ES6 Features
------------------------
+Javascript ES6
+--------------
 There is standard library coverage for ES6. Call `doczar` with the `--with es6` option.
 Additionally, the `browser-strict` and `iojs` standard libraries will pull in ES6 documentation.
 

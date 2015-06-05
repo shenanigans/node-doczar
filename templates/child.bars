@@ -25,6 +25,12 @@
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
         </div>
+    {{else}}
+        {{#override}}
+            <div class="source super">
+                Overrides <a class="super" href="{{link path}}">{{name}}</a>
+            </div>
+        {{/override}}
     {{/if}}
     {{#if aliasTo}}
         <div class="source alias">

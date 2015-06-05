@@ -95,7 +95,7 @@ function appendArr (a, b) { a.push.apply (a, b); }
 
 var COLORS = { 10:'blue', 20:'cyan', 30:'green', 40:'yellow', 50:'red', 60:'magenta' };
 var BG_COLORS = { 10:'blueBG', 20:'cyanBG', 30:'greenBG', 40:'yellowBG', 50:'redBG', 60:'magentaBG' };
-var LVL_NAME = { 10:'trace   ', 20:'debug   ', 30:'info    ', 40:'warning ', 50:'error   ', 60:'fatal   ' };
+var LVL_NAME = { 10:'  trace ', 20:'  debug ', 30:'   info ', 40:'warning ', 50:'  error ', 60:'  fatal ' };
 var RESERVED = { v:true, level:true, name:true, hostname:true, pid:true, time:true, msg:true, src:true };
 var logger = bunyan.createLogger ({
     name:       "doczar",
@@ -132,25 +132,35 @@ var options = {
     showAPI:    argv.api,
     verbose:    argv.verbose
 };
-function processSource(){
-    var context = new ComponentCache (logger);
-    async.eachSeries (sourcefiles, function (fname, callback) {
-        Parser.parseFile (fname, context, logger, callback);
+
+var context = new ComponentCache (logger);
+function processSource (filenames) {
+    var nextFiles = [];
+    async.eachSeries (filenames, function (fname, callback) {
+        Parser.parseFile (
+            fname,
+            context,
+            logger,
+            function (newName) { nextFiles.push (newName); },
+            callback
+        );
     }, function (err) {
         if (err) {
-            logger.fatal (err, 'unexpected error');
+            logger.fatal ({ err:err }, 'unexpected error');
             return process.exit (1);
         }
-        context.finalize (options, function (warnings) {
-            logger.info ('parsing complete');
-            logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
 
+        if (nextFiles.length)
+            return processSource (nextFiles);
+
+        logger.info ('compiling documentation');
+        context.finalize (options, function(){
+            logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
             context.writeFiles (argv.out, options, function (err) {
                 if (err) {
                     logger.error (err, 'unexpected filesystem output error');
                     return process.exit (1);
                 }
-
                 logger.info ('filesystem output complete');
                 logger.info ('done');
                 return process.exit (0);
@@ -262,7 +272,7 @@ if (argv.in)
     }
 
 if (!argv.jsmod)
-    return processSource();
+    return processSource (sourcefiles);
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
@@ -303,5 +313,5 @@ async.eachSeries (modules, function (mod, callback) {
     if (err)
         return process.nextTick (1);
 
-    processSource();
+    processSource (sourcefiles);
 });
