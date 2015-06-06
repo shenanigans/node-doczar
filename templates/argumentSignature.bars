@@ -42,11 +42,6 @@
             {{name}}
         </a>
     {{/if}}
-    {{#if isInherited}}
-        <div class="source">
-            Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
-        </div>
-    {{/if}}
     {{#if isCallback}}<span>
         (
         {{#arguments}}

@@ -144,8 +144,12 @@
                             <h4>returns</h4>
                             <div class="section returns">
                                 {{#returns}}
-                                    <div class="return">
+                                    <div class="return{{#if isSymbol}} symbol{{/if}}">
+{{#if isSymbol}}
+{{> symbolChild}}
+{{else}}
 {{> child}}
+{{/if}}
                                     </div>
                                 {{/returns}}
                             </div>
