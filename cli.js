@@ -246,29 +246,30 @@ if (argv.in)
             if (argv.in[i].match (/^".*"$/))
                 argv.in[i] = argv.in[i].slice (1, -1);
             try {
-                if (fs.statSync (path.resolve (process.cwd(), argv.in[i])).isDirectory()) {
-                    logger.error ({ filename:argv.in[i] }, 'input path is a directory');
-                    continue;
-                }
-            } catch (err) { /* just the All's Well Alarm */ }
-            var files = glob.sync (argv.in[i]);
-            logger.debug ({ selector:argv.in, files:files }, 'globbed selector');
-            appendArr (sourcefiles, files);
+                var files = glob.sync (argv.in[i]);
+            } catch (err) {
+                logger.warn ({ option:'--in', filename:argv.in[i] }, 'cannot process selector');
+                continue;
+            }
+            if (files.length) {
+                logger.debug ({ selector:argv.in[i], files:files }, 'globbed selector');
+                appendArr (sourcefiles, files);
+            } else
+                logger.warn ({ option:'--in', selector:argv.in[i] }, 'selected zero documents');
         }
     else {
         if (argv.in.match (/^".*"$/))
             argv.in = argv.in.slice (1, -1);
-        var doProcess = true;
         try {
-            if (fs.statSync (path.resolve (process.cwd(), argv.in)).isDirectory()) {
-                logger.error ({ filename:argv.in, error:'directory' }, 'cannot process path');
-                doProcess = false;
-            }
-        } catch (err) { /* just the All's Well Alarm */ }
-        var files = glob.sync (argv.in);
-        logger.debug ({ selector:argv.in, files:files }, 'globbed selector');
-        if (doProcess)
-            appendArr (sourcefiles, files);
+            var files = glob.sync (argv.in);
+            if (files.length) {
+                logger.debug ({ selector:argv.in, files:files }, 'globbed selector');
+                appendArr (sourcefiles, files);
+            } else
+                logger.warn ({ option:'--in', selector:argv.in }, 'selected zero documents');
+        } catch (err) {
+            logger.warn ({ option:'--in', filename:argv.in }, 'cannot process selector');
+        }
     }
 
 if (!argv.jsmod)
