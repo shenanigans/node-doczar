@@ -13,7 +13,7 @@
                 <span class="punctuation">[</span>
                 <span class="punctuation">]</span>
             {{/if}}
-        {{/valtype}}{{else}}*{{/if}}</span>
+        {{/valtype}}{{/if}}</span>
     {{else}}
         <a class="title" href="{{softlink path}}">
             {{name}}
