@@ -86,8 +86,8 @@ var STDLIBS = {
 
 var argv = require ('minimist') (process.argv, {
     default:        { out:'docs', verbose:'info' },
-    boolean:        [ 'dev', 'api' ],
-    string:         [ 'verbose', 'jsmod', 'in', 'with', 'code' ],
+    boolean:        [ 'dev', 'api', 'json', 'raw' ],
+    string:         [ 'verbose', 'jsmod', 'in', 'with', 'code', 'date' ],
     alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' }
 });
 function isArray (a) { return a.__proto__ === Array.prototype; }
@@ -97,7 +97,11 @@ var COLORS = { 10:'blue', 20:'cyan', 30:'green', 40:'yellow', 50:'red', 60:'mage
 var BG_COLORS = { 10:'blueBG', 20:'cyanBG', 30:'greenBG', 40:'yellowBG', 50:'redBG', 60:'magentaBG' };
 var LVL_NAME = { 10:'  trace ', 20:'  debug ', 30:'   info ', 40:'warning ', 50:'  error ', 60:'  fatal ' };
 var RESERVED = { v:true, level:true, name:true, hostname:true, pid:true, time:true, msg:true, src:true };
-var logger = bunyan.createLogger ({
+var logger;
+if (argv.raw)
+    logger = bunyan.createLogger ({ name:"doczar", level:argv.verbose });
+else
+    logger = bunyan.createLogger ({
     name:       "doczar",
     streams:    [ { level:argv.verbose, type:'raw', stream:{ write:function (doc) {
         var color = COLORS[doc.level];
@@ -120,11 +124,6 @@ var logger = bunyan.createLogger ({
     } } } ]
 });
 
-if (argv.code && !Object.hasOwnProperty (HIGHLIGHT_STYLES, argv.code)) {
-    logger.error ('unknown code highlighting style "'+argv.code+'"');
-    delete argv.code;
-}
-
 var sourcefiles = [];
 var options = {
     codeStyle:  argv.code || DEFAULT_HIGHLIGHT_STYLE,
@@ -132,6 +131,21 @@ var options = {
     showAPI:    argv.api,
     verbose:    argv.verbose
 };
+
+if (argv.date)
+    try {
+        options.date = new Date (argv.date);
+    } catch (err) {
+        logger.error ('invalid datestamp');
+        return process.exit (1);
+    }
+else
+    options.date = new Date();
+
+if (argv.code && !Object.hasOwnProperty (HIGHLIGHT_STYLES, argv.code)) {
+    logger.error ('unknown code highlighting style "'+argv.code+'"');
+    delete argv.code;
+}
 
 var context = new ComponentCache (logger);
 function processSource (filenames) {
@@ -156,6 +170,8 @@ function processSource (filenames) {
         logger.info ('compiling documentation');
         context.finalize (options, function(){
             logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
+            if (argv.json)
+                options.json = true;
             context.writeFiles (argv.out, options, function (err) {
                 if (err) {
                     logger.error (err, 'unexpected filesystem output error');

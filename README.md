@@ -56,8 +56,12 @@ option          | description
 o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
 i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
 j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
+with            | Include a prebuilt standard library in the documentation.
 dev             | Display Components marked with the `@development` modifier.
 api             | Display **only** Components marked with the `@api` modifier.
+raw             | Log events as json strings instead of pretty printing them.
+json            | Create an `index.json` file in each directory instead of a rendered `index.html`.
+date            | Explicitly set the datestamp on each page with any Date-compatible string.
 
 
 Development
