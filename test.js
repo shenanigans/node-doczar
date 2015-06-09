@@ -184,6 +184,7 @@ function killDir (dir, callback) {
 }
 
 runTest ('Basic Structure');
+runTest ('Name Sanitization');
 runTest ('Document Parsing');
 runTest ('Basic Inheritence');
 runTest ('Function Inheritence');

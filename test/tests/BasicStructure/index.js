@@ -23,3 +23,26 @@
 @member/Object[String, Test.Foo]|Array[Test.Foo] complexMultiType
     A complex-multi-type member.
 */
+
+/**     @member/Function doThings
+@argument/String able
+@callback foo
+    @argument/String able
+        Able.
+    @argument/Object baker
+        Baker.
+    @callback cheese
+        Cheese.
+        @argument/Error|undefined err
+            Errl
+        @returns
+    @callback
+        Callback.
+        @argument/String
+            Unnamed arg.
+        @returns
+    @returns/Number
+        Return Number.
+@returns/Object
+    Return Object.
+*/

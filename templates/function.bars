@@ -120,6 +120,7 @@
                                         </a>
                                     </span>
                                 {{/kwargs}}
+                                {{#if returns}}
                                 <h5>Returns</h5>
                                 <div class="section returns">
                                     {{#returns}}
@@ -132,6 +133,7 @@
                                         </div>
                                     {{/returns}}
                                 </div>
+                                {{/if}}
                             {{/if}}
                         </div>
                     </div>
