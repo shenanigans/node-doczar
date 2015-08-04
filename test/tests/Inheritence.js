@@ -17,7 +17,7 @@
 
 /**     @class child
     @super .parent
-    Child class of [parent]().
+    Child class of [parent](.parent).
 @member/Function water
     @argument/Number blob
     @returns/String

@@ -50,21 +50,25 @@ async.parallel ([
             return process.exit (1);
         }
         async.each (list, function (testName, callback) {
-            child_process.exec (
-                'doczar --with es6 --date "june 5 2020" --in test/tests/'
-              + testName
-              + ' --out test/compare/'
-              + testName,
-                function (err) {
-                    if (err) return callback (err);
+            async.parallel ([
+                function (callback) {
+                    child_process.exec (
+                        'doczar --with es6 --date "june 5 2020" --in test/tests/'
+                      + testName
+                      + ' --out test/compare/'
+                      + testName.slice (0, -3),
+                        callback
+                    );
+                },
+                function (callback) {
                     child_process.exec (
                         'doczar --json --with es6 --date "june 5 2020" --in test/tests/'
-                      + testName+'/index.js --out test/compare/'
-                      + testName,
+                      + testName+' --out test/compare/'
+                      + testName.slice (0, -3),
                         callback
                     );
                 }
-            );
+            ], callback);
         }, function (err) {
             if (err) {
                 console.log (err.stack);

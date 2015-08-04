@@ -15,7 +15,7 @@ function runTest (name) {
                 'doczar --verbose trace --json --raw --with es6 --date "june 5 2020" '
               + '--in test/tests/'
               + name.replace (' ', '')
-              + ' --out test/out/'
+              + '.js --out test/out/'
               + name.replace (' ', '')
               ;
             child_process.exec (
@@ -37,27 +37,11 @@ function runTest (name) {
         });
 
         it ("does not log any issues", function(){
-            if (logs.filter (function (item) { return item.level > 30; }).length)
+            var issues = logs.filter (function (item) { return item.level > 30; });
+            if (issues.length) {
+                console.log (issues);
                 throw new Error ('compilation issues detected');
-        });
-
-        it ("selects all necessary files", function (done) {
-            fs.readdir (
-                path.join ('test', 'tests', name.replace (' ', '')),
-                function (err, filenames) {
-                    var loadedNames = [];
-                    for (var i=0,j=logs.length; i<j; i++)
-                        if (logs[i].msg == 'read file')
-                            loadedNames.push (logs[i].filename);
-                    for (var i=0, j=filenames.length; i<j; i++)
-                        if (
-                            filenames[i] != 'index.js'
-                         && loadedNames.indexOf (filenames[i]) < 0
-                        )
-                            return done (new Error ('failed to load file '+filenames[i]));
-                    done();
-                }
-            );
+            }
         });
 
         it ("correctly reproduces the sample", function (done) {
