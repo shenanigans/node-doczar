@@ -15,16 +15,20 @@ function runTest (name) {
                 'doczar --verbose trace --json --raw --with es6 --date "june 5 2020" '
               + '--in test/tests/'
               + name.replace (' ', '')
-              + '/index.js --out test/out/'
+              + ' --out test/out/'
               + name.replace (' ', '')
               ;
             child_process.exec (
                 command,
                 function (err, stdout, stderr) {
-                    logs = stdout ?
-                        stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
-                      : []
-                      ;
+                    try {
+                        logs = stdout ?
+                            stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
+                          : []
+                          ;
+                    } catch (err) {
+                        return done (err);
+                    }
                     if (stderr && stderr.length)
                         return done (new Error (stderr.toString()));
                     done ();
@@ -183,10 +187,8 @@ function killDir (dir, callback) {
     });
 }
 
-runTest ('Basic Structure');
+runTest ('Structure');
 runTest ('Name Sanitization');
 runTest ('Document Parsing');
-runTest ('Basic Inheritence');
-runTest ('Function Inheritence');
+runTest ('Inheritence');
 runTest ('Symbols');
-

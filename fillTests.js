@@ -53,7 +53,7 @@ async.parallel ([
             child_process.exec (
                 'doczar --with es6 --date "june 5 2020" --in test/tests/'
               + testName
-              + '/index.js --out test/compare/'
+              + ' --out test/compare/'
               + testName,
                 function (err) {
                     if (err) return callback (err);
