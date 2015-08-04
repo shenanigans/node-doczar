@@ -68,7 +68,11 @@ async.parallel ([
                         callback
                     );
                 }
-            ], callback);
+            ], function (err) {
+                if (err) return callback (err);
+                console.log ('finished with '+testName);
+                callback();
+            });
         }, function (err) {
             if (err) {
                 console.log (err.stack);

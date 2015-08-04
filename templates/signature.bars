@@ -17,8 +17,8 @@
                 {{/if}}
             {{/valtype}}</span>
         {{/if}}
-        <a href="{{softlink ../path}}" class="title">
-            {{../name}}
+        <a class="title">
+            {{name}}
         </a>
         (
             <span>{{#sigargs}}
