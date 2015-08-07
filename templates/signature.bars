@@ -8,12 +8,12 @@
                 <span class="valsep">|</span>
                 <a class="valtype" href="{{link path}}">{{name}}</a>
                 {{#if generics}}
-                    [
+                    &lt;
                     <span>{{#generics}}
                         <a class="valtype" href="{{link path}}">{{name}}</a>
                         <span class="valsep">,</span>
                     {{/generics}}</span>
-                    ]
+                    &gt;
                 {{/if}}
             {{/valtype}}</span>
         {{/if}}
@@ -26,12 +26,12 @@
                     <span class="valsep">|</span>
                     <a class="valtype" href="{{link path}}">{{name}}</a>
                     {{#if generics}}
-                        [
+                        &lt;
                         <span>{{#generics}}
                             <a class="valtype" href="{{link path}}">{{name}}</a>
                             <span class="valsep">,</span>
                         {{/generics}}</span>
-                        ]
+                        &gt;
                     {{/if}}
                 {{/valtype}}</span>
                 <a class="argname" href="{{softlink path}}">{{name}}</a>

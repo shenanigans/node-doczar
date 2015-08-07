@@ -8,7 +8,7 @@
     A second [Symbol]() class prop.
 @property/Symbol [.Foo.baker]
     A third [Symbol]() class prop, itself stored on a [Symbol]().
-@member/Array[Test.Foo.[Test.Foo.able]] genericWithSymbol
+@member/Array<Test.Foo.[Test.Foo.able]> genericWithSymbol
     A member with a generic type that contains a symbol.
 @member/String [Test.Foo.able]
     A member on a Symbol.

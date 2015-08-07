@@ -1,13 +1,4 @@
 <div id="TOC">
-    <!--<h3>Table of Contents</h3>-->
-    {{#if modules}}
-        <div class="section">
-            <h4 class="header"><a href="#modules">Modules</a></h4>
-            {{#modules}}
-                <a href="{{softlink path}}">{{name}}</a><br />
-            {{/modules}}
-        </div>
-    {{/if}}
     {{#if isFunction}}
         {{#if arguments}}
             <div class="section">
@@ -17,6 +8,14 @@
                 {{/arguments}}
             </div>
         {{/if}}
+    {{/if}}
+    {{#if modules}}
+        <div class="section">
+            <h4 class="header"><a href="#modules">Modules</a></h4>
+            {{#modules}}
+                <a href="{{softlink path}}">{{name}}</a><br />
+            {{/modules}}
+        </div>
     {{/if}}
     {{#if enums}}
         <div class="section">

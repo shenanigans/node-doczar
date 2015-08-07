@@ -24,12 +24,12 @@
                 <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
                 {{#if isArray}}[ ]{{/if}}
                 {{#if generics}}
-                    [
+                    &lt;
                         <span>{{#generics}}
                             <a class="valtype" href="{{link path}}">{{name}}</a>
                             <span class="valsep">,</span>
                         {{/generics}}</span>
-                    ]
+                    &gt;
                 {{/if}}
                 <span class="valsep">|</span>
             {{/valtype}}</span>
@@ -60,12 +60,12 @@
                                 <span class="valsep punctuation">|</span>
                                 <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
                                 {{#if generics}}
-                                    <span class="punctuation">[</span>
+                                    <span class="punctuation">&lt;</span>
                                     <span>{{#generics}}
                                         <a class="valtype" href="{{link path}}">{{name}}</a>
                                         <span class="valsep">,</span>
                                     {{/generics}}</span>
-                                    <span class="punctuation">]</span>
+                                    <span class="punctuation">&gt;</span>
                                 {{/if}}
                             {{/valtype}}</span>
                         {{/returns}}</span>

@@ -40,8 +40,3 @@
 /*      @spare CASEPROPALFA~fooSpare
     Foo bar baz.
 */
-/**     @class `Funky Class` */
-/**     @member/Function `Funky Class`.`cheddar \`method\``
-    Cheese!
-@argument/String fooArg
-*/

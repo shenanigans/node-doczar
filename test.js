@@ -173,6 +173,7 @@ function killDir (dir, callback) {
 
 runTest ('Structure');
 runTest ('Name Sanitization');
-runTest ('Document Parsing');
 runTest ('Inheritence');
 runTest ('Symbols');
+runTest ('Signatures');
+runTest ('Parser Challenges');

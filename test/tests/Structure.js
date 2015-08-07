@@ -18,9 +18,9 @@
     A multi-type member.
 @member/.Foo localType
     A locally-rooted-type member.
-@member/Object[String, Test.Foo] complexType
+@member/Object<String, Test.Foo> complexType
     A complex-type member.
-@member/Object[String, Test.Foo]|Array[Test.Foo] complexMultiType
+@member/Object<String, Test.Foo>|Array<Test.Foo> complexMultiType
     A complex-multi-type member.
 */
 
