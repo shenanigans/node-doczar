@@ -12,7 +12,7 @@ function runTest (name) {
             this.timeout (10000);
             this.slow (3000);
             var command =
-                'doczar --verbose trace --json --raw --with es6 --date "june 5 2020" '
+                'doczar --verbose trace --json --raw --with node.js --date "june 5 2020" '
               + '--in test/tests/'
               + name.replace (' ', '')
               + '.js --out test/out/'

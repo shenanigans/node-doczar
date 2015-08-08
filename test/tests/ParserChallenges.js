@@ -5,6 +5,9 @@
     cover.
 @member/String `backtick name #9, #9, #9...`
 @member/Function `backtick method #57`
+@property/String `escape \` challenge 1`
+@property/String `escape\ \` challenge 2`
+@property/String `escape\ \\\` challenge 3`
 */
 /**     @argument/String #`backtick method #57`(`backtick argument!`
     This is an argument of the `` `backtick method #57` `` function.

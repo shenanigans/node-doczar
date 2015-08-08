@@ -52,11 +52,11 @@
     @remote `https://nodejs.org/api/process.html#process_process_stderr`
 @Stream.Readable stdin
     @remote `https://nodejs.org/api/process.html#process_process_stdin`
-@Array[String] argv
+@Array<String> argv
     @remote `https://nodejs.org/api/process.html#process_process_argv`
 @String execPath
     @remote `https://nodejs.org/api/process.html#process_process_execpath`
-@Array[String] execArgv
+@Array<String> execArgv
     @remote `https://nodejs.org/api/process.html#process_process_execargv`
 @String env
     @remote `https://nodejs.org/api/process.html#process_process_env`

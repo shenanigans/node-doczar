@@ -32,7 +32,7 @@
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_disconnect_callback`
 @.Worker #worker
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_worker`
-@Object[.Worker] #workers
+@Object<.Worker> #workers
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_workers`
 */
 

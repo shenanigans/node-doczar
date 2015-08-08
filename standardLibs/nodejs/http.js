@@ -2,7 +2,7 @@
 /**     @module http
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_http`
-@Array[String] METHODS
+@Array<String> METHODS
     @remote `https://nodejs.org/api/http.html#http_http_methods`
 @Object STATUS_CODES
     @remote `https://nodejs.org/api/http.html#http_http_status_codes`
