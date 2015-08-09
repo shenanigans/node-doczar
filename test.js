@@ -12,7 +12,7 @@ function runTest (name) {
             this.timeout (10000);
             this.slow (3000);
             var command =
-                'doczar --verbose trace --json --raw --with node.js --date "june 5 2020" '
+                'doczar --verbose debug --json --raw --with es6 --date "june 5 2020" '
               + '--in test/tests/'
               + name.replace (' ', '')
               + '.js --out test/out/'
@@ -37,6 +37,8 @@ function runTest (name) {
         });
 
         it ("does not log any issues", function(){
+            if (!logs)
+                return;
             var issues = logs.filter (function (item) { return item.level > 30; });
             if (issues.length) {
                 console.log (issues);
@@ -117,9 +119,10 @@ function runTest (name) {
                     if (!outputDoc && compareDoc)
                         return callback (new Error ('unmatched json file in sample'));
                     if (outputDoc && compareDoc) try {
-                        assert.deepEqual (outputDoc, compareDoc, 'documents do not match');
+                        assert.deepEqual (outputDoc, compareDoc);
                     } catch (err) {
-                        return callback (new Error ('output documents do not match: '+level));
+                        console.log (err.message);
+                        return callback (new Error ('output documents do not match: '+level+'/index.json'));
                     }
 
                     if (outputDirs.length > compareDirs.length)
@@ -172,6 +175,7 @@ function killDir (dir, callback) {
 }
 
 runTest ('Structure');
+runTest ('Alias');
 runTest ('Name Sanitization');
 runTest ('Inheritence');
 runTest ('Symbols');

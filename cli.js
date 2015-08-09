@@ -191,6 +191,7 @@ var LIB_SYNONYMS = {
     ES5:            'es5',
     ES6:            'es6',
     Node:           'nodejs',
+    node:           'nodejs',
     'Node.js':      'nodejs',
     'node.js':      'nodejs',
     'IO.js':        'iojs',

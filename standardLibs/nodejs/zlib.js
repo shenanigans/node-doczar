@@ -26,25 +26,25 @@
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_createunzip_options`
     @returns/.Unzip
 @class Gzip
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_gzip`
 @class Gunzip
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_gunzip`
 @class Deflate
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_deflate`
 @class Inflate
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_inflate`
 @class DeflateRaw
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_deflateraw`
 @class InflateRaw
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_inflateraw`
 @class Unzip
-    @super zlib.Zlib
+    @super .Zlib
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_unzip`
 @Function deflate
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_deflate_buf_options_callback`

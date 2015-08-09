@@ -68,3 +68,7 @@
 @property/String staticString
 @member/String memberString
 */
+
+/**     @module Next:Last
+    Another module.
+*/
