@@ -5,35 +5,100 @@ var child_process = require ('child_process');
 var async = require ('async');
 var fs = require ('graceful-fs');
 
+function killDir (dir, callback) {
+    var tries = 0;
+    fs.readdir (dir, function (err, list) {
+        if (err) {
+            if (err.code == 'ENOENT')
+                return callback();
+            return callback (err);
+        }
+        async.each (list, function (filename, callback) {
+            var fullpath = path.join (dir, filename);
+            fs.stat (fullpath, function (err, stats) {
+                if (err) return callback (err);
+                if (stats.isFile())
+                    return fs.unlink (fullpath, callback);
+                killDir (fullpath, callback);
+            });
+        }, function tryToRemove (err) {
+            if (err) return callback (err);
+            if (++tries > 5)
+                return callback (new Error ('failed to clear directory'));
+            fs.rmdir (dir, function (err) {
+                if (err) {
+                    if (err.code == 'ENOTEMPTY')
+                        return setTimeout (tryToRemove, 100);
+                    callback (err);
+                }
+                callback();
+            });
+        });
+    });
+}
+
 function runTest (name) {
     describe (name, function(){
         var logs;
         it ("compiles completely", function (done) {
             this.timeout (10000);
             this.slow (3000);
-            var command =
-                'doczar --verbose debug --json --raw --with es6 --date "june 5 2020" '
-              + '--in test/tests/'
-              + name.replace (' ', '')
-              + '.js --out test/out/'
-              + name.replace (' ', '')
-              ;
-            child_process.exec (
-                command,
-                function (err, stdout, stderr) {
-                    try {
-                        logs = stdout ?
-                            stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
-                          : []
+            killDir (path.resolve ('test/out/' + name.replace (' ', '')), function (err) {
+                if (err)
+                    return done (err);
+                async.parallel ([
+                    function (callback) {
+                        var command =
+                            'doczar --verbose debug --json --raw --with es6 --date "june 5 2020" '
+                          + '--in test/tests/'
+                          + name.replace (' ', '')
+                          + '.js --out test/out/'
+                          + name.replace (' ', '')
                           ;
-                    } catch (err) {
-                        return done (err);
+                        child_process.exec (
+                            command,
+                            function (err, stdout, stderr) {
+                                try {
+                                    logs = stdout ?
+                                        stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
+                                      : []
+                                      ;
+                                } catch (err) {
+                                    return callback (err);
+                                }
+                                if (stderr && stderr.length)
+                                    return callback (new Error (stderr.toString()));
+                                callback ();
+                            }
+                        );
+                    },
+                    function (callback) {
+                        var command =
+                            'doczar --verbose debug --raw --with es6 --date "june 5 2020" '
+                          + '--in test/tests/'
+                          + name.replace (' ', '')
+                          + '.js --out test/out/'
+                          + name.replace (' ', '')
+                          ;
+                        child_process.exec (
+                            command,
+                            function (err, stdout, stderr) {
+                                try {
+                                    logs = stdout ?
+                                        stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
+                                      : []
+                                      ;
+                                } catch (err) {
+                                    return callback (err);
+                                }
+                                if (stderr && stderr.length)
+                                    return callback (new Error (stderr.toString()));
+                                callback ();
+                            }
+                        );
                     }
-                    if (stderr && stderr.length)
-                        return done (new Error (stderr.toString()));
-                    done ();
-                }
-            );
+                ], done);
+            });
         });
 
         it ("does not log any issues", function(){
@@ -143,34 +208,6 @@ function runTest (name) {
             checkLevel (name.replace (' ', ''), done);
         });
 
-    });
-}
-
-function killDir (dir, callback) {
-    var tries = 0;
-    fs.readdir (dir, function (err, list) {
-        if (err) return callback (err);
-        async.each (list, function (filename, callback) {
-            var fullpath = path.join (dir, filename);
-            fs.stat (fullpath, function (err, stats) {
-                if (err) return callback (err);
-                if (stats.isFile())
-                    return fs.unlink (fullpath, callback);
-                killDir (fullpath, callback);
-            });
-        }, function tryToRemove (err) {
-            if (err) return callback (err);
-            if (++tries > 5)
-                return callback (new Error ('failed to clear directory'));
-            fs.rmdir (dir, function (err) {
-                if (err) {
-                    if (err.code == 'ENOTEMPTY')
-                        return setTimeout (tryToRemove, 100);
-                    callback (err);
-                }
-                callback();
-            });
-        });
     });
 }
 
