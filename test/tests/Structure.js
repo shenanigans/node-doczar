@@ -7,6 +7,8 @@
 
 /**     @class Foo
     These are the implicit `@spare details`.
+@submodule `Interrupting Cow`
+    Mooooooo!
 @spare summary
     This is the explicit `@spare summary`.
 @constructor
