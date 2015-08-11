@@ -51,17 +51,17 @@ $ doczar --in=src/**/*.c --out docz
 $ doczar --jsmod ./main # outputs to ./docs
 ```
 
-option          | description
----------------:|---------------------------------
-o, out          | Selects a directory to fill with documentation output. The directory need not exist or be empty.
-i, in           | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
-j, js, jsmod    | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
-with            | Include a prebuilt standard library in the documentation.
-dev             | Display Components marked with the `@development` modifier.
-api             | Display **only** Components marked with the `@api` modifier.
-raw             | Log events as json strings instead of pretty printing them.
-json            | Create an `index.json` file in each directory instead of a rendered `index.html`.
-date            | Explicitly set the datestamp on each page with any Date-compatible string.
+option        | description
+-------------:|---------------------------------
+o, out        | Selects a directory to fill with documentation output. The directory need not exist or be empty.
+i, in         | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
+j, js, jsmod  | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
+with          | Include a prebuilt standard library in the documentation.
+dev           | Display Components marked with the `@development` modifier.
+api           | Display **only** Components marked with the `@api` modifier.
+raw           | Log events as json strings instead of pretty printing them.
+json          | Create an `index.json` file in each directory instead of a rendered `index.html`.
+date          | Explicitly set the datestamp on each page with any Date-compatible string.
 
 
 Development
@@ -85,11 +85,22 @@ In languages with c-like block comments (don't forget css) it looks like this:
     For compatibility purposes, c-like comments support any
     number of asterisks *immediately after the slash*.
 */
+/************* @member MyClass#asteriskCount
+    *Any* number of asterisks (greater than zero).
+*/
 ```
 
-The final newline is not required.
+The final newline is not required. This is mainly to support `@module` declarations that span
+multiple files. See [Modules](#modules) for more information on scope and `@module`.
 ```c
-int myInt = 42; /* @property/int myInt */
+/** @module BoxFactory */
+int myInt = 42; /* @local/int myInt */
+
+/** @spare ExtraDocs
+    These extra documents are part of the
+    [BoxFactory](.) module. Their full
+    path is `BoxFactory~ExtraDocs`.
+*/
 ```
 
 A special markdown caveat: you will need *two* newlines to terminate a bullet list.
@@ -171,14 +182,30 @@ to the enclosing comment.
 
 
 ###Modules
+In some languages such as Java, the concept of a module is very specific and `@module` declarations
+always describe an importable structure. In environments like Node.js where directly importing
+submodules is rare, one might use a `@module` to describe a type that is involved in processing or
+may be returned but which is abstract or cannot be accessed directly.
+
 The `@module` Declaration has an infectious scope. Every Declaration after it is scoped to the
-module Component, as are locally-rooted value types. (see [crosslinking](#crosslinking))
+module Component, as are value type paths that begin with a delimiter. See [crosslinking]
+(#crosslinking) for more information. If you want to semantically declare a `@module` without
+affecting the scope, use the `@submodule` declaration instead.
+
+The global namespace and the first level of modules live together. Beyond the root, modules possess
+their own namespace and are delimited with `:`.
 ```c
 /**     @module Foo
     The Foo module.
 */
 /**     @class Bar
     The Foo.Bar class.
+*/
+/**     @submodule/class Baz
+    The Foo:Baz class.
+*/
+/**     @property/Function createBar
+
 */
 ```
 

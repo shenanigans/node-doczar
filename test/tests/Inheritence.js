@@ -1,7 +1,7 @@
 
 /**     @module InheritenceTest */
-/**     @property/symbol hello */
-/**     @property/symbol goodbye */
+/**     @property/Symbol hello */
+/**     @property/Symbol goodbye */
 /**     @class parent
     Parent class.
 @property/String foo

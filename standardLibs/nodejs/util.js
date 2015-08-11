@@ -2,9 +2,9 @@
 /**     @module util
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/util.html#util_util`
-Customizing util.inspect colors
+@spare `Customizing util.inspect colors`
     @remote `https://nodejs.org/api/util.html#util_customizing_util_inspect_colors`
-Custom inspect() function on Objects
+@spare `Custom inspect() function on Objects`
     @remote `https://nodejs.org/api/util.html#util_custom_inspect_function_on_objects`
 @Function #debuglog
     @remote `https://nodejs.org/api/util.html#util_util_debuglog_section`

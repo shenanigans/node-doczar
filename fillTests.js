@@ -53,7 +53,7 @@ async.parallel ([
             async.parallel ([
                 function (callback) {
                     child_process.exec (
-                        'doczar --with es6 --date "june 5 2020" --in test/tests/'
+                        'doczar --with browser-strict --date "june 5 2020" --in test/tests/'
                       + testName
                       + ' --out test/compare/'
                       + testName.slice (0, -3),
@@ -62,7 +62,7 @@ async.parallel ([
                 },
                 function (callback) {
                     child_process.exec (
-                        'doczar --json --with es6 --date "june 5 2020" --in test/tests/'
+                        'doczar --json --with browser-strict --date "june 5 2020" --in test/tests/'
                       + testName+' --out test/compare/'
                       + testName.slice (0, -3),
                         callback

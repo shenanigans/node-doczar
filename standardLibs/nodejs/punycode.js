@@ -10,7 +10,7 @@
     @remote `https://nodejs.org/api/punycode.html#punycode_punycode_tounicode_domain`
 @Function toASCII
     @remote `https://nodejs.org/api/punycode.html#punycode_punycode_toascii_domain`
-@JSON ucs2
+@json ucs2
 @Function ucs2.decode
     @remote `https://nodejs.org/api/punycode.html#punycode_punycode_ucs2_decode_string`
 @Function ucs2.encode

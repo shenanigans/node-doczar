@@ -53,7 +53,7 @@
     @remote `https://nodejs.org/api/cluster.html#cluster_event_error`
 @String #id
     @remote `https://nodejs.org/api/cluster.html#cluster_worker_id`
-@ChildProcess #process
+@child_process:ChildProcess #process
     @remote `https://nodejs.org/api/cluster.html#cluster_worker_process`
 @Boolean #suicide
     @remote `https://nodejs.org/api/cluster.html#cluster_worker_suicide`

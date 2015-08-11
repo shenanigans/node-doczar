@@ -59,7 +59,7 @@
     @remote `https://nodejs.org/api/http.html#http_event_close_1`
 @event finish
     @remote `https://nodejs.org/api/http.html#http_event_finish`
-writeContinue
+@Function #writeContinue
     @remote `https://nodejs.org/api/http.html#http_response_writecontinue`
 @Function #writeHead
     @remote `https://nodejs.org/api/http.html#http_response_writehead_statuscode_statusmessage_headers`

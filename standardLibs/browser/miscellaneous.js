@@ -14,3 +14,7 @@
 /**     @class NodeList
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/NodeList`
 */
+
+/**     @class DocumentFragment
+    @remote `https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment`
+*/

@@ -104,65 +104,67 @@
                 {{/if}}
                 {{#if isClasslike}}
                     <!-- constructor function -->
-                    <h1>constructor</h1>
-                    <div id="constructor" class="section constructor">
-                        <h2 class="signature">
-                            {{name}} (
-                                {{#arguments}}
+                    {{#if hasConstructorInfo}}
+                        <h1>constructor</h1>
+                        <div id="constructor" class="section constructor">
+                            <h2 class="signature">
+                                {{name}} (
+                                    {{#arguments}}
 {{> argument}}
-                                {{/arguments}}
-                            ) {
-                        </h2>
-                        <div class="markdown">{{{markdown constructorDoc}}}</div>
-                        {{#if arguments}}
-                            <h3>Arguments</h3>
-                            <div class="section arguments">
-                                {{#arguments}}
-                                    <div class="child argument" id="{{elemID}}">
+                                    {{/arguments}}
+                                ) {
+                            </h2>
+                            <div class="markdown">{{{markdown constructorDoc}}}</div>
+                            {{#if arguments}}
+                                <h3>Arguments</h3>
+                                <div class="section arguments">
+                                    {{#arguments}}
+                                        <div class="child argument" id="{{elemID}}">
 {{> argumentSignature}}
-                                        <div class="info">
-                                            <span class="markdown">{{{markdown summaryDoc}}}</span>
-                                            {{#if isCallback}}
-                                                <h4>Arguments</h4>
-                                                <div class="section arguments">
-                                                    {{#arguments}}
-                                                        <div class="child argument" id="{{elemID}}">
+                                            <div class="info">
+                                                <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                {{#if isCallback}}
+                                                    <h4>Arguments</h4>
+                                                    <div class="section arguments">
+                                                        {{#arguments}}
+                                                            <div class="child argument" id="{{elemID}}">
 {{> argumentSignature}}
-                                                            <div class="info">
-                                                                <span class="markdown">{{{markdown summaryDoc}}}</span>
-                                                            <div class="tail"></div></div>
-                                                        </div>
-                                                    {{/arguments}}
-                                                </div>
-                                            {{/if}}
-                                        <div class="tail"></div></div>
-                                    </div>
-                                {{/arguments}}
-                            </div>
-                        {{/if}}
-                        {{#if returns}}
-                            <h4>returns</h4>
-                            <div class="section returns">
-                                {{#returns}}
-                                    <div class="return{{#if isSymbol}} symbol{{/if}}">
+                                                                <div class="info">
+                                                                    <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                                <div class="tail"></div></div>
+                                                            </div>
+                                                        {{/arguments}}
+                                                    </div>
+                                                {{/if}}
+                                            <div class="tail"></div></div>
+                                        </div>
+                                    {{/arguments}}
+                                </div>
+                            {{/if}}
+                            {{#if returns}}
+                                <h4>returns</h4>
+                                <div class="section returns">
+                                    {{#returns}}
+                                        <div class="return{{#if isSymbol}} symbol{{/if}}">
 {{#if isSymbol}}
 {{> symbolChild}}
 {{else}}
 {{> child}}
 {{/if}}
-                                    </div>
-                                {{/returns}}
-                            </div>
-                        {{/if}}
-                        {{#if throws}}
-                            <!-- exception cases -->
-                            <h2 class="header">Thrown Exceptions</h2>
-                            <div id="throws" class="section throws">
-                                {{#throws}}
+                                        </div>
+                                    {{/returns}}
+                                </div>
+                            {{/if}}
+                            {{#if throws}}
+                                <!-- exception cases -->
+                                <h2 class="header">Thrown Exceptions</h2>
+                                <div id="throws" class="section throws">
+                                    {{#throws}}
 {{> child}}
-                                {{/throws}}
-                            </div>
-                        {{/if}}
-                    </div>
+                                    {{/throws}}
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/if}}
                 {{/if}}
             </div>
