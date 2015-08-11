@@ -27,7 +27,7 @@ body.spare .markdown {
 
 a {
     text-decoration: none;
-    color: #476EBE;
+    color: #3C73E2;
 }
 a:hover {
     text-decoration: underline;
@@ -136,6 +136,10 @@ p {
 #TOC h4 a {
     text-decoration: none;
 }
+#TOC a.inherited {
+    color: #73B2E0;
+
+}
 #TOC .section {
     padding: 0 0 0 1em;
 }
@@ -217,6 +221,9 @@ p {
     font-weight: 700;
     margin: 0;
     padding-left: 0.3em;
+}
+.signature.inherited {
+
 }
 .child > .signature {
     font-size: 120%;
