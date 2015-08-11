@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>zlib.Unzip documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="class" id="component_808">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">class</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">zlib</a><span class="delimiter">.</span><a href="https://nodejs.org/api/zlib.html#zlib_class_zlib_unzip" class="breadcrumb class">Unzip</a>
+            </span>
+                <div class="source super">
+                    Inherits from <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">Zlib</a>
+                </div>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#events">Events</a></h4>
+                <a href="#component_633" class="inherited">close</a><br />
+                <a href="#component_631" class="inherited">data</a><br />
+                <a href="#component_642" class="inherited">drain</a><br />
+                <a href="#component_632" class="inherited">end</a><br />
+                <a href="#component_648" class="inherited">error</a><br />
+                <a href="#component_643" class="inherited">finish</a><br />
+                <a href="#component_644" class="inherited">pipe</a><br />
+                <a href="#component_630" class="inherited">readable</a><br />
+                <a href="#component_645" class="inherited">unpipe</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#methods">Methods</a></h4>
+                <a href="#component_638" class="inherited">cork</a><br />
+                <a href="#component_641" class="inherited">end</a><br />
+                <a href="#component_823" class="inherited">flush</a><br />
+                <a href="#component_625" class="inherited">isPaused</a><br />
+                <a href="#component_824" class="inherited">params</a><br />
+                <a href="#component_624" class="inherited">pause</a><br />
+                <a href="#component_626" class="inherited">pipe</a><br />
+                <a href="#component_621" class="inherited">read</a><br />
+                <a href="#component_825" class="inherited">reset</a><br />
+                <a href="#component_623" class="inherited">resume</a><br />
+                <a href="#component_640" class="inherited">setDefaultEncoding</a><br />
+                <a href="#component_622" class="inherited">setEncoding</a><br />
+                <a href="#component_639" class="inherited">uncork</a><br />
+                <a href="#component_627" class="inherited">unpipe</a><br />
+                <a href="#component_628" class="inherited">unshift</a><br />
+                <a href="#component_629" class="inherited">wrap</a><br />
+                <a href="#component_637" class="inherited">write</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- constructor function -->
+            </div>
+<div class="children">
+        <!-- events -->
+        <h1 id="events" class="header">Events</h1>
+        <div class="section members">
+<div id="component_633" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_close">close</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_631" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_data">data</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_642" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_drain">drain</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_632" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_end">end</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_648" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_error_1">error</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_643" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_finish">finish</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_644" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_pipe">pipe</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_630" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_readable">readable</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_645" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/stream.html#stream_event_unpipe">unpipe</a>
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- methods -->
+        <h1 id="methods" class="header">Methods</h1>
+        <div class="section members">
+<div id="component_638" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_writable_cork" class="title">
+            cork
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_641" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_writable_end_chunk_encoding_callback" class="title">
+            end
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_823" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="javascript:return false;" class="title">
+            flush
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_625" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_ispaused" class="title">
+            isPaused
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_824" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="javascript:return false;" class="title">
+            params
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_624" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_pause" class="title">
+            pause
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_626" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_pipe_destination_options" class="title">
+            pipe
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_621" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_read_size" class="title">
+            read
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_825" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="javascript:return false;" class="title">
+            reset
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_623" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_resume" class="title">
+            resume
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_640" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_writable_setdefaultencoding_encoding" class="title">
+            setDefaultEncoding
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_622" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding" class="title">
+            setEncoding
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_639" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_writable_uncork" class="title">
+            uncork
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_627" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_unpipe_destination" class="title">
+            unpipe
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_628" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_unshift_chunk" class="title">
+            unshift
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_629" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_readable_wrap_stream" class="title">
+            wrap
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/readable/index.html">stream.Readable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_637" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/stream.html#stream_writable_write_chunk_encoding_callback" class="title">
+            write
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+        <div class="source super">
+            Inherited from <a class="super" href="../../../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

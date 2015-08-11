@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>process documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../highlight.css" />
+    <script type="text/javascript" src="../../index.js"></script>
+</head>
+<body class="property" id="component_561">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../index.html">property</a>
+            <span>
+                <a class="valtype" href="../../property/object/index.html">Object</a>
+                
+                <span class="valsep">|</span>
+            </span>
+            <span class="breadcrumbs">
+                <span class="delimiter">.</span><a href="index.html" class="breadcrumb property">process</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#events">Events</a></h4>
+                <a href="#component_559">beforeExit</a><br />
+                <a href="#component_558">exit</a><br />
+                <a href="#component_560">uncaughtException</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_555">arch</a><br />
+                <a href="#component_545">argv</a><br />
+                <a href="#component_552">config</a><br />
+                <a href="#component_548">env</a><br />
+                <a href="#component_547">execArgv</a><br />
+                <a href="#component_546">execPath</a><br />
+                <a href="#component_549">exitCode</a><br />
+                <a href="#component_557">mainModule</a><br />
+                <a href="#component_553">pid</a><br />
+                <a href="#component_556">platform</a><br />
+                <a href="#component_543">stderr</a><br />
+                <a href="#component_544">stdin</a><br />
+                <a href="#component_542">stdout</a><br />
+                <a href="#component_554">title</a><br />
+                <a href="#component_550">version</a><br />
+                <a href="#component_551">versions</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                <a href="#component_525">abort</a><br />
+                <a href="#component_526">chdir</a><br />
+                <a href="#component_527">cwd</a><br />
+                <a href="#component_528">exit</a><br />
+                <a href="#component_529">getgid</a><br />
+                <a href="#component_533">getgroups</a><br />
+                <a href="#component_531">getuid</a><br />
+                <a href="#component_541">hrtime</a><br />
+                <a href="#component_535">initgroups</a><br />
+                <a href="#component_536">kill</a><br />
+                <a href="#component_537">memoryUsage</a><br />
+                <a href="#component_538">nextTick</a><br />
+                <a href="#component_530">setgid</a><br />
+                <a href="#component_534">setgroups</a><br />
+                <a href="#component_532">setuid</a><br />
+                <a href="#component_539">umask</a><br />
+                <a href="#component_540">uptime</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_523" href="https://nodejs.org/api/process.html#process_exit_codes">Exit Codes</a>
+                            <br />
+                            <a class="spare" id="component_522" href="https://nodejs.org/api/process.html#process_process">Library Documentation</a>
+                            <br />
+                            <a class="spare" id="component_524" href="https://nodejs.org/api/process.html#process_signal_events">Signal Events</a>
+                            <br />
+                    </div>
+            </div>
+<div class="children">
+        <!-- events -->
+        <h1 id="events" class="header">Events</h1>
+        <div class="section members">
+<div id="component_559" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_event_beforeexit">beforeExit</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_558" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_event_exit">exit</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_560" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_event_uncaughtexception">uncaughtException</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_555" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_arch">arch</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_545" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/array/index.html">Array</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_argv">argv</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_552" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_config">config</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_548" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_env">env</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_547" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/array/index.html">Array</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_execargv">execArgv</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_546" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_execpath">execPath</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_549" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_exitcode">exitCode</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_557" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_mainmodule">mainModule</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_553" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_pid">pid</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_556" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_platform">platform</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_543" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/writable/index.html">stream.Writable</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_stderr">stderr</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_544" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/readable/index.html">stream.Readable</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_stdin">stdin</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_542" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/writable/index.html">stream.Writable</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_stdout">stdout</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_554" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_title">title</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_550" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_version">version</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_551" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/process.html#process_process_versions">versions</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- static functions -->
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
+<div id="component_525" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_abort" class="title">
+            abort
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_526" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_chdir_directory" class="title">
+            chdir
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_527" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_cwd" class="title">
+            cwd
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_528" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_exit_code" class="title">
+            exit
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_529" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_getgid" class="title">
+            getgid
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_533" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_getgroups" class="title">
+            getgroups
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_531" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_getuid" class="title">
+            getuid
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_541" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_hrtime" class="title">
+            hrtime
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_535" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_initgroups_user_extra_group" class="title">
+            initgroups
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_536" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_kill_pid_signal" class="title">
+            kill
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_537" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_memoryusage" class="title">
+            memoryUsage
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_538" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_nexttick_callback" class="title">
+            nextTick
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_530" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_setgid_id" class="title">
+            setgid
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_534" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_setgroups_groups" class="title">
+            setgroups
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_532" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_setuid_id" class="title">
+            setuid
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_539" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_umask_mask" class="title">
+            umask
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_540" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/process.html#process_process_uptime" class="title">
+            uptime
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

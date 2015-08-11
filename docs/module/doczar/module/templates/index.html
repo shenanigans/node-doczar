@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar:Templates documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="module" id="component_1239">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb module">Templates</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                <a href="#component_1224">render</a><br />
+                <a href="#component_1236">renderRoot</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                        <div class="markdown"><p>Loads and prepares the Marked and Handlebars renderers. Encapsulates a state mechanism to root
+links to the <a href="../../module/component/index.html"><code>Component</code></a> being rendered.</p>
+</div>
+                <div class="clear"></div>
+            </div>
+<div class="children">
+        <!-- static functions -->
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
+<div id="component_1224" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            </span>
+        </span>
+        <a href="property/render/index.html" class="title">
+            render
+        </a>
+        (
+            <span>
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1218">
+            component
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            </span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Produce an html rendering of a <a href="../../module/component/index.html"><code>Component</code></a>.</p>
+</span>
+            <h4>Arguments</h4>
+            <div class="section arguments">
+                    <div class="child argument " id="component_1218">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="../../module/component/index.html">doczar:Component</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            component
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"><p>The Component to render.</p>
+</span>
+                        </div>
+                    </div>
+            </div>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_1221" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The rendered html document.</p>
+</span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_1236" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            </span>
+        </span>
+        <a href="property/renderroot/index.html" class="title">
+            renderRoot
+        </a>
+        (
+            <span>
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1227">
+            root
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1230">
+            context
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            </span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Produce an html rendering of the <a href="../../module/component/index.html"><code>Components</code></a> on a <a href="../../module/componentcache/index.html"><code>context</code></a> root.</p>
+</span>
+            <h4>Arguments</h4>
+            <div class="section arguments">
+                    <div class="child argument " id="component_1227">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            root
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"><p>The cache root to render.</p>
+</span>
+                        </div>
+                    </div>
+                    <div class="child argument " id="component_1230">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="../../module/componentcache/index.html">doczar:ComponentCache</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            context
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"><p>The parent <a href="../../module/componentcache/index.html"><code>ComponentCache</code></a> context object.</p>
+</span>
+                        </div>
+                    </div>
+            </div>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_1233" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The rendered html document.</p>
+</span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

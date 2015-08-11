@@ -11,26 +11,26 @@
             <a class="valtype" href="{{link path}}">{{name}}</a>
             {{#if isArray}}[ ]{{/if}}
             {{#if generics}}
-                <span class="punctuation">[</span>
+                <span class="punctuation">&lt;</span>
                 <span>{{#generics}}
                     <a class="valtype" href="{{link path}}">{{name}}</a>
                     <span class="valsep punctuation">,</span>
                 {{/generics}}</span>
-                <span class="punctuation">]</span>
+                <span class="punctuation">&gt;</span>
             {{/if}}
-        {{/valtype}}{{else}}*{{/if}}</span>
+        {{/valtype}}{{/if}}</span>
     {{else}}
         <span>{{#valtype}}
             <span class="valsep punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
             {{#if isArray}}[ ]{{/if}}
             {{#if generics}}
-                <span class="punctuation">[</span>
+                <span class="punctuation">&lt;</span>
                 <span>{{#generics}}
                     <a class="valtype" href="{{link path}}">{{name}}</a>
                     <span class="valsep punctuation">,</span>
                 {{/generics}}</span>
-                <span class="punctuation">]</span>
+                <span class="punctuation">&gt;</span>
             {{/if}}
         {{/valtype}}</span>
         <a class="title" href="{{softlink path}}">

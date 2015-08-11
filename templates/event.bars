@@ -1,4 +1,25 @@
 <div id="{{elemID}}" class="child event">
+    <span class="signature">
+        {{#flags}}
+            <div class="flag {{.}}">{{.}}</div>
+        {{/flags}}
+        <span>{{#valtype}}
+            <span class="valsep">|</span>
+            <a class="valtype" href="{{link path}}">{{name}}</a>
+            {{#if generics}}
+                &lt;
+                <span>{{#generics}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                &gt;
+            {{/if}}
+        {{/valtype}}</span>
+        {{#unless valtype}}{{#unless hideCtype}}
+            <span class="ctype">{{ctype}}</span>
+        {{/unless}}{{/unless}}
+        <a class="title" href="{{link path}}">{{name}}</a>
+    </span>
     {{#if isInherited}}
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
@@ -10,27 +31,6 @@
             </div>
         {{/override}}
     {{/if}}
-    <span class="signature">
-        {{#flags}}
-            <div class="flag {{.}}">{{.}}</div>
-        {{/flags}}
-        <span>{{#valtype}}
-            <span class="valsep">|</span>
-            <a class="valtype" href="{{link path}}">{{name}}</a>
-            {{#if generics}}
-                [
-                <span>{{#generics}}
-                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                    <span class="valsep">,</span>
-                {{/generics}}</span>
-                ]
-            {{/if}}
-        {{/valtype}}</span>
-        {{#unless valtype}}{{#unless hideCtype}}
-            <span class="ctype">{{ctype}}</span>
-        {{/unless}}{{/unless}}
-        <a class="title" href="{{link path}}">{{name}}</a>
-    </span>
     <div class="info">
         <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if arguments}}

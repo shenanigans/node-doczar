@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>fs documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../highlight.css" />
+    <script type="text/javascript" src="../../index.js"></script>
+</head>
+<body class="module" id="component_394">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="index.html" class="breadcrumb module">fs</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_324">FSWatcher</a><br />
+                <a href="#component_322">ReadStream</a><br />
+                <a href="#component_321">Stats</a><br />
+                <a href="#component_323">WriteStream</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                <a href="#component_390">access</a><br />
+                <a href="#component_391">accessSync</a><br />
+                <a href="#component_383">appendFile</a><br />
+                <a href="#component_384">appendFileSync</a><br />
+                <a href="#component_337">chmod</a><br />
+                <a href="#component_338">chmodSync</a><br />
+                <a href="#component_331">chown</a><br />
+                <a href="#component_332">chownSync</a><br />
+                <a href="#component_365">close</a><br />
+                <a href="#component_366">closeSync</a><br />
+                <a href="#component_392">createReadStream</a><br />
+                <a href="#component_393">createWriteStream</a><br />
+                <a href="#component_388">exists</a><br />
+                <a href="#component_389">existsSync</a><br />
+                <a href="#component_339">fchmod</a><br />
+                <a href="#component_340">fchmodSync</a><br />
+                <a href="#component_333">fchown</a><br />
+                <a href="#component_334">fchownSync</a><br />
+                <a href="#component_345">fstat</a><br />
+                <a href="#component_348">fstatSync</a><br />
+                <a href="#component_373">fsync</a><br />
+                <a href="#component_374">fsyncSync</a><br />
+                <a href="#component_327">ftruncate</a><br />
+                <a href="#component_328">ftruncateSync</a><br />
+                <a href="#component_371">futimes</a><br />
+                <a href="#component_372">futimesSync</a><br />
+                <a href="#component_341">lchmod</a><br />
+                <a href="#component_342">lchmodSync</a><br />
+                <a href="#component_335">lchown</a><br />
+                <a href="#component_336">lchownSync</a><br />
+                <a href="#component_349">link</a><br />
+                <a href="#component_350">linkSync</a><br />
+                <a href="#component_344">lstat</a><br />
+                <a href="#component_347">lstatSync</a><br />
+                <a href="#component_361">mkdir</a><br />
+                <a href="#component_362">mkdirSync</a><br />
+                <a href="#component_367">open</a><br />
+                <a href="#component_368">openSync</a><br />
+                <a href="#component_377">read</a><br />
+                <a href="#component_379">readFile</a><br />
+                <a href="#component_380">readFileSync</a><br />
+                <a href="#component_378">readSync</a><br />
+                <a href="#component_363">readdir</a><br />
+                <a href="#component_364">readdirSync</a><br />
+                <a href="#component_353">readlink</a><br />
+                <a href="#component_354">readlinkSync</a><br />
+                <a href="#component_355">realpath</a><br />
+                <a href="#component_356">realpathSync</a><br />
+                <a href="#component_325">rename</a><br />
+                <a href="#component_326">renameSync</a><br />
+                <a href="#component_359">rmdir</a><br />
+                <a href="#component_360">rmdirSync</a><br />
+                <a href="#component_343">stat</a><br />
+                <a href="#component_346">statSync</a><br />
+                <a href="#component_351">symlink</a><br />
+                <a href="#component_352">symlinkSync</a><br />
+                <a href="#component_329">truncate</a><br />
+                <a href="#component_330">truncateSync</a><br />
+                <a href="#component_357">unlink</a><br />
+                <a href="#component_358">unlinkSync</a><br />
+                <a href="#component_386">unwatchFile</a><br />
+                <a href="#component_369">utimes</a><br />
+                <a href="#component_370">utimesSync</a><br />
+                <a href="#component_387">watch</a><br />
+                <a href="#component_385">watchFile</a><br />
+                <a href="#component_375">write</a><br />
+                <a href="#component_381">writeFile</a><br />
+                <a href="#component_382">writeFileSync</a><br />
+                <a href="#component_376">writeSync</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_320" href="https://nodejs.org/api/fs.html#fs_file_system">Library Documentation</a>
+                            <br />
+                    </div>
+            </div>
+<div class="children">
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_324" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/fs.html#class_fs_fswatcher">FSWatcher</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_322" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/fs.html#class_fs_readstream">ReadStream</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_321" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/fs.html#class_fs_stats">Stats</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_323" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/fs.html#class_fs_writestream">WriteStream</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- static functions -->
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
+<div id="component_390" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_access_path_mode_callback" class="title">
+            access
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_391" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_accesssync_path_mode" class="title">
+            accessSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_383" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_appendfile_filename_data_options_callback" class="title">
+            appendFile
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_384" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_appendfilesync_filename_data_options" class="title">
+            appendFileSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_337" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_chmod_path_mode_callback" class="title">
+            chmod
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_338" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_chmodsync_path_mode" class="title">
+            chmodSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_331" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_chown_path_uid_gid_callback" class="title">
+            chown
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_332" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_chownsync_path_uid_gid" class="title">
+            chownSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_365" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_close_fd_callback" class="title">
+            close
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_366" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_closesync_fd" class="title">
+            closeSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_392" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_createreadstream_path_options" class="title">
+            createReadStream
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_393" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_createwritestream_path_options" class="title">
+            createWriteStream
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_388" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_exists_path_callback" class="title">
+            exists
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_389" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_existssync_path" class="title">
+            existsSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_339" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fchmod_fd_mode_callback" class="title">
+            fchmod
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_340" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fchmodsync_fd_mode" class="title">
+            fchmodSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_333" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fchown_fd_uid_gid_callback" class="title">
+            fchown
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_334" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fchownsync_fd_uid_gid" class="title">
+            fchownSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_345" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fstat_fd_callback" class="title">
+            fstat
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_348" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fstatsync_fd" class="title">
+            fstatSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_373" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fsync_fd_callback" class="title">
+            fsync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_374" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_fsyncsync_fd" class="title">
+            fsyncSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_327" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_ftruncate_fd_len_callback" class="title">
+            ftruncate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_328" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_ftruncatesync_fd_len" class="title">
+            ftruncateSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_371" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_futimes_fd_atime_mtime_callback" class="title">
+            futimes
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_372" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_futimessync_fd_atime_mtime" class="title">
+            futimesSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_341" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lchmod_path_mode_callback" class="title">
+            lchmod
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_342" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lchmodsync_path_mode" class="title">
+            lchmodSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_335" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lchown_path_uid_gid_callback" class="title">
+            lchown
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_336" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lchownsync_path_uid_gid" class="title">
+            lchownSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_349" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_link_srcpath_dstpath_callback" class="title">
+            link
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_350" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_linksync_srcpath_dstpath" class="title">
+            linkSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_344" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lstat_path_callback" class="title">
+            lstat
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_347" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_lstatsync_path" class="title">
+            lstatSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_361" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_mkdir_path_mode_callback" class="title">
+            mkdir
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_362" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_mkdirsync_path_mode" class="title">
+            mkdirSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_367" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_open_path_flags_mode_callback" class="title">
+            open
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_368" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_opensync_path_flags_mode" class="title">
+            openSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_377" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_read_fd_buffer_offset_length_position_callback" class="title">
+            read
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_379" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readfile_filename_options_callback" class="title">
+            readFile
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_380" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readfilesync_filename_options" class="title">
+            readFileSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_378" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readsync_fd_buffer_offset_length_position" class="title">
+            readSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_363" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readdir_path_callback" class="title">
+            readdir
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_364" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readdirsync_path" class="title">
+            readdirSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_353" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readlink_path_callback" class="title">
+            readlink
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_354" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_readlinksync_path" class="title">
+            readlinkSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_355" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_realpath_path_cache_callback" class="title">
+            realpath
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_356" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_realpathsync_path_cache" class="title">
+            realpathSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_325" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_rename_oldpath_newpath_callback" class="title">
+            rename
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_326" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_renamesync_oldpath_newpath" class="title">
+            renameSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_359" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_rmdir_path_callback" class="title">
+            rmdir
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_360" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_rmdirsync_path" class="title">
+            rmdirSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_343" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_stat_path_callback" class="title">
+            stat
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_346" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_statsync_path" class="title">
+            statSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_351" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_symlink_srcpath_dstpath_type_callback" class="title">
+            symlink
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_352" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_symlinksync_srcpath_dstpath_type" class="title">
+            symlinkSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_329" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_truncate_path_len_callback" class="title">
+            truncate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_330" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_truncatesync_path_len" class="title">
+            truncateSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_357" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_unlink_path_callback" class="title">
+            unlink
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_358" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_unlinksync_path" class="title">
+            unlinkSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_386" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_unwatchfile_filename_listener" class="title">
+            unwatchFile
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_369" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_utimes_path_atime_mtime_callback" class="title">
+            utimes
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_370" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_utimessync_path_atime_mtime" class="title">
+            utimesSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_387" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_watch_filename_options_listener" class="title">
+            watch
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_385" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_watchfile_filename_options_listener" class="title">
+            watchFile
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_375" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_write_fd_buffer_offset_length_position_callback" class="title">
+            write
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_381" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_writefile_filename_data_options_callback" class="title">
+            writeFile
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_382" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_writefilesync_filename_data_options" class="title">
+            writeFileSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_376" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/fs.html#fs_writesync_fd_buffer_offset_length_position" class="title">
+            writeSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

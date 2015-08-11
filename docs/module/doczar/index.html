@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../highlight.css" />
+    <script type="text/javascript" src="../../index.js"></script>
+</head>
+<body class="module" id="component_1242">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="index.html" class="breadcrumb module">doczar</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#modules">Modules</a></h4>
+                <a href="#component_1215">Component</a><br />
+                <a href="#component_1001">ComponentCache</a><br />
+                <a href="#component_836">Options</a><br />
+                <a href="#component_932">Parser</a><br />
+                <a href="#component_1061">Patterns</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                        <div class="markdown"><p>Select, load and parse source files for <code>doczar</code> format documentation comments. Render html
+output to a configured disk location.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">o, out</td>
+<td>Selects a directory to fill with documentation output. The directory need not exist or be empty.</td>
+</tr>
+<tr>
+<td style="text-align:right">i, in</td>
+<td>Selects files to document. Parses nix-like wildcards using <a href="https://github.com/isaacs/node-glob">glob</a>. <code>doczar</code> does not parse directories - you must select files.</td>
+</tr>
+<tr>
+<td style="text-align:right">j, js, jsmod</td>
+<td>Loads the filename with <a href="https://github.com/defunctzombie/node-required">required</a> and documents every required source file.</td>
+</tr>
+<tr>
+<td style="text-align:right">with</td>
+<td>Include a prebuilt standard library in the documentation.</td>
+</tr>
+<tr>
+<td style="text-align:right">dev</td>
+<td>Display Components marked with the <code>@development</code> modifier.</td>
+</tr>
+<tr>
+<td style="text-align:right">api</td>
+<td>Display <strong>only</strong> Components marked with the <code>@api</code> modifier.</td>
+</tr>
+<tr>
+<td style="text-align:right">raw</td>
+<td>Log events as json strings instead of pretty printing them.</td>
+</tr>
+<tr>
+<td style="text-align:right">json</td>
+<td>Create an <code>index.json</code> file in each directory instead of a rendered <code>index.html</code>.</td>
+</tr>
+<tr>
+<td style="text-align:right">date</td>
+<td>Explicitly set the datestamp on each page with any Date-compatible string.</td>
+</tr>
+</tbody>
+</table>
+</div>
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_829" href="https://github.com/shenanigans/node-doczar">GitHub.com Repository</a>
+                            <br />
+                            <a class="spare" id="component_828" href="spare/readme.md/index.html">README.md</a>
+                            <br />
+                    </div>
+            </div>
+<div class="children">
+        <!-- modules -->
+        <h1 id="modules" class="header">Modules</h1>
+        <div class="section modules">
+<div id="component_1215" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="module/component/index.html">Component</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The quantum of doczar documentation. Every Component has its own directory and html page in the
+final output. Codifies type, expected location and useful information about a unit of data or
+functionality. The ultimate goal is to produce and render a <a href="javascript:return false;"><code>Finalization</code></a>.</p>
+</span>
+    </div>
+</div>
+<div id="component_1001" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="module/componentcache/index.html">ComponentCache</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Roots a document tree and builds all the <a href="module/component/index.html"><code>Components</code></a> that live inside it.
+<a href="javascript:return false;"><code>Looks up</code></a> and <a href="javascript:return false;"><code>creates</code></a> <a href="module/component/index.html"><code>Components</code></a> by path.
+Centralizes <a href="javascript:return false;"><code>finalization</code></a> and <a href="javascript:return false;"><code>filesystem output</code></a>.</p>
+</span>
+    </div>
+</div>
+<div id="component_836" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="module/options/index.html">Options</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Options for generating the documentation.</p>
+</span>
+    </div>
+</div>
+<div id="component_932" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="module/parser/index.html">Parser</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Digs document comments out of source files, splits them into Declarations and Modifiers, then
+reports everything it finds to a <a href="module/componentcache/index.html"><code>ComponentCache</code></a> instance.</p>
+</span>
+    </div>
+</div>
+<div id="component_1061" class="child module">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="module/patterns/index.html">Patterns</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Syntax information and regular expressions used throughout doczar. Abandon all hope ye who enter
+here.</p>
+</span>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

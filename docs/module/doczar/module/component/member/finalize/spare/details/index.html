@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar:Component#finalize~details documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../../../../../index.js"></script>
+</head>
+<body class="spare" id="component_1168">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../../../../../index.html">spare</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../../../../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="../../../../index.html" class="breadcrumb module">Component</a><span class="delimiter">#</span><a href="../../index.html" class="breadcrumb member">finalize</a><span class="delimiter">~</span><a href="index.html" class="breadcrumb spare">details</a>
+            </span>
+        </div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                    <div class="markdown"><p>Create a representative document ready for rendering and save it to <a href="../../../../index.html#component_1113"><code>final</code></a>.</p>
+<p>A tricky waltz prepares this Component&#39;s <a href="../../../../property/finalization/index.html"><code>finalization</code></a> for rendering.</p>
+<h2 id="stage-0-accumulation">Stage 0: Accumulation</h2>
+<p>Every child Component on this Component is compiled into two Arrays: One is an Array of Arrays
+grouping children by the name they were stored under, the other is a flat Array of all children.
+The <a href="javascript:return false;"><code>hasChildren</code></a> output Boolean and the <a href="../../../../index.html#component_1144"><code>isTotallyEmpty</code></a> local Boolean are processed. Implicit documentation (if any) is converted to
+either a <code>@summary</code> or <code>@details</code> child Component. Finally, <a href="javascript:return false;"><code>async.each</code></a> calls <code>finalize</code> on
+every child Component before proceeding to Stage 2: Compilation.</p>
+<h2 id="stage-1-initialization">Stage 1: Initialization</h2>
+<p>Occurs synchronously after Stage 0. Leaves are processed first, then downward toward the trunk.
+This Component&#39;s <a href="../../../../index.html#component_1113"><code>final</code></a> property is partially filled. Simple flag properties are set.
+Empty containers are placed for all child types.</p>
+<p>If this Component is a <code>@spare</code> then markdown is rendered now. Modifiers are processed into the
+<a href="../../../../property/finalization/index.html"><code>finalization</code></a>. The local Booleans <a href="../../../../index.html#component_1107"><code>ctype</code></a>, <a href="../../../../index.html#component_1145"><code>isClassValtype</code></a> and <a href="../../../../index.html#component_1146"><code>isJSONValtype</code></a> are processed into the output Booleans
+<a href="javascript:return false;"><code>isFunction</code></a>, <a href="javascript:return false;"><code>isCallback</code></a>, <a href="javascript:return false;"><code>isClasslike</code></a> and <a href="javascript:return false;"><code>isInline</code></a>.</p>
+<p>At this point, the <code>finalize</code> call returns. After a trip around the event loop, Stage 2 begins
+to process from the trunk outward to the leaves.</p>
+<h2 id="stage-2-compilation">Stage 2: Compilation</h2>
+<p>Control briefly passes to <a href="../../../../member/inherit/index.html"><code>#inherit</code></a> to generate a new Object containing inherited properties.
+Every Component with a superclass digs recursively to base classes and builds new versions of
+several child sets. These inherited sets include local children too.</p>
+<p>Every expected variety of child Component is enumerated and a source set picked from either the
+inheritence document (preferentially) or the local Component.</p>
+</div>
+                <div class="clear"></div>
+            </div>
+<div class="children">
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

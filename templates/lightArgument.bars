@@ -8,12 +8,20 @@
         <span class="punctuation">=</span>
         <span>{{#if valtype}}{{#valtype}}
             <span class="valsep punctuation">|</span>
-            <a class="valtype" href="{{link path}}">{{name}}</a>
+            <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
             {{#if isArray}}
                 <span class="punctuation">[</span>
                 <span class="punctuation">]</span>
             {{/if}}
-        {{/valtype}}{{else}}*{{/if}}</span>
+            {{#if generics}}
+                <span class="punctuation">&lt;</span>
+                <span>{{#generics}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>
+                    <span class="valsep">,</span>
+                {{/generics}}</span>
+                <span class="punctuation">&gt;</span>
+            {{/if}}
+        {{/valtype}}{{/if}}</span>
     {{else}}
         <a class="title" href="{{softlink path}}">
             {{name}}

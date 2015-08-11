@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../highlight.css" />
+    <script type="text/javascript" src="../../index.js"></script>
+</head>
+<body class="module" id="component_256">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="index.html" class="breadcrumb module">Crypto</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_233">Certificate</a><br />
+                <a href="#component_227">Cipher</a><br />
+                <a href="#component_228">Decipher</a><br />
+                <a href="#component_231">DiffieHellman</a><br />
+                <a href="#component_232">ECDH</a><br />
+                <a href="#component_225">Hash</a><br />
+                <a href="#component_226">Hmac</a><br />
+                <a href="#component_229">Sign</a><br />
+                <a href="#component_230">Verify</a><br />
+                <a href="#component_255">DEFAULT_ENCODING</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                <a href="#component_240">createCipher</a><br />
+                <a href="#component_241">createCipheriv</a><br />
+                <a href="#component_237">createCredentials</a><br />
+                <a href="#component_242">createDecipher</a><br />
+                <a href="#component_243">createDecipheriv</a><br />
+                <a href="#component_246">createDiffieHellman</a><br />
+                <a href="#component_248">createECDH</a><br />
+                <a href="#component_238">createHash</a><br />
+                <a href="#component_239">createHmac</a><br />
+                <a href="#component_244">createSign</a><br />
+                <a href="#component_245">createVerify</a><br />
+                <a href="#component_235">getCiphers</a><br />
+                <a href="#component_247">getDiffieHellman</a><br />
+                <a href="#component_236">getHashes</a><br />
+                <a href="#component_249">pbkdf2</a><br />
+                <a href="#component_250">pbkdf2Sync</a><br />
+                <a href="#component_254">privateDecrypt</a><br />
+                <a href="#component_252">pseudoRandomBytes</a><br />
+                <a href="#component_253">publicEncrypt</a><br />
+                <a href="#component_251">randomBytes</a><br />
+                <a href="#component_234">setEngine</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_224" href="https://nodejs.org/api/crypto.html#crypto_crypto">Library Documentation</a>
+                            <br />
+                    </div>
+            </div>
+<div class="children">
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_233" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_certificate">Certificate</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_227" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_cipher">Cipher</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_228" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_decipher">Decipher</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_231" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_diffiehellman">DiffieHellman</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_232" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_ecdh">ECDH</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_225" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_hash">Hash</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_226" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_hmac">Hmac</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_229" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_sign">Sign</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_230" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_class_verify">Verify</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_255" class="child property">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/crypto.html#crypto_crypto_default_encoding">DEFAULT_ENCODING</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- static functions -->
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
+<div id="component_240" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createcipher_algorithm_password" class="title">
+            createCipher
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_241" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createcipheriv_algorithm_key_iv" class="title">
+            createCipheriv
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_237" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createcredentials_details" class="title">
+            createCredentials
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_242" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createdecipher_algorithm_password" class="title">
+            createDecipher
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_243" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createdecipheriv_algorithm_key_iv" class="title">
+            createDecipheriv
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_246" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_creatediffiehellman_prime_prime_encoding_generator_generator_encoding" class="title">
+            createDiffieHellman
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_248" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createecdh_curve_name" class="title">
+            createECDH
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_238" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createhash_algorithm" class="title">
+            createHash
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_239" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createhmac_algorithm_key" class="title">
+            createHmac
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_244" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createsign_algorithm" class="title">
+            createSign
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_245" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_createverify_algorithm" class="title">
+            createVerify
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_235" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_getciphers_" class="title">
+            getCiphers
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_247" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_getdiffiehellman_group_name" class="title">
+            getDiffieHellman
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_236" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_gethashes_" class="title">
+            getHashes
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_249" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2_password_salt_iterations_keylen_digest_callback" class="title">
+            pbkdf2
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_250" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest" class="title">
+            pbkdf2Sync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_254" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_privatedecrypt_private_key_buffer" class="title">
+            privateDecrypt
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_252" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_pseudorandombytes_size_callback" class="title">
+            pseudoRandomBytes
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_253" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_publicencrypt_public_key_buffer" class="title">
+            publicEncrypt
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_251" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback" class="title">
+            randomBytes
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_234" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/crypto.html#crypto_crypto_setengine_engine_flags" class="title">
+            setEngine
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

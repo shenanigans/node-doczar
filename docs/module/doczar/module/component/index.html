@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar:Component documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="module" id="component_1215">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb module">Component</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_1098">Finalization</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#members">Member Properties</a></h4>
+                <a href="#component_1131">argsByName</a><br />
+                <a href="#component_1128">argument</a><br />
+                <a href="#component_1107">ctype</a><br />
+                <a href="#component_1116">doc</a><br />
+                <a href="#component_1113">final</a><br />
+                <a href="#component_1145">isClassValtype</a><br />
+                <a href="#component_1146">isJSONValtype</a><br />
+                <a href="#component_1144">isTotallyEmpty</a><br />
+                <a href="#component_1125">member</a><br />
+                <a href="#component_1101">path</a><br />
+                <a href="#component_1104">pathstr</a><br />
+                <a href="#component_1122">property</a><br />
+                <a href="#component_1134">returns</a><br />
+                <a href="#component_1137">returnsByName</a><br />
+                <a href="#component_1119">spare</a><br />
+                <a href="#component_1140">throws</a><br />
+                <a href="#component_1143">throwsByName</a><br />
+                <a href="#component_1110">valtype</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#methods">Methods</a></h4>
+                <a href="#component_1169">finalize</a><br />
+                <a href="#component_1175">inherit</a><br />
+                <a href="#component_1152">submit</a><br />
+                <a href="#component_1185">writeFiles</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#localValues">Local Values</a></h4>
+                <a href="#component_1206">ALIAS_PROPS</a><br />
+                <a href="#component_1197">CONVERT_NAMES</a><br />
+                <a href="#component_1188">COPY_CHILDREN</a><br />
+                <a href="#component_1203">NATURALIZE_CHILDREN</a><br />
+                <a href="#component_1191">SORT_CHILDREN</a><br />
+                <a href="#component_1200">SPECIAL_CTYPES</a><br />
+                <a href="#component_1194">SPLIT_FUNCTIONS</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                        <div class="markdown"><p>The quantum of doczar documentation. Every Component has its own directory and html page in the
+final output. Codifies type, expected location and useful information about a unit of data or
+functionality. The ultimate goal is to produce and render a <a href="property/finalization/index.html"><code>Finalization</code></a>.</p>
+</div>
+                <div class="clear"></div>
+                    <!-- constructor function -->
+                        <h1>constructor</h1>
+                        <div id="constructor" class="section constructor">
+                            <h2 class="signature">
+                                Component (
+<div class="argument">
+    
+    
+        <span>
+            <span class="valsep punctuation">|</span>
+            <a class="valtype" href="../../module/componentcache/index.html">doczar:ComponentCache</a>
+            
+        </span>
+        <a class="title" href="#component_1209">
+            context
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+<div class="argument">
+    
+    
+        <span>
+            <span class="valsep punctuation">|</span>
+            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            
+        </span>
+        <a class="title" href="#component_1212">
+            path
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+                                ) {
+                            </h2>
+                            <div class="markdown"></div>
+                                <h3>Arguments</h3>
+                                <div class="section arguments">
+                                        <div class="child argument" id="component_1209">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="../../module/componentcache/index.html">doczar:ComponentCache</a>
+            
+        </span>
+        <a class="name" href="index.html#component_1209">
+            context
+        </a>
+    
+</span>
+                                            <div class="info">
+                                                <span class="markdown"><p>Each new <code>Component</code> is a member of a specific <code>ComponentCache</code>.</p>
+</span>
+                                            <div class="tail"></div></div>
+                                        </div>
+                                        <div class="child argument" id="component_1212">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            
+        </span>
+        <a class="name" href="index.html#component_1212">
+            path
+        </a>
+    
+</span>
+                                            <div class="info">
+                                                <span class="markdown"><p>The type of the new <code>Component</code>, expressed as an Array of Arrays in the form
+<code>[ [ delimiter, name ], ...]</code></p>
+</span>
+                                            <div class="tail"></div></div>
+                                        </div>
+                                </div>
+                        </div>
+            </div>
+<div class="children">
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_1098" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="property/finalization/index.html">Finalization</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>This is how a Component presents itself to the Handlebars rendering engine.</p>
+</span>
+    </div>
+</div>
+        </div>
+        <!-- member properties -->
+        <h1 id="members" class="header">Member Properties</h1>
+        <div class="section members">
+<div id="component_1131" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1131">argsByName</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of named items from <code>argument</code> to their <code>Component</code> instances.</p>
+</span>
+    </div>
+</div>
+<div id="component_1128" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1128">argument</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>An Array of <code>Component</code> instances representing function arguments for this <code>Component</code>. If our
+<code>ctype</code> is not <code>&quot;member&quot;</code> or <code>&quot;property&quot;</code> these arguments are rendered as belonging to a
+constructor function. (Further document this constructor by providing <code>@spare constructor</code>)</p>
+</span>
+    </div>
+</div>
+<div id="component_1107" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1107">ctype</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The &quot;component type&quot; of this <code>Component</code>, better known as the word after the <code>@</code>. One of
+<code>property</code>, <code>member</code>, <code>spare</code>, <code>module</code>, <code>class</code>, <code>argument</code>, <code>returns</code>, <code>callback</code>, <code>default</code>.</p>
+</span>
+    </div>
+</div>
+<div id="component_1116" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1116">doc</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>An Array of String markdown documents that have been applied to this <code>Component</code>.</p>
+</span>
+    </div>
+</div>
+<div id="component_1113" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="property/finalization/index.html">doczar:Component.Finalization</a>
+            
+        
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1113">final</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>After <a href="member/finalize/index.html"><code>finalization</code></a>, <code>final</code> is an Object designed to be passed to the template
+engine (<a href="http://handlebarsjs.com/">Handlebars</a>).</p>
+</span>
+    </div>
+</div>
+<div id="component_1145" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1145">isClassValtype</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_1146" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1146">isJSONValtype</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_1144" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1144">isTotallyEmpty</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_1125" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1125">member</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of property names to <code>Component</code> instances representing these types.</p>
+</span>
+    </div>
+</div>
+<div id="component_1101" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1101">path</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The type of this <code>Component</code> expressed as an Array of Arrays in the form
+<code>[ [ delimiter, name ], ...]</code></p>
+</span>
+    </div>
+</div>
+<div id="component_1104" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1104">pathstr</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p><code>path</code> joined down to a String.</p>
+</span>
+    </div>
+</div>
+<div id="component_1122" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1122">property</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of property names to <code>Component</code> instances representing these types.</p>
+</span>
+    </div>
+</div>
+<div id="component_1134" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1134">returns</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>An array of Component instances representing return values for this Component.</p>
+</span>
+    </div>
+</div>
+<div id="component_1137" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1137">returnsByName</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of named items from <code>returns</code> to their <code>Component</code> instances.</p>
+</span>
+    </div>
+</div>
+<div id="component_1119" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1119">spare</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of &quot;spare document&quot; names to <code>Component</code> instances representing these documents.</p>
+</span>
+    </div>
+</div>
+<div id="component_1140" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1140">throws</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>An array of Component instances representing situations when code represented by this Component
+may throw an exception.</p>
+</span>
+    </div>
+</div>
+<div id="component_1143" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+                &lt;
+                <span>
+                    <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+                    <span class="valsep">,</span>
+                
+                    <a class="valtype" href="index.html">doczar:Component</a>
+                    <span class="valsep">,</span>
+                </span>
+                &gt;
+        </span>
+        
+        <a class="title" href="index.html#component_1143">throwsByName</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A map of named items from <code>throws</code> to their <code>Component</code> instances.</p>
+</span>
+    </div>
+</div>
+<div id="component_1110" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1110">valtype</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The working type(s) of the value described by this <code>Component</code>. This is simply an Array of
+String type paths.</p>
+</span>
+    </div>
+</div>
+        </div>
+        <!-- methods -->
+        <h1 id="methods" class="header">Methods</h1>
+        <div class="section members">
+<div id="component_1169" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="member/finalize/index.html" class="title">
+            finalize
+        </a>
+        (
+            <span>
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1166">
+            options
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            </span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Create a representative document ready for rendering and save it to <a href="index.html#component_1113"><code>final</code></a>.</p>
+<p>A tricky waltz prepares this Component&#39;s <a href="property/finalization/index.html"><code>finalization</code></a> for rendering.</p>
+<h2 id="stage-0-accumulation">Stage 0: Accumulation</h2>
+<p>Every child Component on this Component is compiled into two Arrays: One is an Array of Arrays
+grouping children by the name they were stored under, the other is a flat Array of all children.
+The <a href="javascript:return false;"><code>hasChildren</code></a> output Boolean and the <a href="index.html#component_1144"><code>isTotallyEmpty</code></a> local Boolean are processed. Implicit documentation (if any) is converted to
+either a <code>@summary</code> or <code>@details</code> child Component. Finally, <a href="javascript:return false;"><code>async.each</code></a> calls <code>finalize</code> on
+every child Component before proceeding to Stage 2: Compilation.</p>
+<h2 id="stage-1-initialization">Stage 1: Initialization</h2>
+<p>Occurs synchronously after Stage 0. Leaves are processed first, then downward toward the trunk.
+This Component&#39;s <a href="index.html#component_1113"><code>final</code></a> property is partially filled. Simple flag properties are set.
+Empty containers are placed for all child types.</p>
+<p>If this Component is a <code>@spare</code> then markdown is rendered now. Modifiers are processed into the
+<a href="property/finalization/index.html"><code>finalization</code></a>. The local Booleans <a href="index.html#component_1107"><code>ctype</code></a>, <a href="index.html#component_1145"><code>isClassValtype</code></a> and <a href="index.html#component_1146"><code>isJSONValtype</code></a> are processed into the output Booleans
+<a href="javascript:return false;"><code>isFunction</code></a>, <a href="javascript:return false;"><code>isCallback</code></a>, <a href="javascript:return false;"><code>isClasslike</code></a> and <a href="javascript:return false;"><code>isInline</code></a>.</p>
+<p>At this point, the <code>finalize</code> call returns. After a trip around the event loop, Stage 2 begins
+to process from the trunk outward to the leaves.</p>
+<h2 id="stage-2-compilation">Stage 2: Compilation</h2>
+<p>Control briefly passes to <a href="member/inherit/index.html"><code>#inherit</code></a> to generate a new Object containing inherited properties.
+Every Component with a superclass digs recursively to base classes and builds new versions of
+several child sets. These inherited sets include local children too.</p>
+<p>Every expected variety of child Component is enumerated and a source set picked from either the
+inheritence document (preferentially) or the local Component.</p>
+</span>
+            <h4>Arguments</h4>
+            <div class="section arguments">
+                    <div class="child argument " id="component_1166">
+<span class="signature">
+    
+    
+        <span></span>
+        <a class="name" href="javascript:return false;">
+            options
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"></span>
+                        </div>
+                    </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_1175" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="index.html">doczar:Component</a>
+            </span>
+        </span>
+        <a href="member/inherit/index.html" class="title">
+            inherit
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Gather children from superclasses and merge them, in order, into a document representing this
+Component&#39;s inheritence. <strong>Note:</strong> this Component&#39;s children will <em>also</em> be merged in, producing
+a pre-compiled inheritence result and <em>not</em> just the inherited children.</p>
+</span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_1172" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="index.html">doczar:Component</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>The assembled inheritence document is returned. It looks like an incomplete Component instance,
+containing only child Components.</p>
+</span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_1152" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="member/submit/index.html" class="title">
+            submit
+        </a>
+        (
+            <span>
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1149">
+            info
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            </span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Merge additional information into this Component.</p>
+</span>
+            <h4>Arguments</h4>
+            <div class="section arguments">
+                    <div class="child argument " id="component_1149">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="javascript:return false;">doczar:Parser:Submission</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            info
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"><p>Document information hot off the <a href="../../module/parser/index.html"><code>Parser</code></a>.</p>
+</span>
+                        </div>
+                    </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_1185" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="member/writefiles/index.html" class="title">
+            writeFiles
+        </a>
+        (
+            <span>
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1176">
+            basedir
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1177">
+            baseTagPath
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1178">
+            options
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            
+<div class="argument">
+    
+    
+        <a class="title" href="#component_1182">
+            callback
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+            </span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"><p>Create a directory with mkdirp, write an index.html and recursively call for child Components.</p>
+</span>
+            <h4>Arguments</h4>
+            <div class="section arguments">
+                    <div class="child argument " id="component_1176">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            basedir
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"></span>
+                        </div>
+                    </div>
+                    <div class="child argument " id="component_1177">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            baseTagPath
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"></span>
+                        </div>
+                    </div>
+                    <div class="child argument " id="component_1178">
+<span class="signature">
+    
+    
+        <span>
+            <span class="valsep punctuation punctuation">|</span>
+            <a class="valtype" href="../../module/options/index.html">doczar:Options</a>
+            
+        </span>
+        <a class="name" href="javascript:return false;">
+            options
+        </a>
+    
+</span>
+                        <div class="info">
+                            <span class="markdown"></span>
+                        </div>
+                    </div>
+                    <div class="child argument callback" id="component_1182">
+<span class="signature">
+    
+    
+        <span></span>
+        <a class="name" href="javascript:return false;">
+            callback
+        </a>
+    <span>
+        (
+<div class="argument">
+    
+    
+        <span>
+            <span class="valsep punctuation">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>
+            
+        </span>
+        <a class="title" href="#component_1181">
+            err
+        </a>
+    
+    <span class="comma">,</span>
+</div>
+        ) {
+    </span>
+</span>
+                        <div class="info">
+                            <span class="markdown"></span>
+                                    <h4>Arguments</h4>
+                                    <div class="section arguments">
+                                            <div class="child argument" id="component_1181">
+                                                <span class="signature">
+                                                        <span>
+                                                            <span class="valsep">|</span>
+                                                            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>
+                                                        </span>
+                                                        <a class="title" href="javascript:return false;">
+                                                            err
+                                                        </a>
+                                                </span>
+                                                <div class="info">
+                                                    <span class="markdown"><p>Filesystem errors and critical failures which hault document assembly will be returned.</p>
+</span>
+                                                </div>
+                                            </div>
+                                    </div>
+                        </div>
+                    </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+        <!-- instance properties -->
+        <h1 id="localValues" class="header">Local Variables</h1>
+        <div class="section localValues">
+<div id="component_1206" class="child local">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">local</span>
+        
+        <a class="title" href="index.html#component_1206">ALIAS_PROPS</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_1197" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1197">CONVERT_NAMES</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>For dumb reasons, some local child type names are simply converted to a plural name in the
+<a href="property/finalization/index.html"><code>finalization</code></a>. This should be refactored out soon.</p>
+</span>
+    </div>
+</div>
+<div id="component_1188" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1188">COPY_CHILDREN</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A list of all local child type names to <a href="member/finalize/index.html"><code>process</code></a> into the <a href="property/finalization/index.html"><code>finalization</code></a>.</p>
+</span>
+    </div>
+</div>
+<div id="component_1203" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1203">NATURALIZE_CHILDREN</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>Some child Component types should never be <a href="javascript:return false;"><code>marked as inherited</code></a>.</p>
+</span>
+    </div>
+</div>
+<div id="component_1191" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/array/index.html">Array</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1191">SORT_CHILDREN</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A list of all child type names from the <a href="property/finalization/index.html"><code>finalization</code></a> that should be sorted
+after they are filled.</p>
+</span>
+    </div>
+</div>
+<div id="component_1200" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1200">SPECIAL_CTYPES</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A handful of Component <a href="index.html#component_1107"><code>ctypes</code></a> are important enough that they are <a href="member/finalize/index.html"><code>finalized</code></a> under their <a href="index.html#component_1107"><code>ctype</code></a> instead of their child type. Stored as a truth map.</p>
+</span>
+    </div>
+</div>
+<div id="component_1194" class="child local">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="../../../../property/object/index.html">Object</a>
+            
+        </span>
+        
+        <a class="title" href="index.html#component_1194">SPLIT_FUNCTIONS</a>
+    </span>
+    <div class="info">
+<span class="markdown"><p>A handful of local child types should be split into different type names on the <a href="property/finalization/index.html"><code>finalization</code></a> depending on whether or not they are <a href="javascript:return false;"><code>marked callable</code></a>. These are mapped as <code>{ localName: [ &quot;isFunction&quot;, &quot;notFunction&quot; ],
+}</code>.</p>
+</span>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

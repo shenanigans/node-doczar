@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>zlib documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../highlight.css" />
+    <script type="text/javascript" src="../../index.js"></script>
+</head>
+<body class="module" id="component_827">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../index.html">module</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="index.html" class="breadcrumb module">zlib</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#statics">Static Properties</a></h4>
+                <a href="#component_804">Deflate</a><br />
+                <a href="#component_806">DeflateRaw</a><br />
+                <a href="#component_803">Gunzip</a><br />
+                <a href="#component_802">Gzip</a><br />
+                <a href="#component_805">Inflate</a><br />
+                <a href="#component_807">InflateRaw</a><br />
+                <a href="#component_808">Unzip</a><br />
+                <a href="#component_826">Zlib</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#functions">Static Functions</a></h4>
+                <a href="#component_793">createDeflate</a><br />
+                <a href="#component_797">createDeflateRaw</a><br />
+                <a href="#component_791">createGunzip</a><br />
+                <a href="#component_789">createGzip</a><br />
+                <a href="#component_795">createInflate</a><br />
+                <a href="#component_799">createInflateRaw</a><br />
+                <a href="#component_801">createUnzip</a><br />
+                <a href="#component_809">deflate</a><br />
+                <a href="#component_811">deflateRaw</a><br />
+                <a href="#component_812">deflateRawSync</a><br />
+                <a href="#component_810">deflateSync</a><br />
+                <a href="#component_815">gunzip</a><br />
+                <a href="#component_816">gunzipSync</a><br />
+                <a href="#component_813">gzip</a><br />
+                <a href="#component_814">gzipSync</a><br />
+                <a href="#component_817">inflate</a><br />
+                <a href="#component_819">inflateRaw</a><br />
+                <a href="#component_820">inflateRawSync</a><br />
+                <a href="#component_818">inflateSync</a><br />
+                <a href="#component_821">unzip</a><br />
+                <a href="#component_822">unzipSync</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_787" href="https://nodejs.org/api/zlib.html#zlib_examples">Examples</a>
+                            <br />
+                            <a class="spare" id="component_786" href="https://nodejs.org/api/zlib.html#zlib_zlib">Library Documentation</a>
+                            <br />
+                    </div>
+            </div>
+<div class="children">
+        <!-- static properties -->
+        <h1 id="statics" class="header">Static Properties</h1>
+        <div class="section properties">
+<div id="component_804" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflate">Deflate</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_806" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflateraw">DeflateRaw</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_803" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gunzip">Gunzip</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_802" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gzip">Gzip</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_805" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflate">Inflate</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_807" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflateraw">InflateRaw</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_808" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_unzip">Unzip</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">zlib.Zlib</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_826" class="child class">
+    <span class="signature">
+        <span></span>
+        
+            <span class="ctype">class</span>
+        
+        <a class="title" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib">Zlib</a>
+    </span>
+        <div class="source super">
+            Subclass of <a class="super" href="../../property/readable/index.html">stream.Readable</a>
+        </div>
+        <div class="source super">
+            Subclass of <a class="super" href="../../property/writable/index.html">stream.Writable</a>
+        </div>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- static functions -->
+        <h1 id="functions" class="header">Static Functions</h1>
+        <div class="section properties">
+<div id="component_793" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflate">zlib.Deflate</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_createdeflate_options" class="title">
+            createDeflate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_792" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflate">zlib.Deflate</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_797" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflateraw">zlib.DeflateRaw</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_createdeflateraw_options" class="title">
+            createDeflateRaw
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_796" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_deflateraw">zlib.DeflateRaw</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_791" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gunzip">zlib.Gunzip</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_creategunzip_options" class="title">
+            createGunzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_790" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gunzip">zlib.Gunzip</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_789" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gzip">zlib.Gzip</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_creategzip_options" class="title">
+            createGzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_788" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_gzip">zlib.Gzip</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_795" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflate">zlib.Inflate</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_createinflate_options" class="title">
+            createInflate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_794" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflate">zlib.Inflate</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_799" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflateraw">zlib.InflateRaw</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_createinflateraw_options" class="title">
+            createInflateRaw
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_798" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_inflateraw">zlib.InflateRaw</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_801" class="child function">
+    <span class="signature">
+        <span>
+            <span class="valsep">,</span>
+            <span class="types">
+                <span class="valsep punctuation">|</span>
+                <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_unzip">zlib.Unzip</a>
+            </span>
+        </span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_createunzip_options" class="title">
+            createUnzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+            <h4>Returns</h4>
+            <div class="section returns">
+                <div class="return">
+<div id="component_800" class="child returns">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://nodejs.org/api/zlib.html#zlib_class_zlib_unzip">zlib.Unzip</a>
+            
+        </span>
+        
+        <a class="title" href="javascript:return false;"></a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+                </div>
+            </div>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_809" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_deflate_buf_options_callback" class="title">
+            deflate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_811" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_deflateraw_buf_options_callback" class="title">
+            deflateRaw
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_812" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_deflaterawsync_buf_options" class="title">
+            deflateRawSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_810" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_deflatesync_buf_options" class="title">
+            deflateSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_815" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_gunzip_buf_options_callback" class="title">
+            gunzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_816" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_gunzipsync_buf_options" class="title">
+            gunzipSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_813" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_gzip_buf_options_callback" class="title">
+            gzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_814" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_gzipsync_buf_options" class="title">
+            gzipSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_817" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_inflate_buf_options_callback" class="title">
+            inflate
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_819" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_inflateraw_buf_options_callback" class="title">
+            inflateRaw
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_820" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_inflaterawsync_buf_options" class="title">
+            inflateRawSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_818" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_inflatesync_buf_options" class="title">
+            inflateSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_821" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_unzip_buf_options_callback" class="title">
+            unzip
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_822" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/zlib.html#zlib_zlib_unzipsync_buf_options" class="title">
+            unzipSync
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

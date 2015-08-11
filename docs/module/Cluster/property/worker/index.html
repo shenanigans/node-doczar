@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cluster.Worker documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="class" id="component_194">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">class</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">Cluster</a><span class="delimiter">.</span><a href="index.html" class="breadcrumb class">Worker</a>
+            </span>
+        </div>
+<div id="TOC">
+        <div class="section">
+            <h4 class="header"><a href="#events">Events</a></h4>
+                <a href="#component_191">disconnect</a><br />
+                <a href="#component_193">error</a><br />
+                <a href="#component_192">exit</a><br />
+                <a href="#component_190">listening</a><br />
+                <a href="#component_188">message</a><br />
+                <a href="#component_189">online</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#members">Member Properties</a></h4>
+                <a href="#component_180">id</a><br />
+                <a href="#component_181">process</a><br />
+                <a href="#component_182">suicide</a><br />
+        </div>
+        <div class="section">
+            <h4 class="header"><a href="#methods">Methods</a></h4>
+                <a href="#component_185">disconnect</a><br />
+                <a href="#component_187">isConnected</a><br />
+                <a href="#component_186">isDead</a><br />
+                <a href="#component_184">kill</a><br />
+                <a href="#component_183">send</a><br />
+        </div>
+</div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                <div class="clear"></div>
+                    <!-- extra document info -->
+                    <h1>Additional Documentation Pages</h1>
+                    <div id="spares" class="section spares">
+                            <a class="spare" id="component_179" href="https://nodejs.org/api/cluster.html#cluster_class_worker">Library Documentation</a>
+                            <br />
+                    </div>
+                    <!-- constructor function -->
+            </div>
+<div class="children">
+        <!-- events -->
+        <h1 id="events" class="header">Events</h1>
+        <div class="section members">
+<div id="component_191" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_disconnect">disconnect</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_193" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_error">error</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_192" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_exit">exit</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_190" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_listening">listening</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_188" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_message">message</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+<div id="component_189" class="child event">
+    <span class="signature">
+        <span></span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_event_online">online</a>
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- member properties -->
+        <h1 id="members" class="header">Member Properties</h1>
+        <div class="section members">
+<div id="component_180" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_worker_id">id</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_181" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https">child_process:ChildProcess</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_worker_process">process</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+<div id="component_182" class="child member">
+    <span class="signature">
+        <span>
+            <span class="valsep">|</span>
+            <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>
+            
+        </span>
+        
+        <a class="title" href="https://nodejs.org/api/cluster.html#cluster_worker_suicide">suicide</a>
+    </span>
+    <div class="info">
+<span class="markdown"></span>
+    </div>
+</div>
+        </div>
+        <!-- methods -->
+        <h1 id="methods" class="header">Methods</h1>
+        <div class="section members">
+<div id="component_185" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/cluster.html#cluster_worker_disconnect" class="title">
+            disconnect
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_187" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/cluster.html#cluster_worker_isconnected" class="title">
+            isConnected
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_186" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/cluster.html#cluster_worker_isdead" class="title">
+            isDead
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_184" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/cluster.html#cluster_worker_kill_signal_sigterm" class="title">
+            kill
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+<div id="component_183" class="child function">
+    <span class="signature">
+        <span></span>
+        <a href="https://nodejs.org/api/cluster.html#cluster_worker_send_message_sendhandle" class="title">
+            send
+        </a>
+        (
+            <span></span>
+        ) {
+    </span>
+    <div class="info">
+        <span class="markdown"></span>
+        <div class="tail" /></div>
+    </div>
+</div>
+        </div>
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

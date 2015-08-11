@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar~details documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../index.js"></script>
+</head>
+<body class="spare" id="component_1241">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../index.html">spare</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">~</span><a href="index.html" class="breadcrumb spare">details</a>
+            </span>
+        </div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                    <div class="markdown"><p>Select, load and parse source files for <code>doczar</code> format documentation comments. Render html
+output to a configured disk location.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">o, out</td>
+<td>Selects a directory to fill with documentation output. The directory need not exist or be empty.</td>
+</tr>
+<tr>
+<td style="text-align:right">i, in</td>
+<td>Selects files to document. Parses nix-like wildcards using <a href="https://github.com/isaacs/node-glob">glob</a>. <code>doczar</code> does not parse directories - you must select files.</td>
+</tr>
+<tr>
+<td style="text-align:right">j, js, jsmod</td>
+<td>Loads the filename with <a href="https://github.com/defunctzombie/node-required">required</a> and documents every required source file.</td>
+</tr>
+<tr>
+<td style="text-align:right">with</td>
+<td>Include a prebuilt standard library in the documentation.</td>
+</tr>
+<tr>
+<td style="text-align:right">dev</td>
+<td>Display Components marked with the <code>@development</code> modifier.</td>
+</tr>
+<tr>
+<td style="text-align:right">api</td>
+<td>Display <strong>only</strong> Components marked with the <code>@api</code> modifier.</td>
+</tr>
+<tr>
+<td style="text-align:right">raw</td>
+<td>Log events as json strings instead of pretty printing them.</td>
+</tr>
+<tr>
+<td style="text-align:right">json</td>
+<td>Create an <code>index.json</code> file in each directory instead of a rendered <code>index.html</code>.</td>
+</tr>
+<tr>
+<td style="text-align:right">date</td>
+<td>Explicitly set the datestamp on each page with any Date-compatible string.</td>
+</tr>
+</tbody>
+</table>
+</div>
+                <div class="clear"></div>
+            </div>
+<div class="children">
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

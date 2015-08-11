@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>doczar:Parser:Path~summary documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../index.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../../highlight.css" />
+    <script type="text/javascript" src="../../../../../../../../index.js"></script>
+</head>
+<body class="spare" id="component_837">
+    <div id="outer">
+        <div id="header">
+            
+            
+            
+            
+            
+            <a class="ctype" href="../../../../../../../../index.html">spare</a>
+            <span></span>
+            <span class="breadcrumbs">
+                <span class="delimiter">:</span><a href="../../../../../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="../../../../index.html" class="breadcrumb module">Parser</a><span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">Path</a><span class="delimiter">~</span><a href="index.html" class="breadcrumb spare">summary</a>
+            </span>
+        </div>
+        <div id="content">
+            <!-- basic document info -->
+            <div id="details">
+                    <div class="markdown"><p>Paths are represented as Arrays of Arrays, each child Array representing the individual portions
+of a fragement path. That is, the delimiter, the String fragment name, and in the case that the
+fragment is an es6 symbol a third child contains another <code>Path</code> representing the parsed form of
+the fragment name. Examplia gratia:</p>
+<pre><code class="lang-javascript">[ [ <span class="hljs-string">"."</span>, <span class="hljs-string">"name"</span> ], ...]
+</code></pre>
+<p>Or with a symbol:</p>
+<pre><code class="lang-javascript">[ [ <span class="hljs-string">"."</span>, <span class="hljs-string">"Symbols.iterator"</span>, [ [ <span class="hljs-string">"."</span>, <span class="hljs-string">"Symbols"</span> ], [ <span class="hljs-string">"."</span>, <span class="hljs-string">"iterator"</span> ] ] ]
+</code></pre>
+</div>
+                <div class="clear"></div>
+            </div>
+<div class="children">
+</div>
+        </div>
+    </div>
+    <div id="footer">
+        This document was generated with
+        <a href="https://github.com/shenanigans/node-doczar">doczar</a>
+        at <span class="time">2:41am</span> on <span class="date">8/11/2015</span>
+    </div>
+</body>
+</html>

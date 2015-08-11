@@ -2,7 +2,7 @@
 /**     @module http
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_http`
-@Array[String] METHODS
+@Array<String> METHODS
     @remote `https://nodejs.org/api/http.html#http_http_methods`
 @Object STATUS_CODES
     @remote `https://nodejs.org/api/http.html#http_http_status_codes`
@@ -59,7 +59,7 @@
     @remote `https://nodejs.org/api/http.html#http_event_close_1`
 @event finish
     @remote `https://nodejs.org/api/http.html#http_event_finish`
-writeContinue
+@Function #writeContinue
     @remote `https://nodejs.org/api/http.html#http_response_writecontinue`
 @Function #writeHead
     @remote `https://nodejs.org/api/http.html#http_response_writehead_statuscode_statusmessage_headers`
