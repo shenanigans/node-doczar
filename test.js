@@ -112,6 +112,8 @@ function runTest (name) {
         });
 
         it ("correctly reproduces the sample", function (done) {
+            this.timeout (10000);
+            this.slow (3000);
             function checkLevel (level, callback) {
                 var outputDoc, compareDoc;
                 var outputDirs = [];
