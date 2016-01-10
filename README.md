@@ -15,7 +15,7 @@ doczar
 | 11 | [Javascript ES6](#javascript-es6)
 | 12 | [LICENSE](#license)
 
-Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
+Doczar (pronounced **dōzer**) is a simple, explicit documentation generator for javascript, python,
 ruby, java, c-like languages, and others.
 
 Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
