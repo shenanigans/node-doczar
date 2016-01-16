@@ -1,22 +1,8 @@
 doczar
 ======
-|    | Table Of Contents
-|---:|-------------------------------
-|  1 | [Installation](#installation)
-|  2 | [Shell Usage](#shell-usage)
-|  3 | [Development](#development)
-|  4 | [Comment Syntax](#comment-syntax)
-|  5 | [Components, Types and Paths](#components-types-and-paths)
-|  6 | [Documents and Spares](#documents-and-spares)
-|  7 | [Functions](#functions)
-|  8 | [Inheritence](#inheritence)
-|  9 | [Events and Errors](#events-and-errors)
-| 10 | [Generics](#generics)
-| 11 | [Javascript ES6](#javascript-es6)
-| 12 | [LICENSE](#license)
-
 Doczar (pronounced **dōzer**) is a simple, explicit documentation generator for javascript, python,
-ruby, java, c-like languages, and others.
+ruby, java, c-like languages, and others. It is used to generate [its own docs.]
+(http://shenanigans.github.io/node-doczar/docs/module/doczar/index.html)
 
 Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
@@ -31,6 +17,21 @@ large, complex entities easy.
  * multiple return values and keyword arguments
  * function signatures
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
+
+|    | Table Of Contents
+|---:|-------------------------------
+|  1 | [Installation](#installation)
+|  2 | [Shell Usage](#shell-usage)
+|  3 | [Development](#development)
+|  4 | [Comment Syntax](#comment-syntax)
+|  5 | [Components, Types and Paths](#components-types-and-paths)
+|  6 | [Documents and Spares](#documents-and-spares)
+|  7 | [Functions](#functions)
+|  8 | [Inheritence](#inheritence)
+|  9 | [Events and Errors](#events-and-errors)
+| 10 | [Generics](#generics)
+| 11 | [Javascript ES6](#javascript-es6)
+| 12 | [LICENSE](#license)
 
 
 Installation
