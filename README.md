@@ -559,7 +559,7 @@ are only displayed in the documentation (and crosslinked).
 @signature (Number content)
     Convert the number to ascii text and send, followed
     by `STOP`.
-@signature (Array[String] content)
+@signature (Array<String> content)
     Send each message, delimited and terminated with
     `STOP`.
 */
@@ -658,8 +658,8 @@ Type paths support generics (java), templates (c++) and arrays-of-things (javasc
 specify any number of generic types on any type path, including with the use of multiple types and
 pipes `|`.
 ```c
-/**     @property/Array[String]|undefined fooProp
-    An Array of Strings, or undefined.
+/**     @property/Array<String>|Object<String, String>|undefined fooProp
+    An Array of Strings, an Object mapping Strings to Strings, or undefined.
 */
 ```
 
