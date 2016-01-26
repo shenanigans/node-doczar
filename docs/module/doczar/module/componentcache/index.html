@@ -17,7 +17,7 @@
             <a class="ctype" href="../../../../index.html">module</a>
             <span></span>
             <span class="breadcrumbs">
-                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb module">ComponentCache</a>
+                <span class="delimiter">.</span><a href="../../index.html" class="breadcrumb ">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb ">ComponentCache</a>
             </span>
         </div>
 <div id="TOC">
@@ -39,8 +39,8 @@
             <!-- basic document info -->
             <div id="details">
                         <div class="markdown"><p>Roots a document tree and builds all the <a href="../../module/component/index.html"><code>Components</code></a> that live inside it.
-<a href="member/resolve/index.html"><code>Looks up</code></a> and <a href="member/getcomponent/index.html"><code>creates</code></a> <a href="../../module/component/index.html"><code>Components</code></a> by path.
-Centralizes <a href="member/finalize/index.html"><code>finalization</code></a> and <a href="member/writefiles/index.html"><code>filesystem output</code></a>.</p>
+<a href="#resolve">Looks up</a> and <a href="#getComponent">creates</a> <a href="../../module/component/index.html"><code>Components</code></a> by path.
+Centralizes <a href="#finalize">finalization</a> and <a href="#writeFiles">filesystem output</a>.</p>
 </div>
                 <div class="clear"></div>
                     <!-- constructor function -->
@@ -91,6 +91,7 @@ will be logged on this <a href="javascript:return false;"><code>Logger</code></a
                         </div>
             </div>
 <div class="children">
+    
         <!-- member properties -->
         <h1 id="members" class="header">Member Properties</h1>
         <div class="section members">
@@ -144,7 +145,7 @@ will be logged on this <a href="javascript:return false;"><code>Logger</code></a
         ) {
     </span>
     <div class="info">
-        <span class="markdown"><p><a href="javascript:return false;"><code>Prepare</code></a> every <a href="../../module/component/index.html"><code>Component</code></a> in the cache for
+        <span class="markdown"><p><a href="../../module/component/member/finalize/index.html"><code>Prepare</code></a> every <a href="../../module/component/index.html"><code>Component</code></a> in the cache for
 rendering and execute a callback.</p>
 </span>
             <h4>Arguments</h4>
@@ -158,7 +159,7 @@ rendering and execute a callback.</p>
             <a class="valtype" href="../../../../property/object/index.html">Object</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/finalize/index.html#component_969">
             options
         </a>
     
@@ -172,7 +173,7 @@ rendering and execute a callback.</p>
     
     
         <span></span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/finalize/index.html#component_972">
             callback
         </a>
     <span>
@@ -181,7 +182,7 @@ rendering and execute a callback.</p>
     </span>
 </span>
                         <div class="info">
-                            <span class="markdown"><p>Called when ready to <a href="member/writefiles/index.html"><code>output files</code></a>. No arguments.</p>
+                            <span class="markdown"><p>Called when ready to <a href="#writeFiles">output files</a>. No arguments.</p>
 </span>
                         </div>
                     </div>
@@ -227,10 +228,10 @@ to create a Component.</p>
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/getcomponent/index.html#component_938">
             tpath
         </a>
     
@@ -252,7 +253,7 @@ to create a Component.</p>
             
         </span>
         
-        <a class="title" href="javascript:return false;"></a>
+        <a class="title" href="member/getcomponent/index.html#component_941"></a>
     </span>
     <div class="info">
 <span class="markdown"><p>The retrieved or newly created component.</p>
@@ -313,10 +314,10 @@ link.</p>
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/getrelativeurlfortype/index.html#component_978">
             start
         </a>
     
@@ -332,10 +333,10 @@ link.</p>
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/getrelativeurlfortype/index.html#component_981">
             type
         </a>
     
@@ -357,7 +358,7 @@ link.</p>
             
         </span>
         
-        <a class="title" href="javascript:return false;"></a>
+        <a class="title" href="member/getrelativeurlfortype/index.html#component_984"></a>
     </span>
     <div class="info">
 <span class="markdown"><p>Either a relative url to the requested Component&#39;s root page, or <code>&quot;javascript:return false;&quot;</code>.</p>
@@ -407,10 +408,10 @@ found.</p>
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/resolve/index.html#component_947">
             tpath
         </a>
     
@@ -432,7 +433,7 @@ found.</p>
             
         </span>
         
-        <a class="title" href="javascript:return false;"></a>
+        <a class="title" href="member/resolve/index.html#component_956"></a>
     </span>
     <div class="info">
 <span class="markdown"><p>The retrieved Component.</p>
@@ -476,7 +477,7 @@ found.</p>
     </span>
     <div class="info">
         <span class="markdown"><p>Retrieve an existing or new <a href="../../module/component/index.html"><code>Component</code></a> from this cache by the specified path
-and call <a href="javascript:return false;"><code>submit</code></a> on it with the provided <code>info</code> Object.</p>
+and call <a href="../../module/component/member/submit/index.html"><code>submit</code></a> on it with the provided <code>info</code> Object.</p>
 </span>
             <h4>Arguments</h4>
             <div class="section arguments">
@@ -486,10 +487,10 @@ and call <a href="javascript:return false;"><code>submit</code></a> on it with t
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/submit/index.html#component_962">
             tpath
         </a>
     
@@ -505,10 +506,10 @@ and call <a href="javascript:return false;"><code>submit</code></a> on it with t
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Submission</a>
+            <a class="valtype" href="../../module/parser/module/submission/index.html">doczar:Parser:Submission</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/submit/index.html#component_965">
             info
         </a>
     
@@ -565,7 +566,7 @@ and call <a href="javascript:return false;"><code>submit</code></a> on it with t
     <div class="info">
         <span class="markdown"><p>Create the requested base directory if it does not already exist. Configure and render the base
 <code>index.html</code> file for the root. Copy in global content from <code>./indexFiles</code>. Recursively work
-through the root and call <a href="javascript:return false;"><code>writeFiles</code></a> on all immediate child
+through the root and call <a href="../../module/component/member/writefiles/index.html"><code>writeFiles</code></a> on all immediate child
 Components. Hit the callback when all Components have recursively written their output files, or
 if an Error interrupts the process.</p>
 </span>
@@ -580,7 +581,7 @@ if an Error interrupts the process.</p>
             <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_990">
             basedir
         </a>
     
@@ -599,7 +600,7 @@ if an Error interrupts the process.</p>
             <a class="valtype" href="../../module/options/index.html">doczar:Options</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_991">
             options
         </a>
     
@@ -613,7 +614,7 @@ if an Error interrupts the process.</p>
     
     
         <span></span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_992">
             callback
         </a>
     <span>
@@ -636,7 +637,7 @@ if an Error interrupts the process.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">2:47am</span> on <span class="date">8/11/2015</span>
+        at <span class="time">9:41pm</span> on <span class="date">1/25/2016</span>
     </div>
 </body>
 </html>

@@ -17,7 +17,7 @@
             <a class="ctype" href="../../../../index.html">spare</a>
             <span></span>
             <span class="breadcrumbs">
-                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">~</span><a href="index.html" class="breadcrumb spare">README.md</a>
+                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb ">doczar</a><span class="delimiter">~</span><a href="index.html" class="breadcrumb ">README.md</a>
             </span>
         </div>
         <div id="content">
@@ -26,6 +26,22 @@
                     <div class="markdown"><p>This is the rendered output of the <code>doczar</code> source documentation.
 <em>View the <a href="https://github.com/shenanigans/node-doczar">source</a> on GitHub!</em></p>
 <h1 id="doczar">doczar</h1>
+<p>Doczar (pronounced <strong>dōzer</strong>) is a simple, explicit documentation generator for javascript, python,
+ruby, java, c-like languages, and others. It is used to generate <a href="http://shenanigans.github.io/node-doczar/docs/module/doczar/index.html">its own docs.</a></p>
+<p>Rather than attempting to document the source code itself, doczar <strong>only</strong> uses tagged comments. The
+comment format has been designed for legibility and uses a simple scope model to make documenting
+large, complex entities easy.</p>
+<p>####Features</p>
+<ul>
+<li>describe modules and object-oriented structures</li>
+<li>inheritence, multiple inheritence and Java <code>interface</code></li>
+<li>Github-flavored markdown with syntax highlighting</li>
+<li>semi-automatic crosslinking</li>
+<li>callbacks and events</li>
+<li>multiple return values and keyword arguments</li>
+<li>function signatures</li>
+<li>automatic Node.js <a href="https://github.com/defunctzombie/node-required">dependency graph</a> documentation</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -84,22 +100,6 @@
 </tr>
 </tbody>
 </table>
-<p>Doczar (pronounced <strong>dozer</strong>) is a simple, explicit documentation generator for javascript, python,
-ruby, java, c-like languages, and others.</p>
-<p>Rather than attempting to document the source code itself, doczar <strong>only</strong> uses tagged comments. The
-comment format has been designed for legibility and uses a simple scope model to make documenting
-large, complex entities easy.</p>
-<h4 id="features">Features</h4>
-<ul>
-<li>describe modules and object-oriented structures</li>
-<li>inheritence, multiple inheritence and Java <code>interface</code></li>
-<li>Github-flavored markdown with syntax highlighting</li>
-<li>semi-automatic crosslinking</li>
-<li>callbacks and events</li>
-<li>multiple return values and keyword arguments</li>
-<li>function signatures</li>
-<li>automatic Node.js <a href="https://github.com/defunctzombie/node-required">dependency graph</a> documentation</li>
-</ul>
 <h2 id="installation">Installation</h2>
 <p><code>doczar</code> is cross-platform. Because pathnames are sanitized differently on Windows, documentation is
 best viewed and/or hosted on the same machine where it was generated.</p>
@@ -160,8 +160,8 @@ $ doczar --jsmod ./main # outputs to ./docs
 <p><code>doczar</code> is developed and maintained by Kevin &quot;Schmidty&quot; Smith under the MIT license. If you want to
 see continued development on <code>doczar</code>, please help me <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=PN6C2AZTS2FP8&amp;lc=US&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">pay my bills!</a></p>
 <h2 id="comment-syntax">Comment Syntax</h2>
-<h3 id="declarations">Declarations</h3>
-<p>The simplest form of documentation is a single Declaration in its own block comment with an
+<p>###Declarations
+The simplest form of documentation is a single Declaration in its own block comment with an
 informational summary. The opening line of a block comment must contain only the characters opening
 the comment, a Declaration and as many spaces and tabs as you want. On the next line you may begin
 describing this unit of code with
@@ -204,7 +204,7 @@ multiple files. See <a href="#modules">Modules</a> for more information on scope
     """</span>
 </code></pre>
 <p>Ruby users may use <code>=begin</code> and <code>=end</code> with the same rules.</p>
-<pre><code class="lang-ruby"><span class="hljs-comment">=begin  <span class="hljs-yardoctag">@module</span> MyRubyGem
+<pre><code class="lang-ruby"><span class="hljs-comment">=begin  <span class="hljs-doctag">@module</span> MyRubyGem
     I don't know very much about Ruby.
 =end</span>
 </code></pre>
@@ -236,8 +236,8 @@ middle of a link definition.</p>
     Returns a new instance with the default configuration.
 */</span>
 </code></pre>
-<h3 id="inner-declarations">Inner Declarations</h3>
-<p>Once you have opened a declaration, you may write additional declarations which will all be scoped
+<p>###Inner Declarations
+Once you have opened a declaration, you may write additional declarations which will all be scoped
 to the enclosing comment.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @class MyClass
     A simple class.
@@ -247,8 +247,8 @@ to the enclosing comment.</p>
     A member Function on each instance of MyClass.
 */</span>
 </code></pre>
-<h3 id="modules">Modules</h3>
-<p>In some languages such as Java, the concept of a module is very specific and <code>@module</code> declarations
+<p>###Modules
+In some languages such as Java, the concept of a module is very specific and <code>@module</code> declarations
 always describe an importable structure. In environments like Node.js where directly importing
 submodules is rare, one might use a <code>@module</code> to describe a type that is involved in processing or
 may be returned but which is abstract or cannot be accessed directly.</p>
@@ -270,8 +270,8 @@ their own namespace and are delimited with <code>:</code>.</p>
 
 */</span>
 </code></pre>
-<h3 id="value-types">Value Types</h3>
-<p>A value type is declared with a forward slash. Multiple value types are declared with the pipe <code>|</code>
+<p>###Value Types
+A value type is declared with a forward slash. Multiple value types are declared with the pipe <code>|</code>
 character.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @property/String foobar
     A String property called "foobar".
@@ -280,8 +280,8 @@ character.</p>
     This property may be either a Number or `undefined`.
 */</span>
 </code></pre>
-<h3 id="modifiers-and-flags">Modifiers and Flags</h3>
-<p>Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
+<p>###Modifiers and Flags
+Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags just render literally as helpful
 keywords in a contrasting color.</p>
@@ -297,15 +297,16 @@ keywords in a contrasting color.</p>
 */</span>
 </code></pre>
 <p>Here is a list of the available Modifiers and Flags</p>
-<h4 id="modifiers">Modifiers</h4>
+<p>####Modifiers</p>
 <ul>
 <li><code>@development</code> hides this Component unless the --dev flag is used</li>
 <li><code>@api</code> reveals this Component and its ancestors when the --api flag is used</li>
 <li><code>@optional</code> indicates something which need not exist (usually an argument)</li>
 <li><code>@super</code> inherits from a superclass</li>
 <li><code>@implements</code> associates an implemented Java interface</li>
+<li><code>@default</code> describes a default value. Always use backticks.</li>
 </ul>
-<h4 id="flags">Flags</h4>
+<p>####Flags</p>
 <ul>
 <li><code>@public</code></li>
 <li><code>@protected</code></li>
@@ -316,8 +317,8 @@ keywords in a contrasting color.</p>
 </ul>
 <h2 id="components-types-and-paths">Components, Types and Paths</h2>
 <p>Let&#39;s look at all the Components we have available.</p>
-<h4 id="primary-components">Primary Components</h4>
-<p>These are the only Components which may be used to open a new document comment.</p>
+<p>####Primary Components
+These are the only Components which may be used to open a new document comment.</p>
 <ul>
 <li><code>@module</code> organizational Component</li>
 <li><code>@class</code> instantiable class objects</li>
@@ -330,8 +331,8 @@ keywords in a contrasting color.</p>
 <li><code>@throws</code> conditions causing an exception to be thrown</li>
 <li><code>@enum</code> list of named values</li>
 </ul>
-<h4 id="inner-components">Inner Components</h4>
-<p>These may only appear inside a document comment opened by a Primary Component Declaration.</p>
+<p>####Inner Components
+These may only appear inside a document comment opened by a Primary Component Declaration.</p>
 <ul>
 <li><code>@argument</code> optionally-named function or event argument</li>
 <li><code>@kwarg</code> python-style keyword argument</li>
@@ -342,7 +343,7 @@ keywords in a contrasting color.</p>
 </ul>
 <p>Many of these Component types have their own special path delimiters. This lets us reference more
 things as paths than in any other document generator. Here they are:</p>
-<h4 id="special-delimiters">Special Delimiters</h4>
+<p>####Special Delimiters</p>
 <ul>
 <li><code>~</code> <code>@spare</code></li>
 <li><code>.</code> <code>@property</code></li>
@@ -383,8 +384,8 @@ entirely optional feature. My personal recommendation is to use it only for <cod
     Data stored by this node in the chain.
 */</span>
 </code></pre>
-<h4 id="crosslinking">Crosslinking</h4>
-<p>You can easily crosslink to any other defined Component using the normal markdown link syntax. If
+<p>####Crosslinking
+You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.</p>
 <p>Furthermore, every defined Component is also a valid type, and the same rule applies when starting a
 type path with a delimiter.</p>
@@ -490,8 +491,8 @@ your arguments and return values, or not.</p>
     Type of parrot to joke about.
 */</span>
 </code></pre>
-<h3 id="callback-functions">Callback Functions</h3>
-<p>The <code>@callback</code> Declaration expands the <code>@argument</code> scope in order to document the callback
+<p>###Callback Functions
+The <code>@callback</code> Declaration expands the <code>@argument</code> scope in order to document the callback
 Function&#39;s arguments. You may reclose this scope with any unnamed <code>@returns</code> Declaration. You may
 name your callbacks, or not.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @property/Function loadDefinitions
@@ -530,8 +531,8 @@ name your callbacks, or not.</p>
         Maximum level of jigginess achieved.
 */</span>
 </code></pre>
-<h3 id="function-signatures">Function Signatures</h3>
-<p>If you&#39;re writing an overloaded function with multiple signatures or need to document special
+<p>###Function Signatures
+If you&#39;re writing an overloaded function with multiple signatures or need to document special
 permutations of optional arguments, <code>@signature</code> is there for you. It redefines the return value and
 argument signature and documents the signature separately.</p>
 <p>When you create a <code>@signature</code> with an Inner Declaration, the scope rules for Functions and
@@ -569,7 +570,7 @@ are only displayed in the documentation (and crosslinked).</p>
 @signature (Number content)
     Convert the number to ascii text and send, followed
     by `STOP`.
-@signature (Array[String] content)
+@signature (Array&lt;String&gt; content)
     Send each message, delimited and terminated with
     `STOP`.
 */</span>
@@ -647,12 +648,12 @@ You may name your exception cases, or not.</p>
 <p>Type paths support generics (java), templates (c++) and arrays-of-things (javascript). You may
 specify any number of generic types on any type path, including with the use of multiple types and
 pipes <code>|</code>.</p>
-<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Array[String]|undefined fooProp
-    An Array of Strings, or undefined.
+<pre><code class="lang-c"><span class="hljs-comment">/**     @property/Array&lt;String&gt;|Object&lt;String, String&gt;|undefined fooProp
+    An Array of Strings, an Object mapping Strings to Strings, or undefined.
 */</span>
 </code></pre>
-<h3 id="coming-soon">Coming Soon</h3>
-<p>Generics in Class Declarations.</p>
+<p>###Coming Soon
+Generics in Class Declarations.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @class Container&lt;Object elemType&gt;
     A container of arbitrarily-typed references.
 @function #get
@@ -667,8 +668,8 @@ pipes <code>|</code>.</p>
 Additionally, the <code>browser-strict</code> and <code>iojs</code> standard libraries will pull in ES6 documentation.</p>
 <p>Several additional tricks were added to <code>doczar</code> itself to support the documentation of <code>ES6</code>
 scripts.</p>
-<h3 id="symbols">Symbols</h3>
-<p>Symbols are supported inline everywhere normal paths are supported. You may use either absolute or
+<p>###Symbols
+Symbols are supported inline everywhere normal paths are supported. You may use either absolute or
 locally rooted paths in Symbols.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @module MainPackage */</span>
 
@@ -698,8 +699,8 @@ locally rooted paths in Symbols.</p>
     A String mapped to a static Symbol.
 */</span>
 </code></pre>
-<h3 id="rest-and-spread">Rest and Spread</h3>
-<p>To document use of the <code>rest</code> keyword or &quot;spread&quot; syntax to accept arbitrary numbers of arguments,
+<p>###Rest and Spread
+To document use of the <code>rest</code> keyword or &quot;spread&quot; syntax to accept arbitrary numbers of arguments,
 use the <code>@args</code> declaration.</p>
 <pre><code class="lang-c"><span class="hljs-comment">/**     @member/Function Foo#methodAlfa
     A method that takes at least one argument.
@@ -731,13 +732,15 @@ SOFTWARE.</p>
                 <div class="clear"></div>
             </div>
 <div class="children">
+    
+    
 </div>
         </div>
     </div>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">2:47am</span> on <span class="date">8/11/2015</span>
+        at <span class="time">9:41pm</span> on <span class="date">1/25/2016</span>
     </div>
 </body>
 </html>
