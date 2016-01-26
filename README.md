@@ -8,7 +8,7 @@ Rather than attempting to document the source code itself, doczar **only** uses 
 comment format has been designed for legibility and uses a simple scope model to make documenting
 large, complex entities easy.
 
-####Features
+#### Features
  * describe modules and object-oriented structures
  * inheritence, multiple inheritence and Java `interface`
  * Github-flavored markdown with syntax highlighting
@@ -73,7 +73,7 @@ see continued development on `doczar`, please help me [pay my bills!](https://ww
 
 Comment Syntax
 --------------
-###Declarations
+### Declarations
 The simplest form of documentation is a single Declaration in its own block comment with an
 informational summary. The opening line of a block comment must contain only the characters opening
 the comment, a Declaration and as many spaces and tabs as you want. On the next line you may begin
@@ -167,7 +167,7 @@ To add a child with a standalone doc comment, simply specify a
 ```
 
 
-###Inner Declarations
+### Inner Declarations
 Once you have opened a declaration, you may write additional declarations which will all be scoped
 to the enclosing comment.
 
@@ -182,7 +182,7 @@ to the enclosing comment.
 ```
 
 
-###Modules
+### Modules
 In some languages such as Java, the concept of a module is very specific and `@module` declarations
 always describe an importable structure. In environments like Node.js where directly importing
 submodules is rare, one might use a `@module` to describe a type that is involved in processing or
@@ -211,7 +211,7 @@ their own namespace and are delimited with `:`.
 ```
 
 
-###Value Types
+### Value Types
 A value type is declared with a forward slash. Multiple value types are declared with the pipe `|`
 character.
 ```c
@@ -224,7 +224,7 @@ character.
 ```
 
 
-###Modifiers and Flags
+### Modifiers and Flags
 Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags just render literally as helpful
@@ -243,7 +243,7 @@ keywords in a contrasting color.
 ```
 
 Here is a list of the available Modifiers and Flags
-####Modifiers
+#### Modifiers
  * `@development` hides this Component unless the --dev flag is used
  * `@api` reveals this Component and its ancestors when the --api flag is used
  * `@optional` indicates something which need not exist (usually an argument)
@@ -251,7 +251,7 @@ Here is a list of the available Modifiers and Flags
  * `@implements` associates an implemented Java interface
  * `@default` describes a default value. Always use backticks.
 
-####Flags
+#### Flags
  * `@public`
  * `@protected`
  * `@private`
@@ -265,7 +265,7 @@ Components, Types and Paths
 ---------------------------
 Let's look at all the Components we have available.
 
-####Primary Components
+#### Primary Components
 These are the only Components which may be used to open a new document comment.
  * `@module` organizational Component
  * `@class` instantiable class objects
@@ -279,7 +279,7 @@ These are the only Components which may be used to open a new document comment.
  * `@enum` list of named values
 
 
-####Inner Components
+#### Inner Components
 These may only appear inside a document comment opened by a Primary Component Declaration.
  * `@argument` optionally-named function or event argument
  * `@kwarg` python-style keyword argument
@@ -291,7 +291,7 @@ These may only appear inside a document comment opened by a Primary Component De
 Many of these Component types have their own special path delimiters. This lets us reference more
 things as paths than in any other document generator. Here they are:
 
-####Special Delimiters
+#### Special Delimiters
  * `~` `@spare`
  * `.` `@property`
  * `#` `@member`
@@ -337,7 +337,7 @@ Feel free to document a type as being a pointer or array.
 ```
 
 
-####Crosslinking
+#### Crosslinking
 You can easily crosslink to any other defined Component using the normal markdown link syntax. If
 you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
 
@@ -470,7 +470,7 @@ Keyword arguments are as easy as replacing `@argument` with `@kwarg`.
 ```
 
 
-###Callback Functions
+### Callback Functions
 The `@callback` Declaration expands the `@argument` scope in order to document the callback
 Function's arguments. You may reclose this scope with any unnamed `@returns` Declaration. You may
 name your callbacks, or not.
@@ -515,7 +515,7 @@ Although I've never seen this pattern used, it is possible to document multiple 
 ```
 
 
-###Function Signatures
+### Function Signatures
 If you're writing an overloaded function with multiple signatures or need to document special
 permutations of optional arguments, `@signature` is there for you. It redefines the return value and
 argument signature and documents the signature separately.
@@ -664,7 +664,7 @@ pipes `|`.
 */
 ```
 
-###Coming Soon
+### Coming Soon
 Generics in Class Declarations.
 ```c
 /**     @class Container<Object elemType>
@@ -687,7 +687,7 @@ Additionally, the `browser-strict` and `iojs` standard libraries will pull in ES
 Several additional tricks were added to `doczar` itself to support the documentation of `ES6`
 scripts.
 
-###Symbols
+### Symbols
 Symbols are supported inline everywhere normal paths are supported. You may use either absolute or
 locally rooted paths in Symbols.
 ```c
@@ -722,7 +722,7 @@ locally rooted paths in Symbols.
 */
 ```
 
-###Rest and Spread
+### Rest and Spread
 To document use of the `rest` keyword or "spread" syntax to accept arbitrary numbers of arguments,
 use the `@args` declaration.
 ```c
