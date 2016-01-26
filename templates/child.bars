@@ -21,6 +21,9 @@
         {{/unless}}{{/unless}}
         <a class="title" href="{{link path}}">{{name}}</a>
     </span>
+    {{#if default}}
+        <div class="default">default: <span class="value">{{default}}</span></div>
+    {{/if}}
     {{#if isInherited}}
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>

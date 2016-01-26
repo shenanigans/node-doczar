@@ -249,6 +249,7 @@ Here is a list of the available Modifiers and Flags
  * `@optional` indicates something which need not exist (usually an argument)
  * `@super` inherits from a superclass
  * `@implements` associates an implemented Java interface
+ * `@default` describes a default value. Always use backticks.
 
 ####Flags
  * `@public`

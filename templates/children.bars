@@ -1,5 +1,5 @@
 <div class="children">
-    {{#unless isClasslike}}
+    {{#unless isFunction}}{{#unless isClasslike}}
         {{#if arguments}}
             <h2>Arguments</h2>
             <div class="section arguments">
@@ -44,7 +44,7 @@
                 {{/throws}}
             </div>
         {{/if}}
-    {{/unless}}
+    {{/unless}}{{/unless}}
     {{#if enums}}
         <!-- enums -->
         <h1 id="enums" class="header">Enumerations</h1>
