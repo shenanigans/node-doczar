@@ -17,7 +17,7 @@
             <a class="ctype" href="../../../../index.html">module</a>
             <span></span>
             <span class="breadcrumbs">
-                <span class="delimiter">:</span><a href="../../index.html" class="breadcrumb module">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb module">Component</a>
+                <span class="delimiter">.</span><a href="../../index.html" class="breadcrumb ">doczar</a><span class="delimiter">:</span><a href="index.html" class="breadcrumb ">Component</a>
             </span>
         </div>
 <div id="TOC">
@@ -69,7 +69,7 @@
             <div id="details">
                         <div class="markdown"><p>The quantum of doczar documentation. Every Component has its own directory and html page in the
 final output. Codifies type, expected location and useful information about a unit of data or
-functionality. The ultimate goal is to produce and render a <a href="property/finalization/index.html"><code>Finalization</code></a>.</p>
+functionality. The ultimate goal is to produce and render a <a href="javascript:return false;">Finalization</a>.</p>
 </div>
                 <div class="clear"></div>
                     <!-- constructor function -->
@@ -96,7 +96,7 @@ functionality. The ultimate goal is to produce and render a <a href="property/fi
     
         <span>
             <span class="valsep punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
         <a class="title" href="#component_1212">
@@ -135,7 +135,7 @@ functionality. The ultimate goal is to produce and render a <a href="property/fi
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Path</a>
+            <a class="valtype" href="../../module/parser/index.html#component_839">doczar:Parser:Path</a>
             
         </span>
         <a class="name" href="index.html#component_1212">
@@ -153,6 +153,7 @@ functionality. The ultimate goal is to produce and render a <a href="property/fi
                         </div>
             </div>
 <div class="children">
+    
         <!-- static properties -->
         <h1 id="statics" class="header">Static Properties</h1>
         <div class="section properties">
@@ -260,7 +261,7 @@ constructor function. (Further document this constructor by providing <code>@spa
         <a class="title" href="index.html#component_1113">final</a>
     </span>
     <div class="info">
-<span class="markdown"><p>After <a href="member/finalize/index.html"><code>finalization</code></a>, <code>final</code> is an Object designed to be passed to the template
+<span class="markdown"><p>After <a href="#finalize">finalization</a>, <code>final</code> is an Object designed to be passed to the template
 engine (<a href="http://handlebarsjs.com/">Handlebars</a>).</p>
 </span>
     </div>
@@ -542,25 +543,25 @@ String type paths.</p>
         ) {
     </span>
     <div class="info">
-        <span class="markdown"><p>Create a representative document ready for rendering and save it to <a href="index.html#component_1113"><code>final</code></a>.</p>
-<p>A tricky waltz prepares this Component&#39;s <a href="property/finalization/index.html"><code>finalization</code></a> for rendering.</p>
+        <span class="markdown"><p>Create a representative document ready for rendering and save it to <a href="#final">final</a>.</p>
+<p>A tricky waltz prepares this Component&#39;s <a href="javascript:return false;">finalization</a> for rendering.</p>
 <h2 id="stage-0-accumulation">Stage 0: Accumulation</h2>
 <p>Every child Component on this Component is compiled into two Arrays: One is an Array of Arrays
 grouping children by the name they were stored under, the other is a flat Array of all children.
-The <a href="javascript:return false;"><code>hasChildren</code></a> output Boolean and the <a href="index.html#component_1144"><code>isTotallyEmpty</code></a> local Boolean are processed. Implicit documentation (if any) is converted to
+The <a href="javascript:return false;">hasChildren</a> output Boolean and the <a href="#isTotallyEmpty">isTotallyEmpty</a> local Boolean are processed. Implicit documentation (if any) is converted to
 either a <code>@summary</code> or <code>@details</code> child Component. Finally, <a href="javascript:return false;"><code>async.each</code></a> calls <code>finalize</code> on
 every child Component before proceeding to Stage 2: Compilation.</p>
 <h2 id="stage-1-initialization">Stage 1: Initialization</h2>
 <p>Occurs synchronously after Stage 0. Leaves are processed first, then downward toward the trunk.
-This Component&#39;s <a href="index.html#component_1113"><code>final</code></a> property is partially filled. Simple flag properties are set.
+This Component&#39;s <a href="#final">final</a> property is partially filled. Simple flag properties are set.
 Empty containers are placed for all child types.</p>
 <p>If this Component is a <code>@spare</code> then markdown is rendered now. Modifiers are processed into the
-<a href="property/finalization/index.html"><code>finalization</code></a>. The local Booleans <a href="index.html#component_1107"><code>ctype</code></a>, <a href="index.html#component_1145"><code>isClassValtype</code></a> and <a href="index.html#component_1146"><code>isJSONValtype</code></a> are processed into the output Booleans
-<a href="javascript:return false;"><code>isFunction</code></a>, <a href="javascript:return false;"><code>isCallback</code></a>, <a href="javascript:return false;"><code>isClasslike</code></a> and <a href="javascript:return false;"><code>isInline</code></a>.</p>
+<a href="javascript:return false;">finalization</a>. The local Booleans <a href="#ctype">ctype</a>, <a href="#isClassValtype">isClassValtype</a> and <a href="#isJSONValtype">isJSONValtype</a> are processed into the output Booleans
+<a href="javascript:return false;">isFunction</a>, <a href="javascript:return false;">isCallback</a>, <a href="javascript:return false;">isClasslike</a> and <a href="javascript:return false;">isInline</a>.</p>
 <p>At this point, the <code>finalize</code> call returns. After a trip around the event loop, Stage 2 begins
 to process from the trunk outward to the leaves.</p>
 <h2 id="stage-2-compilation">Stage 2: Compilation</h2>
-<p>Control briefly passes to <a href="member/inherit/index.html"><code>#inherit</code></a> to generate a new Object containing inherited properties.
+<p>Control briefly passes to <a href="#inherit">#inherit</a> to generate a new Object containing inherited properties.
 Every Component with a superclass digs recursively to base classes and builds new versions of
 several child sets. These inherited sets include local children too.</p>
 <p>Every expected variety of child Component is enumerated and a source set picked from either the
@@ -573,7 +574,7 @@ inheritence document (preferentially) or the local Component.</p>
     
     
         <span></span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/finalize/index.html#component_1166">
             options
         </a>
     
@@ -618,7 +619,7 @@ a pre-compiled inheritence result and <em>not</em> just the inherited children.<
             
         </span>
         
-        <a class="title" href="javascript:return false;"></a>
+        <a class="title" href="member/inherit/index.html#component_1172"></a>
     </span>
     <div class="info">
 <span class="markdown"><p>The assembled inheritence document is returned. It looks like an incomplete Component instance,
@@ -662,10 +663,10 @@ containing only child Components.</p>
     
         <span>
             <span class="valsep punctuation punctuation">|</span>
-            <a class="valtype" href="javascript:return false;">doczar:Parser:Submission</a>
+            <a class="valtype" href="../../module/parser/module/submission/index.html">doczar:Parser:Submission</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/submit/index.html#component_1149">
             info
         </a>
     
@@ -743,7 +744,7 @@ containing only child Components.</p>
             <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_1176">
             basedir
         </a>
     
@@ -761,7 +762,7 @@ containing only child Components.</p>
             <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_1177">
             baseTagPath
         </a>
     
@@ -779,7 +780,7 @@ containing only child Components.</p>
             <a class="valtype" href="../../module/options/index.html">doczar:Options</a>
             
         </span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/index.html#component_1178">
             options
         </a>
     
@@ -793,7 +794,7 @@ containing only child Components.</p>
     
     
         <span></span>
-        <a class="name" href="javascript:return false;">
+        <a class="name" href="member/writefiles/argument/callback/index.html">
             callback
         </a>
     <span>
@@ -825,7 +826,7 @@ containing only child Components.</p>
                                                             <span class="valsep">|</span>
                                                             <a class="valtype" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>
                                                         </span>
-                                                        <a class="title" href="javascript:return false;">
+                                                        <a class="title" href="member/writefiles/argument/callback/index.html#component_1181">
                                                             err
                                                         </a>
                                                 </span>
@@ -869,7 +870,7 @@ containing only child Components.</p>
     </span>
     <div class="info">
 <span class="markdown"><p>For dumb reasons, some local child type names are simply converted to a plural name in the
-<a href="property/finalization/index.html"><code>finalization</code></a>. This should be refactored out soon.</p>
+<a href="javascript:return false;">finalization</a>. This should be refactored out soon.</p>
 </span>
     </div>
 </div>
@@ -884,7 +885,7 @@ containing only child Components.</p>
         <a class="title" href="index.html#component_1188">COPY_CHILDREN</a>
     </span>
     <div class="info">
-<span class="markdown"><p>A list of all local child type names to <a href="member/finalize/index.html"><code>process</code></a> into the <a href="property/finalization/index.html"><code>finalization</code></a>.</p>
+<span class="markdown"><p>A list of all local child type names to <a href="#finalize">process</a> into the <a href="javascript:return false;">finalization</a>.</p>
 </span>
     </div>
 </div>
@@ -899,7 +900,7 @@ containing only child Components.</p>
         <a class="title" href="index.html#component_1203">NATURALIZE_CHILDREN</a>
     </span>
     <div class="info">
-<span class="markdown"><p>Some child Component types should never be <a href="javascript:return false;"><code>marked as inherited</code></a>.</p>
+<span class="markdown"><p>Some child Component types should never be <a href="javascript:return false;">marked as inherited</a>.</p>
 </span>
     </div>
 </div>
@@ -914,7 +915,7 @@ containing only child Components.</p>
         <a class="title" href="index.html#component_1191">SORT_CHILDREN</a>
     </span>
     <div class="info">
-<span class="markdown"><p>A list of all child type names from the <a href="property/finalization/index.html"><code>finalization</code></a> that should be sorted
+<span class="markdown"><p>A list of all child type names from the <a href="javascript:return false;">finalization</a> that should be sorted
 after they are filled.</p>
 </span>
     </div>
@@ -930,7 +931,7 @@ after they are filled.</p>
         <a class="title" href="index.html#component_1200">SPECIAL_CTYPES</a>
     </span>
     <div class="info">
-<span class="markdown"><p>A handful of Component <a href="index.html#component_1107"><code>ctypes</code></a> are important enough that they are <a href="member/finalize/index.html"><code>finalized</code></a> under their <a href="index.html#component_1107"><code>ctype</code></a> instead of their child type. Stored as a truth map.</p>
+<span class="markdown"><p>A handful of Component <a href="#ctype">ctypes</a> are important enough that they are <a href="#finalize">finalized</a> under their <a href="#ctype">ctype</a> instead of their child type. Stored as a truth map.</p>
 </span>
     </div>
 </div>
@@ -945,7 +946,7 @@ after they are filled.</p>
         <a class="title" href="index.html#component_1194">SPLIT_FUNCTIONS</a>
     </span>
     <div class="info">
-<span class="markdown"><p>A handful of local child types should be split into different type names on the <a href="property/finalization/index.html"><code>finalization</code></a> depending on whether or not they are <a href="javascript:return false;"><code>marked callable</code></a>. These are mapped as <code>{ localName: [ &quot;isFunction&quot;, &quot;notFunction&quot; ],
+<span class="markdown"><p>A handful of local child types should be split into different type names on the <a href="javascript:return false;">finalization</a> depending on whether or not they are <a href="javascript:return false;">marked callable</a>. These are mapped as <code>{ localName: [ &quot;isFunction&quot;, &quot;notFunction&quot; ],
 }</code>.</p>
 </span>
     </div>
@@ -957,7 +958,7 @@ after they are filled.</p>
     <div id="footer">
         This document was generated with
         <a href="https://github.com/shenanigans/node-doczar">doczar</a>
-        at <span class="time">2:47am</span> on <span class="date">8/11/2015</span>
+        at <span class="time">9:41pm</span> on <span class="date">1/25/2016</span>
     </div>
 </body>
 </html>
