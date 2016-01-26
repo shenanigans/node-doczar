@@ -49,7 +49,7 @@ function runTest (name) {
                 async.parallel ([
                     function (callback) {
                         var command =
-                            'doczar --verbose debug --json --raw --with browser-strict --date "june 5 2020" '
+                            'node ./cli.js --verbose debug --json --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
                           + name.replace (' ', '')
                           + '.js --out test/out/'
@@ -74,7 +74,7 @@ function runTest (name) {
                     },
                     function (callback) {
                         var command =
-                            'doczar --verbose debug --raw --with browser-strict --date "june 5 2020" '
+                            'node ./cli.js --verbose debug --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
                           + name.replace (' ', '')
                           + '.js --out test/out/'
@@ -112,6 +112,8 @@ function runTest (name) {
         });
 
         it ("correctly reproduces the sample", function (done) {
+            this.timeout (10000);
+            this.slow (3000);
             function checkLevel (level, callback) {
                 var outputDoc, compareDoc;
                 var outputDirs = [];

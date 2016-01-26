@@ -1,22 +1,8 @@
 doczar
 ======
-|    | Table Of Contents
-|---:|-------------------------------
-|  1 | [Installation](#installation)
-|  2 | [Shell Usage](#shell-usage)
-|  3 | [Development](#development)
-|  4 | [Comment Syntax](#comment-syntax)
-|  5 | [Components, Types and Paths](#components-types-and-paths)
-|  6 | [Documents and Spares](#documents-and-spares)
-|  7 | [Functions](#functions)
-|  8 | [Inheritence](#inheritence)
-|  9 | [Events and Errors](#events-and-errors)
-| 10 | [Generics](#generics)
-| 11 | [Javascript ES6](#javascript-es6)
-| 12 | [LICENSE](#license)
-
-Doczar (pronounced **dozer**) is a simple, explicit documentation generator for javascript, python,
-ruby, java, c-like languages, and others.
+Doczar (pronounced **dōzer**) is a simple, explicit documentation generator for javascript, python,
+ruby, java, c-like languages, and others. It is used to generate [its own docs.]
+(http://shenanigans.github.io/node-doczar/docs/module/doczar/index.html)
 
 Rather than attempting to document the source code itself, doczar **only** uses tagged comments. The
 comment format has been designed for legibility and uses a simple scope model to make documenting
@@ -31,6 +17,21 @@ large, complex entities easy.
  * multiple return values and keyword arguments
  * function signatures
  * automatic Node.js [dependency graph](https://github.com/defunctzombie/node-required) documentation
+
+|    | Table Of Contents
+|---:|-------------------------------
+|  1 | [Installation](#installation)
+|  2 | [Shell Usage](#shell-usage)
+|  3 | [Development](#development)
+|  4 | [Comment Syntax](#comment-syntax)
+|  5 | [Components, Types and Paths](#components-types-and-paths)
+|  6 | [Documents and Spares](#documents-and-spares)
+|  7 | [Functions](#functions)
+|  8 | [Inheritence](#inheritence)
+|  9 | [Events and Errors](#events-and-errors)
+| 10 | [Generics](#generics)
+| 11 | [Javascript ES6](#javascript-es6)
+| 12 | [LICENSE](#license)
 
 
 Installation
@@ -248,6 +249,7 @@ Here is a list of the available Modifiers and Flags
  * `@optional` indicates something which need not exist (usually an argument)
  * `@super` inherits from a superclass
  * `@implements` associates an implemented Java interface
+ * `@default` describes a default value. Always use backticks.
 
 ####Flags
  * `@public`
@@ -558,7 +560,7 @@ are only displayed in the documentation (and crosslinked).
 @signature (Number content)
     Convert the number to ascii text and send, followed
     by `STOP`.
-@signature (Array[String] content)
+@signature (Array<String> content)
     Send each message, delimited and terminated with
     `STOP`.
 */
@@ -657,8 +659,8 @@ Type paths support generics (java), templates (c++) and arrays-of-things (javasc
 specify any number of generic types on any type path, including with the use of multiple types and
 pipes `|`.
 ```c
-/**     @property/Array[String]|undefined fooProp
-    An Array of Strings, or undefined.
+/**     @property/Array<String>|Object<String, String>|undefined fooProp
+    An Array of Strings, an Object mapping Strings to Strings, or undefined.
 */
 ```
 

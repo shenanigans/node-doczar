@@ -49,11 +49,11 @@ async.parallel ([
             console.log (err.stack);
             return process.exit (1);
         }
-        async.each (list, function (testName, callback) {
+        async.eachSeries (list, function (testName, callback) {
             async.parallel ([
                 function (callback) {
                     child_process.exec (
-                        'doczar --with browser-strict --date "june 5 2020" --in test/tests/'
+                        'node ./cli.js --with browser-strict --date "june 5 2020" --in test/tests/'
                       + testName
                       + ' --out test/compare/'
                       + testName.slice (0, -3),
@@ -62,8 +62,9 @@ async.parallel ([
                 },
                 function (callback) {
                     child_process.exec (
-                        'doczar --json --with browser-strict --date "june 5 2020" --in test/tests/'
-                      + testName+' --out test/compare/'
+                        'node ./cli.js --json --with browser-strict --date "june 5 2020" --in test/tests/'
+                      + testName
+                      + ' --out test/compare/'
                       + testName.slice (0, -3),
                         callback
                     );

@@ -234,7 +234,7 @@ var LIB_DEPENDENCIES = {
 };
 var LIB_BLANK = {
     'browser-strict':   'browser'
-}
+};
 var stdDir = path.join (__dirname, 'standardLibs');
 function includeLib (libname) {
     if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
@@ -273,6 +273,8 @@ if (argv.with) {
     else
         includeLib (argv.with);
 }
+if (argv.jsmod)
+    includeLib ('es5');
 
 if (argv.in)
     if (isArray (argv.in))

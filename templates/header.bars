@@ -102,6 +102,52 @@
 {{> signature}}
                     {{/signatures}}
                 {{/if}}
+                {{#if isFunction}}
+                    {{#if arguments}}
+                        <h2>Arguments</h2>
+                        <div class="section arguments">
+                            {{#arguments}}
+                                <div class="child argument" id="{{elemID}}">
+{{> argumentSignature}}
+                                    <div class="info">
+                                        <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                        {{#if isCallback}}
+                                            <h5>Arguments</h5>
+                                            <div class="section arguments">
+                                                {{#arguments}}
+                                                    <div class="child {{ctype}}">
+{{> argumentSignature}}
+                                                        <div class="info">
+                                                            <span class="markdown">{{{markdown summaryDoc}}}</span>
+                                                        </div>
+                                                    </div>
+                                                {{/arguments}}
+                                            </div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            {{/arguments}}
+                        </div>
+                    {{/if}}
+                    {{#if returns}}
+                        <!-- return values -->
+                        <h1 class="header">Return Values</h1>
+                        <div id="returns" class="section returns">
+                            {{#returns}}
+{{> child}}
+                            {{/returns}}
+                        </div>
+                    {{/if}}
+                    {{#if throws}}
+                        <!-- exception cases -->
+                        <h1 class="header">Thrown Exceptions</h1>
+                        <div id="throws" class="section throws">
+                            {{#throws}}
+{{> child}}
+                            {{/throws}}
+                        </div>
+                    {{/if}}
+                {{/if}}
                 {{#if isClasslike}}
                     <!-- constructor function -->
                     {{#if hasConstructorInfo}}
