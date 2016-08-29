@@ -20,22 +20,42 @@
             {{#if isProtected}}<div class="flag protected">protected</div>{{/if}}
             {{#if isPrivate}}<div class="flag private">private</div>{{/if}}
             <a class="ctype" href="{{{baseTagPath}}}index.html">{{ctype}}</a>
-            <span>{{#valtype}}
-                <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
-                {{#if isArray}}[ ]{{/if}}
-                {{#if generics}}
-                    &lt;
-                        <span>{{#generics}}
-                            <a class="valtype" href="{{link path}}">{{name}}</a>
-                            <span class="valsep">,</span>
-                        {{/generics}}</span>
-                    &gt;
-                {{/if}}
-                <span class="valsep">|</span>
-            {{/valtype}}</span>
+            <span>
+                {{#valtype}}
+                    <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
+                    {{#if isArray}}[ ]{{/if}}
+                    {{#if generics}}
+                        &lt;
+                            <span>{{#generics}}
+                                <a class="valtype" href="{{link path}}">{{name}}</a>
+                                <span class="valsep">,</span>
+                            {{/generics}}</span>
+                        &gt;
+                    {{/if}}
+                    <span class="valsep">|</span>
+                {{/valtype}}
+                {{#if isClasslike}}{{#unless isClass}}
+                    <a class="valtype">class</a>
+                {{/unless}}{{/if}}
+            </span>
             <span class="breadcrumbs">
                 {{#breadcrumbs}}<span class="delimiter">{{delimiter}}</span><a href="{{link path}}" class="breadcrumb {{ctype}}">{{name}}</a>{{/breadcrumbs}}
             </span>
+            {{#if aliasTo}}
+                <div class="source alias">
+                    Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
+                </div>
+            {{/if}}
+            {{#if patchedBy}}
+                <div class="source alias">
+                    Patched by <a class="alias" href="{{link patchedBy.path}}">{{patchedBy.pathstr}}</a>
+                </div>
+            {{/if}}
+            {{#patches}}
+                <div class="source patches">
+                    Patches <a class="patches" href="{{link path}}">{{pathstr}}</a>
+                </div>
+            {{/patches}}
             {{#superClasses}}
                 <div class="source super">
                     Inherits from <a class="super" href="{{link path}}">{{name}}</a>

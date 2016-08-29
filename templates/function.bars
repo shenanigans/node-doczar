@@ -38,6 +38,16 @@
             </div>
         {{/override}}
     {{/if}}
+    {{#if patchedBy}}
+        <div class="source alias">
+            Patched by <a class="alias" href="{{link patchedBy.path}}">{{patchedBy.pathstr}}</a>
+        </div>
+    {{/if}}
+    {{#patches}}
+        <div class="source patches">
+            Patches <a class="patches" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/patches}}
     {{#satisfies}}
         <div class="source interface">
             Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>

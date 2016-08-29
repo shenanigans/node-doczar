@@ -1,21 +1,27 @@
-<div id="{{elemID}}" class="child {{ctype}}">
+<div id="{{elemID}}" class="child {{ctype}}{{#if isInline}} inline{{/if}}">
     <span class="signature">
         {{#flags}}
             <div class="flag {{.}}">{{.}}</div>
         {{/flags}}
-        <span>{{#valtype}}
-            <span class="valsep">|</span>
-            <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
-            {{#if isArray}}[ ]{{/if}}
-            {{#if generics}}
-                &lt;
-                <span>{{#generics}}
-                    <a class="valtype" href="{{link path}}">{{name}}</a>
-                    <span class="valsep">,</span>
-                {{/generics}}</span>
-                &gt;
+        <span>
+            {{#if isClasslike}}
+                <a class="valtype">class</a>
+            {{else}}
+                {{#valtype}}
+                    <span class="valsep">|</span>
+                    <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
+                    {{#if isArray}}[ ]{{/if}}
+                    {{#if generics}}
+                        &lt;
+                        <span>{{#generics}}
+                            <a class="valtype" href="{{link path}}">{{name}}</a>
+                            <span class="valsep">,</span>
+                        {{/generics}}</span>
+                        &gt;
+                    {{/if}}
+                {{/valtype}}
             {{/if}}
-        {{/valtype}}</span>
+        </span>
         {{#unless valtype}}{{#unless hideCtype}}
             <span class="ctype">{{ctype}}</span>
         {{/unless}}{{/unless}}
@@ -40,6 +46,16 @@
             Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
         </div>
     {{/if}}
+    {{#if patchedBy}}
+        <div class="source alias">
+            Patched by <a class="alias" href="{{link patchedBy.path}}">{{patchedBy.pathstr}}</a>
+        </div>
+    {{/if}}
+    {{#patches}}
+        <div class="source patches">
+            Patches <a class="patches" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/patches}}
     {{#superClasses}}
         <div class="source super">
             Subclass of <a class="super" href="{{link path}}">{{pathstr}}</a>
@@ -52,8 +68,8 @@
     {{/interfaces}}
     <div class="info">
 <span class="markdown">{{{markdown summaryDoc}}}</span>
-        {{#if isInline}}
+        {{#if isInline}}{{#unless isModule}}
 {{> children}}
-        {{/if}}
+        {{/unless}}{{/if}}
     </div>
 </div>

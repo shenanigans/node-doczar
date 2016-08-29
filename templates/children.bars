@@ -28,7 +28,7 @@
         {{/if}}
         {{#if returns}}
             <!-- return values -->
-            <h1 class="header">Return Values</h1>
+            <h2 class="header">Return Values</h2>
             <div id="returns" class="section returns">
                 {{#returns}}
 {{> child}}
@@ -37,7 +37,7 @@
         {{/if}}
         {{#if throws}}
             <!-- exception cases -->
-            <h1 class="header">Thrown Exceptions</h1>
+            <h2 class="header">Thrown Exceptions</h2>
             <div id="throws" class="section throws">
                 {{#throws}}
 {{> child}}
@@ -47,7 +47,7 @@
     {{/unless}}{{/unless}}
     {{#if enums}}
         <!-- enums -->
-        <h1 id="enums" class="header">Enumerations</h1>
+        <h2 id="enums" class="header">Enumerations</h2>
         <div class="section members">
             {{#enums}}
 {{> child}}
@@ -56,7 +56,7 @@
     {{/if}}
     {{#if events}}
         <!-- events -->
-        <h1 id="events" class="header">Events</h1>
+        <h2 id="events" class="header">Events</h2>
         <div class="section members">
             {{#events}}
 {{> event}}
@@ -65,7 +65,7 @@
     {{/if}}
     {{#if names}}
         <!-- names -->
-        <h1 id="names" class="header">Names</h1>
+        <h2 id="names" class="header">Names</h2>
         <div class="section names">
             {{#names}}
 {{> child}}
@@ -74,7 +74,7 @@
     {{/if}}
     {{#if modules}}
         <!-- modules -->
-        <h1 id="modules" class="header">Modules</h1>
+        <h2 id="modules" class="header">Modules</h2>
         <div class="section modules">
             {{#modules}}
 {{> child}}
@@ -83,7 +83,7 @@
     {{/if}}
     {{#if statics}}
         <!-- static properties -->
-        <h1 id="statics" class="header">Static Properties</h1>
+        <h2 id="statics" class="header">Static Properties</h2>
         <div class="section properties">
             {{#statics}}
 {{> child}}
@@ -92,7 +92,7 @@
     {{/if}}
     {{#if propertySymbols}}
         <!-- static symbols -->
-        <h1 id="staticSymbols" class="header">Static Symbols</h1>
+        <h2 id="staticSymbols" class="header">Static Symbols</h2>
         <div class="section properties">
             {{#propertySymbols}}
 {{> symbolChild}}
@@ -101,7 +101,7 @@
     {{/if}}
     {{#if functions}}
         <!-- static functions -->
-        <h1 id="functions" class="header">Static Functions</h1>
+        <h2 id="functions" class="header">Static Functions</h2>
         <div class="section properties">
             {{#functions}}
 {{> function}}
@@ -110,7 +110,7 @@
     {{/if}}
     {{#if members}}
         <!-- member properties -->
-        <h1 id="members" class="header">Member Properties</h1>
+        <h2 id="members" class="header">Member Properties</h2>
         <div class="section members">
             {{#members}}
 {{> child}}
@@ -119,7 +119,7 @@
     {{/if}}
     {{#if memberSymbols}}
         <!-- member symbols -->
-        <h1 id="memberSymbols" class="header">Member Symbols</h1>
+        <h2 id="memberSymbols" class="header">Member Symbols</h2>
         <div class="section memberSymbols">
             {{#memberSymbols}}
 {{> symbolChild}}
@@ -128,7 +128,7 @@
     {{/if}}
     {{#if methods}}
         <!-- methods -->
-        <h1 id="methods" class="header">Methods</h1>
+        <h2 id="methods" class="header">Methods</h2>
         <div class="section members">
             {{#methods}}
 {{> function}}
@@ -137,7 +137,7 @@
     {{/if}}
     {{#if localValues}}
         <!-- instance properties -->
-        <h1 id="localValues" class="header">Local Variables</h1>
+        <h2 id="localValues" class="header">Local Variables</h2>
         <div class="section localValues">
             {{#localValues}}
 {{> child}}
@@ -146,7 +146,7 @@
     {{/if}}
     {{#if localFunctions}}
         <!-- instance properties -->
-        <h1 id="localFunctions" class="header">Local Functions</h1>
+        <h2 id="localFunctions" class="header">Local Functions</h2>
         <div class="section localFunctions">
             {{#localFunctions}}
 {{> function}}

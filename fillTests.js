@@ -3,6 +3,10 @@ var path = require ('path');
 var async = require ('async');
 var fs = require ('graceful-fs');
 var child_process = require ('child_process');
+var argv = require ('minimist')(process.argv, {
+    default:    { html:false },
+    boolean:    [ 'html' ]
+});
 
 function killDir (dir, callback) {
     var tries = 0;
@@ -32,6 +36,18 @@ function killDir (dir, callback) {
     });
 }
 
+var ARGUMENTS = {
+    "NodeParsing.js":               "--parse node --root test",
+    "NodeParsingWithoutRoot.js":    "--parse node",
+    "JSParsing.js":                 "--parse js",
+    "JSParsingWithRoot.js":         "--parse js --root test",
+    "ES6Parsing.js":                "--parse js"
+};
+var SKIP = [
+    "NodeParseModule.js",
+    "NodeParseModules",
+    "ES6Modules"
+];
 async.parallel ([
     function (callback) {
         killDir (path.resolve ('test/out'), callback);
@@ -50,22 +66,39 @@ async.parallel ([
             return process.exit (1);
         }
         async.eachSeries (list, function (testName, callback) {
+            if (SKIP.indexOf (testName) >= 0)
+                return callback();
+
+            var targetStr =
+               testName
+             + ' --out test/compare/'
+             + testName.slice (0, -3)
+             ;
+            var htmlCommand =
+               'node ./cli.js --with browser-strict --date "june 5 2020" --in test/tests/'
+             + targetStr
+             ;
+            var jsonCommand =
+               'node ./cli.js --json --with browser-strict --date "june 5 2020" --in test/tests/'
+             + targetStr
+             ;
+            if (ARGUMENTS[testName]) {
+                htmlCommand += ' ' + ARGUMENTS[testName];
+                jsonCommand += ' ' + ARGUMENTS[testName];
+            }
+
             async.parallel ([
                 function (callback) {
+                    if (!argv.html)
+                        return callback();
                     child_process.exec (
-                        'node ./cli.js --with browser-strict --date "june 5 2020" --in test/tests/'
-                      + testName
-                      + ' --out test/compare/'
-                      + testName.slice (0, -3),
+                        htmlCommand,
                         callback
                     );
                 },
                 function (callback) {
                     child_process.exec (
-                        'node ./cli.js --json --with browser-strict --date "june 5 2020" --in test/tests/'
-                      + testName
-                      + ' --out test/compare/'
-                      + testName.slice (0, -3),
+                        jsonCommand,
                         callback
                     );
                 }

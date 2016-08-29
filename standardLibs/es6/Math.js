@@ -1,5 +1,5 @@
 
-/**     @module Math
+/**     @property Math
 @property/Function imul
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/imul`
 @property/Function clz32

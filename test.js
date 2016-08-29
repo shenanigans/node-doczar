@@ -3,7 +3,7 @@ var path = require ('path');
 var assert = require ('assert');
 var child_process = require ('child_process');
 var async = require ('async');
-var fs = require ('graceful-fs');
+var fs = require ('fs-extra');
 
 function killDir (dir, callback) {
     var tries = 0;
@@ -37,12 +37,12 @@ function killDir (dir, callback) {
     });
 }
 
-function runTest (name) {
+function runTest (name, args) {
     describe (name, function(){
         var logs;
         it ("compiles completely", function (done) {
-            this.timeout (10000);
-            this.slow (3000);
+            this.timeout (30000);
+            this.slow (15000);
             killDir (path.resolve ('test/out/' + name.replace (' ', '')), function (err) {
                 if (err)
                     return done (err);
@@ -51,9 +51,11 @@ function runTest (name) {
                         var command =
                             'node ./cli.js --verbose debug --json --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
-                          + name.replace (' ', '')
+                          + name.replace (/ /g, '')
                           + '.js --out test/out/'
-                          + name.replace (' ', '')
+                          + name.replace (/ /g, '')
+                          + ' '
+                          + ( args || '' )
                           ;
                         child_process.exec (
                             command,
@@ -76,9 +78,11 @@ function runTest (name) {
                         var command =
                             'node ./cli.js --verbose debug --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
-                          + name.replace (' ', '')
+                          + name.replace (/ /g, '')
                           + '.js --out test/out/'
-                          + name.replace (' ', '')
+                          + name.replace (/ /g, '')
+                          + ' '
+                          + ( args || '' )
                           ;
                         child_process.exec (
                             command,
@@ -188,7 +192,12 @@ function runTest (name) {
                     if (outputDoc && compareDoc) try {
                         assert.deepEqual (outputDoc, compareDoc);
                     } catch (err) {
-                        console.log (err.message);
+                        for (var i=0,j=outputDoc.length; i<j; i++)
+                            if (outputDoc[i] != compareDoc[i]) {
+                                console.log (' model:', compareDoc.slice (i-10, i+100));
+                                console.log ('result:', outputDoc.slice (i-10, i+100));
+                                break;
+                            }
                         return callback (new Error ('output documents do not match: '+level+'/index.json'));
                     }
 
@@ -207,7 +216,7 @@ function runTest (name) {
                 });
             }
 
-            checkLevel (name.replace (' ', ''), done);
+            checkLevel (name.replace (/ /g, ''), done);
         });
 
     });
@@ -220,3 +229,8 @@ runTest ('Inheritence');
 runTest ('Symbols');
 runTest ('Signatures');
 runTest ('Parser Challenges');
+runTest ('JS Parsing', '--parse js');
+runTest ('JS Parsing With Root', '--parse js --root test');
+runTest ('Node Parsing', '--parse node --root test');
+runTest ('Node Parsing Without Root', '--parse node');
+runTest ('ES6 Parsing', '--parse js');

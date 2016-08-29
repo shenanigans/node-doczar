@@ -189,9 +189,9 @@
 /**     @property/Function setTimeout
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout`
 */
-/**     @module Math
+/**     @property Math
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math`
 */
-/**     @module JSON
+/**     @property JSON
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON`
 */

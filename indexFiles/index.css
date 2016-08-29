@@ -47,8 +47,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #content {
-    min-width: 26em;
-    max-width: 42em;
+    position: absolute;
+    left: 14.5em;
+    right: 0;
     padding: 0 2em 3em 2em;
     display: inline-block;
     text-align: left;
@@ -122,7 +123,7 @@ p {
 #TOC {
     display: inline-block;
     float: left;
-    padding: 0 0.7em 5em 0.7em;
+    padding: 0 0.75em 5em 0.75em;
     width: 13em;
 }
 #TOC.reveal {
@@ -314,11 +315,16 @@ h1.signature, h1.signature {
 }
 
 #footer {
-    padding: 0.8em 0 0.6em 1em;
+    padding: 0.2em 1em;
     font-size: 80%;
-    color: #6F6F6F;
-    border-top: 1px solid #DADADA;
-    background-color: #F2F2F2;
+    color: #505050;
+    border-top: 1px solid #bdbdbd;
+    background-color: #e6e6e6;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 1em 1em 1em #0000002e;
 }
 
 #footer .date {
@@ -351,6 +357,7 @@ h1.signature, h1.signature {
     padding: 0.7em;
     background-color: #F5F5FF;
     border-left: 3px solid #E7E7F9;
+    overflow: auto;
 }
 
 .markdown pre code {

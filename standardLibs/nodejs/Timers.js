@@ -1,14 +1,17 @@
 
-/**     @property/Function ref
+/**     @property/class timeout
+    @remote `https://nodejs.org/api/timers.html#timers_class_timeout`
+*/
+/**     @property/Function timeout.ref
     @remote `https://nodejs.org/api/timers.html#timers_ref`
 **/
 
-/**     @property/Function unref
+/**     @property/Function timeout.unref
     @remote `https://nodejs.org/api/timers.html#timers_unref`
 **/
 
-/**     @property/Function setImmediated
-    @remote `https://nodejs.org/api/timers.html#timers_setImmediated`
+/**     @property/Function setImmediate
+    @remote `https://nodejs.org/api/timers.html#timers_setImmediate`
 **/
 
 /**     @property/Function clearImmediate

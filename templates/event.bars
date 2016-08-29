@@ -31,6 +31,16 @@
             </div>
         {{/override}}
     {{/if}}
+    {{#if patchedBy}}
+        <div class="source alias">
+            Patched by <a class="alias" href="{{link patchedBy.path}}">{{patchedBy.pathstr}}</a>
+        </div>
+    {{/if}}
+    {{#patches}}
+        <div class="source patches">
+            Patches <a class="patches" href="{{link path}}">{{pathstr}}</a>
+        </div>
+    {{/patches}}
     <div class="info">
         <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if arguments}}
