@@ -215,7 +215,7 @@
                     {{/if}}
                     {{#if returns}}
                         <!-- return values -->
-                        <h1 class="header">Return Values</h1>
+                        <h2 class="header">Return Values</h2>
                         <div id="returns" class="section returns">
                             {{#returns}}
 {{> child}}
@@ -224,7 +224,7 @@
                     {{/if}}
                     {{#if throws}}
                         <!-- exception cases -->
-                        <h1 class="header">Thrown Exceptions</h1>
+                        <h2 class="header">Thrown Exceptions</h2>
                         <div id="throws" class="section throws">
                             {{#throws}}
 {{> child}}

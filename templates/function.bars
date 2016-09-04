@@ -164,6 +164,15 @@
                 {{/returns}}
             </div>
         {{/if}}
+        {{#if throws}}
+            <!-- exception cases -->
+            <h4 class="header">Thrown Exceptions</h4>
+            <div id="throws" class="section throws">
+                {{#throws}}
+{{> child}}
+                {{/throws}}
+            </div>
+        {{/if}}
         <div class="tail" /></div>
     </div>
 </div>

@@ -42,6 +42,7 @@ var filth = require ('filth');
 var Parser = require ('./lib/Parser');
 var ComponentCache = require ('./lib/ComponentCache');
 var getNodeModulePath = require ('./lib/getNodeModulePath');
+var Patterns = require ('./lib/Patterns');
 require ('colors');
 
 function concatPaths(){
@@ -201,6 +202,9 @@ function workJSDerefs (level, target, chain) {
 
     if (level['.deref']) for (var i=0,j=level['.deref'].length; i<j; i++) {
         var ref = level['.deref'][i];
+        if (chain.indexOf (ref) >= 0)
+            return didFinishDeref;
+        chain.push (ref);
         recurse (ref, target);
         var possibilities = ref['.types'];
         for (var k=0,l=possibilities.length; k<l; k++)
@@ -244,6 +248,7 @@ function workJSDerefs (level, target, chain) {
 }
 
 // recursively submit all the information built into the namespace
+var SANITY = 0;
 function submitJSLevel (level, scope, localDefault, chain, force) {
     if (!chain)
         chain = [ level ];
@@ -331,7 +336,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             if (level['.members'])
                 ctype = 'class';
             else
-                ctype = 'property';
+                // ctype = 'property';
+                ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
             docstr = level['.docstr'] || '';
         }
         level['.localPath'] = path;
@@ -383,8 +389,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
              )
          )
         ) {
-            force = true;
             level['.force'] = -1; // marks already written
+            force = true;
             Parser.parseTag (
                 context,
                 logger,
@@ -400,10 +406,10 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
                 docstr
             );
         }
-    } else if (
+    } else if ( !level['.silent'] && (
         ( level['.force'] && level['.force'] > 0 )
      || ( force && ( !level['.force'] || level['.force'] > 0 ) )
-    ) {
+    ) ) {
         level['.force'] = -1;
         force = true;
         Parser.parseTag (
@@ -443,8 +449,10 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
     if (level['.instance']) {
         for (var i=level['.instance'].length-1; i>=0; i--) {
             var constructor = level['.instance'][i];
-            while (constructor['.deref'].length == 1 && !constructor['.path'])
-                constructor = constructor['.deref'][0];
+            // while (constructor['.deref'].length == 1 && !constructor['.path'])
+            var chain = [];
+            while (constructor['.deref'].length == 1 && chain.indexOf (constructor['.deref'][0]) < 0)
+                chain.push (constructor = constructor['.deref'][0]);
             if (!constructor['.path'])
                 continue;
             didSubmit = true;
@@ -487,7 +495,10 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
     // recurse to various children
     if (level['.members']) {
         delete level['.members']['.isCol'];
-        for (var key in level['.members'])
+        for (var key in level['.members']) {
+            var pointer = level['.members'][key];
+            while (pointer['.deref'] && pointer['.deref'].length === 1)
+                pointer = pointer['.deref'][0];
             didSubmit += submitJSLevel (
                 level['.members'][key],
                 concatPaths (scope, [ [ '#', key ] ]),
@@ -495,6 +506,7 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
                 chain,
                 force
             );
+        }
     }
 
     if (level['.props']) {
@@ -512,7 +524,7 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             );
         }
     }
-    if (level['.arguments'])
+    if (level['.arguments']) {
         for (var i=0,j=level['.arguments'].length; i<j; i++) {
             var arg = level['.arguments'][i];
             didSubmit += submitJSLevel (
@@ -523,7 +535,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
                 force
             );
         }
-    if (level['.returns'] && level['.returns']['.types'].length)
+    }
+    if (level['.returns'] && level['.returns']['.types'].length) {
         didSubmit += submitJSLevel (
             level['.returns'],
             concatPaths (scope, [ [ ')', '' ] ]),
@@ -531,19 +544,30 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             chain,
             force
         );
+    }
+    if (level['.throws']) {
+        didSubmit += submitJSLevel (
+            level['.throws'],
+            concatPaths (scope, [ [ '!', undefined ] ]),
+            localDefault,
+            chain,
+            force
+        );
+    }
 
     for (var key in level)
         if (key[0] == '.')
             continue;
-        else
+        else {
             didSubmit += submitJSLevel (
                 level[key],
                 concatPaths (scope, [ [ '.', key ] ]),
                 localDefault,
                 chain
             );
+        }
 
-    if (level['.scope'])
+    if (level['.scope']) {
         for (var key in level['.scope'])
             if (key[0] == '.')
                 continue;
@@ -554,14 +578,43 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
                     localDefault,
                     chain
                 );
+    }
 
     delete level['.scope'];
+    // console.trace();
     return didSubmit;
 }
 
 // =================================================================================================
 // this is the main processing function
 var globalNode = new filth.SafeMap ({ '.types':[], '.deref':[] });
+switch (argv.parse) {
+    case 'js':
+        var jsRoot = JSON.parse (
+            fs.readFileSync (path.join (__dirname, 'roots', 'js.json')).toString()
+        );
+        for (var key in jsRoot)
+            globalNode[key] = jsRoot[key];
+        var browserRoot = JSON.parse (
+            fs.readFileSync (path.join (__dirname, 'roots', 'browser.json')).toString()
+        );
+        for (var key in browserRoot)
+            globalNode[key] = browserRoot[key];
+        break;
+    case 'node':
+        var jsRoot = JSON.parse (
+            fs.readFileSync (path.join (__dirname, 'roots', 'js.json')).toString()
+        );
+        for (var key in jsRoot)
+            globalNode[key] = jsRoot[key];
+        var es6Root = JSON.parse (
+            fs.readFileSync (path.join (__dirname, 'roots', 'browser.json')).toString()
+        );
+        for (var key in es6Root)
+            globalNode[key] = es6Root[key];
+        break;
+    default:
+}
 var nodeSourceFiles = {};
 var DELIMIT = process.platform == 'win32' ? '\\' : '/';
 var allFilenames = {};
@@ -657,15 +710,18 @@ function processSource (filenames) {
                             )
                                 moduleNode['.root'] = localDefaultScope;
                         } else
-                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap ({
-                                '.root':    localDefaultScope,
-                                window:     globalNode,
-                                '.exports': filth.clone ({
-                                    '.types':   [],
-                                    '.deref':   [],
-                                    '.props':   { '.isCol':true }
-                                })
-                            });
+                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap (
+                                globalNode,
+                                {
+                                    '.root':    localDefaultScope,
+                                    window:     globalNode,
+                                    '.exports': filth.clone ({
+                                        '.types':   [],
+                                        '.deref':   [],
+                                        '.props':   { '.isCol':true }
+                                    })
+                                }
+                            );
                         try {
                             Parser.parseJSTypes (
                                 fname,
@@ -724,18 +780,21 @@ function processSource (filenames) {
                                 moduleNode['.root'] = localDefaultScope;
                         } else {
                             var exports = new filth.SafeMap ({ '.types':[], '.deref':[] });
-                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap ({
-                                '.root':    localDefaultScope,
-                                globals:    globalNode,
-                                exports:    exports,
-                                module:     new filth.SafeMap ({
-                                    '.types':   [],
-                                    '.deref':   [],
-                                    '.props':   {
-                                        exports:    exports
-                                    }
-                                })
-                            });
+                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap (
+                                globalNode,
+                                {
+                                    '.root':    localDefaultScope,
+                                    global:     globalNode,
+                                    exports:    exports,
+                                    module:     new filth.SafeMap ({
+                                        '.types':   [],
+                                        '.deref':   [],
+                                        '.props':   {
+                                            exports:    exports
+                                        }
+                                    })
+                                }
+                            );
                         }
                         try {
                             Parser.parseJSTypes (
@@ -801,6 +860,20 @@ function processSource (filenames) {
         }
         if (nextFiles.length)
             return processSource (nextFiles);
+
+        if (argv.parse) {
+            logger.info ({ parse:argv.parse }, 'finished parsing');
+            // clean up the source documents
+            for (var fname in nodeSourceFiles) {
+                var source = nodeSourceFiles[fname];
+                var dropped = 0;
+                for (var key in source)
+                    if (source[key] === globalNode[key]) {
+                        dropped++;
+                        delete source[key];
+                    }
+            }
+        }
 
         switch (argv.parse) {
             case 'js':
@@ -985,8 +1058,14 @@ function processSource (filenames) {
                                 return logger.fatal (err, 'internal parsing error');
                             }
                         }
-                        while (exports['.deref'].length == 1)
+                        var chain = [ exports ];
+                        while (exports['.deref'].length == 1) {
                             exports = exports['.deref'][0];
+                            if (chain.indexOf (exports) < 0)
+                                chain.push (exports);
+                            else
+                                break;
+                        }
                         try {
                             didSubmit += submitJSLevel (
                                 exports,
@@ -1001,10 +1080,10 @@ function processSource (filenames) {
                         }
 
                         // work locals
-                        for (var key in nodeSource)
+                        for (var key in nodeSource) {
                             if (key[0] == '.' || key == 'module' || key == 'exports' || key == 'global')
                                 continue;
-                            else try {
+                            try {
                                 didSubmit += submitJSLevel (
                                     nodeSource[key],
                                     [ [ '%', key ] ],
@@ -1016,6 +1095,7 @@ function processSource (filenames) {
                                     'failed to generate Declarations from module source file'
                                 );
                             }
+                        }
                     }
                 } while (didSubmit);
                 break;
