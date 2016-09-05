@@ -1,6 +1,6 @@
 
 require ('async');
-// require ('fs');
+require ('fs');
 
 var Thingy = require ('./NodeParseModules/Thingy');
 var mixedModule = require ('./NodeParseModules/SeveralThings');
