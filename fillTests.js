@@ -41,7 +41,10 @@ var ARGUMENTS = {
     "NodeParsingWithoutRoot.js":    "--parse node",
     "JSParsing.js":                 "--parse js",
     "JSParsingWithRoot.js":         "--parse js --root test",
-    "ES6Parsing.js":                "--parse js"
+    "ES6Parsing.js":                "--parse js",
+    "LocalsAll.js":                 "--parse node --root test --locals all",
+    "LocalsComments.js":            "--parse node --root test --locals comments",
+    "LocalsNone.js":                "--parse node --root test"
 };
 var SKIP = [
     "NodeParseModule.js",

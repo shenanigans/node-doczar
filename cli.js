@@ -317,8 +317,6 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
         localDefault = defaultScope;
     var didSubmit = false;
 
-    // ---------------------------------------------
-    // primary submission point
     if (!level['.path']) {
         didSubmit = true;
         var path, ctype, docstr, types = [];
@@ -447,6 +445,11 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
 
     // are we waiting to add complex paths to the types list?
     if (level['.instance']) {
+        var writeAndForce = Boolean (
+            !isLocalPath (level['.path'])
+         || argv.locals === 'all'
+         || ( argv.locals === 'comments' && hasComments (level))
+        );
         for (var i=level['.instance'].length-1; i>=0; i--) {
             var constructor = level['.instance'][i];
             // while (constructor['.deref'].length == 1 && !constructor['.path'])
@@ -456,13 +459,18 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             if (!constructor['.path'])
                 continue;
             didSubmit = true;
-            if (!constructor['.force'])
+            if (!constructor['.force'] && (
+                level['.force']
+             || !isLocalPath (level['.path'])
+             || argv.locals === 'all'
+             || ( argv.locals === 'comments' && hasComments (level))
+            ))
                 constructor['.force'] = 1;
             level['.instance'].splice (i, 1);
             var typePath = constructor['.path'].map (function (frag) {
                 return frag[0] + frag[1];
             }).join ('');
-            if (level['.types'].indexOf (typePath) < 0) {
+            if (writeAndForce && level['.types'].indexOf (typePath) < 0) {
                 level['.types'].push (typePath);
                 Parser.parseTag (
                     context,
@@ -581,7 +589,6 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
     }
 
     delete level['.scope'];
-    // console.trace();
     return didSubmit;
 }
 

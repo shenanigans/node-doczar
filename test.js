@@ -38,6 +38,7 @@ function killDir (dir, callback) {
 }
 
 function runTest (name, args) {
+    var testname = name.replace (/[^a-zA-Z0-9]/g, '');
     describe (name, function(){
         var logs;
         it ("compiles completely", function (done) {
@@ -51,9 +52,9 @@ function runTest (name, args) {
                         var command =
                             'node ./cli.js --verbose debug --json --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
-                          + name.replace (/ /g, '')
+                          + testname
                           + '.js --out test/out/'
-                          + name.replace (/ /g, '')
+                          + testname
                           + ' '
                           + ( args || '' )
                           ;
@@ -78,9 +79,9 @@ function runTest (name, args) {
                         var command =
                             'node ./cli.js --verbose debug --raw --with browser-strict --date "june 5 2020" '
                           + '--in test/tests/'
-                          + name.replace (/ /g, '')
+                          + testname
                           + '.js --out test/out/'
-                          + name.replace (/ /g, '')
+                          + testname
                           + ' '
                           + ( args || '' )
                           ;
@@ -216,7 +217,7 @@ function runTest (name, args) {
                 });
             }
 
-            checkLevel (name.replace (/ /g, ''), done);
+            checkLevel (testname, done);
         });
 
     });
@@ -234,3 +235,6 @@ runTest ('JS Parsing With Root', '--parse js --root test');
 runTest ('Node Parsing', '--parse node --root test');
 runTest ('Node Parsing Without Root', '--parse node');
 runTest ('ES6 Parsing', '--parse js');
+runTest ('Locals --All', '--parse node --root test --locals all');
+runTest ('Locals --Comments', '--parse node --root test --locals comments');
+runTest ('Locals --None', '--parse node --root test');
