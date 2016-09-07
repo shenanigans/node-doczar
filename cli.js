@@ -39,10 +39,10 @@ var resolve = require ('resolve');
 var glob = require ('glob');
 var bunyan = require ('bunyan');
 var filth = require ('filth');
-var Parser = require ('./lib/Parser');
-var ComponentCache = require ('./lib/ComponentCache');
-var getNodeModulePath = require ('./lib/getNodeModulePath');
-var Patterns = require ('./lib/Patterns');
+var Parser = require ('./src/Parser');
+var ComponentCache = require ('./src/ComponentCache');
+var getNodeModulePath = require ('./src/getNodeModulePath');
+var Patterns = require ('./src/Patterns');
 require ('colors');
 
 function concatPaths(){
