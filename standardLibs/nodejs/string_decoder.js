@@ -1,10 +1,10 @@
 
-/**     @module string_decoder
+/*      @module string_decoder
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/string_decoder.html#string_decoder_stringdecoder`
 */
 
-/**     @class StringDecoder
+/*      @class StringDecoder
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/string_decoder.html#string_decoder_class_stringdecoder`
 @Function #write

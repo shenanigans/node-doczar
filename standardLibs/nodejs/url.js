@@ -1,5 +1,5 @@
 
-/**     @module url
+/*      @module url
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/url.html#url_url`
 @Function parse
@@ -11,7 +11,7 @@
     @remote `https://nodejs.org/api/url.html#url_url_resolve_from_to`
 */
 
-/**     @submodule/class Location
+/*      @submodule/class Location
 @member/String|null protocol
 @member/Boolean slashes
 @member/String|null auth

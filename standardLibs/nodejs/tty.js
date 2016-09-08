@@ -1,5 +1,5 @@
 
-/**     @module tty
+/*      @module tty
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tty.html#tty_tty`
 @Function #isatty
@@ -8,7 +8,7 @@
     @remote `https://nodejs.org/api/tty.html#tty_tty_setrawmode_mode`
 */
 
-/**     @class ReadStream
+/*      @class ReadStream
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tty.html#tty_class_readstream`
 @Boolean #isRaw
@@ -17,7 +17,7 @@
     @remote `https://nodejs.org/api/tty.html#tty_rs_setrawmode_mode`
 */
 
-/**     @class WriteStream
+/*      @class WriteStream
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tty.html#tty_class_writestream`
 @event resize

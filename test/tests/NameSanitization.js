@@ -1,6 +1,6 @@
 
-/**     @module Test */
-/**     @class CaseClass
+/*      @module Test */
+/*      @class CaseClass
     @root
     This Class tests sanitization of links by case. It's a Windows thing.
     * [casePropAlfa](#casePropAlfa)

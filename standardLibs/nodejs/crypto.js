@@ -1,5 +1,5 @@
 
-/**     @module Crypto
+/*      @module Crypto
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/crypto.html#crypto_crypto`
 @class Hash

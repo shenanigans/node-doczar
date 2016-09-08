@@ -1,5 +1,5 @@
 
-/**     @module Cluster
+/*      @module Cluster
     Spawns groups of worker processes, sharing all network ports between them with automatic load
     distribution.
 @spare `Library Documentation`
@@ -36,7 +36,7 @@
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_workers`
 */
 
-/**     @class Worker
+/*      @class Worker
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/cluster.html#cluster_class_worker`
 @event message

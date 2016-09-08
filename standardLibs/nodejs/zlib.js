@@ -1,5 +1,5 @@
 
-/**     @module zlib
+/*      @module zlib
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib`
 @spare `Examples`
@@ -76,7 +76,7 @@
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_unzipsync_buf_options`
 */
 
-/**     @class Zlib
+/*      @class Zlib
     @super stream.Readable
     @super stream.Writable
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib`

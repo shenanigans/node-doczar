@@ -1,5 +1,5 @@
 
-/**     @module path
+/*      @module path
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/path.html#path_path`
 @Function normalize

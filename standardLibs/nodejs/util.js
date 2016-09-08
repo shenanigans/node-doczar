@@ -1,5 +1,5 @@
 
-/**     @module util
+/*      @module util
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/util.html#util_util`
 @spare `Customizing util.inspect colors`

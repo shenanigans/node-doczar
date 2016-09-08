@@ -1,6 +1,6 @@
 
-/**     @module Events */
-/**     @class EventEmitter
+/*      @module Events */
+/*      @class EventEmitter
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/events.html#events_events`
 @Number defaultMaxListeners

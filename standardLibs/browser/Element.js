@@ -1,5 +1,5 @@
 
-/**     @class Element
+/*      @class Element
     @super Node
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/Element`
 @member/NamedNodeMap attributes

@@ -1,5 +1,5 @@
 
-/**     @module readline
+/*      @module readline
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/readline.html#readline_readline`
 @spare `Example: Tiny CLI`
@@ -16,7 +16,7 @@
     @remote `https://nodejs.org/api/readline.html#readline_readline_clearscreendown_stream`
 */
 
-/**     @class Interface
+/*      @class Interface
 @Function #setPrompt
     @remote `https://nodejs.org/api/readline.html#readline_rl_setprompt_prompt`
 @Function #prompt

@@ -1,5 +1,5 @@
 
-/**     @module Domain
+/*      @module Domain
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/domain.html#domain_domain`
 @spare `On Errors`

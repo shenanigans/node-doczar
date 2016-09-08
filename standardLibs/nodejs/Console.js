@@ -1,5 +1,5 @@
 
-/**     @property console
+/*      @property console
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/console.html#console_console`
 @Function log

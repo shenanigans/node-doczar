@@ -1,5 +1,5 @@
 
-/**     @module http
+/*      @module http
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_http`
 @Array<String> METHODS
@@ -19,7 +19,7 @@
 */
 
 
-/**     @class Server
+/*      @class Server
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_class_http_server`
 @event request
@@ -52,7 +52,7 @@
     @remote `https://nodejs.org/api/http.html#http_server_timeout`
 */
 
-/**     @class ServerResponse
+/*      @class ServerResponse
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_class_http_serverresponse`
 @event close
@@ -87,7 +87,7 @@
     @remote `https://nodejs.org/api/http.html#http_response_end_data_encoding_callback`
 */
 
-/**     @class Agent
+/*      @class Agent
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_class_http_agent`
 @Number #maxSockets
@@ -106,7 +106,7 @@
     @remote `https://nodejs.org/api/http.html#http_agent_getname_options`
 */
 
-/**     @class ClientRequest
+/*      @class ClientRequest
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_class_http_clientrequest`
 @event response
@@ -135,7 +135,7 @@
     @remote `https://nodejs.org/api/http.html#http_request_setsocketkeepalive_enable_initialdelay`
 */
 
-/**     @class IncomingMessage
+/*      @class IncomingMessage
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/http.html#http_class_http_incomingmessage`
 @event close

@@ -1,5 +1,5 @@
 
-/**     @property Symbol
+/*      @property Symbol
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol`
 @property/Symbol create
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/create`

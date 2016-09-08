@@ -1,5 +1,5 @@
 
-/**     @module vm
+/*      @module vm
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/vm.html#vm_executing_javascript`
 @Function #runInThisContext
@@ -16,7 +16,7 @@
     @remote `https://nodejs.org/api/vm.html#vm_vm_runInDebugContext_code`
 */
 
-/**     @class Script
+/*      @class Script
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/vm.html#vm_class_script`
 @Function #runInThisContext

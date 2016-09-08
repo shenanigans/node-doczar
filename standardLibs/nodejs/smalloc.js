@@ -1,12 +1,12 @@
 
-/**     @module smalloc
+/*      @module smalloc
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/smalloc.html#smalloc_smalloc`
 @Function alloc
     @remote `https://nodejs.org/api/smalloc.html#smalloc_smalloc_alloc_length_receiver_type`
 */
 
-/**     @class smalloc
+/*      @class smalloc
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/smalloc.html#smalloc_class_smalloc`
 @Function alloc

@@ -1,5 +1,5 @@
 
-/**     @module dgram
+/*      @module dgram
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/dgram.html#dgram_udp_datagram_sockets`
 @Function #createSocket
@@ -8,7 +8,7 @@
     @remote `https://nodejs.org/api/dgram.html#dgram_dgram_createsocket_options_callback`
 */
 
-/**     @class Socket
+/*      @class Socket
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/dgram.html#dgram_class_dgram_socket`
 @event message

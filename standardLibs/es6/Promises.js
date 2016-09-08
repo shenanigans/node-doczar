@@ -1,5 +1,5 @@
 
-/**     @class Promise
+/*      @class Promise
     @root
 
 */

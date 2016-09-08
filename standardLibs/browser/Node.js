@@ -1,5 +1,5 @@
 
-/**     @class Node
+/*      @class Node
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/Node`
 @member/String baseURI
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI`

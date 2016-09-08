@@ -1,8 +1,8 @@
 
-/**     @module InheritenceTest */
-/**     @property/Symbol hello */
-/**     @property/Symbol goodbye */
-/**     @class parent
+/*      @module InheritenceTest */
+/*      @property/Symbol hello */
+/*      @property/Symbol goodbye */
+/*      @class parent
     Parent class.
 @property/String foo
 @property/Function bar
@@ -23,7 +23,7 @@
     The [[goodbye\]](.goodbye) symbol member.
 */
 
-/**     @class child
+/*      @class child
     @super .parent
     Child class of [parent](.parent). Inherited [crosslink test](.child#baz).
 @member/Function water

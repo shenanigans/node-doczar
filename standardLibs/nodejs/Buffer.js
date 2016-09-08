@@ -1,5 +1,5 @@
 
-/**     @class Buffer
+/*      @class Buffer
     An Array-like Class for interracting with raw memory outside of the Node.js heap.
 @argument/Number size
     @optional

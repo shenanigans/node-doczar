@@ -1,5 +1,5 @@
 
-/**     @module tls
+/*      @module tls
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tls.html#tls_tls_ssl`
 @spare `Protocol Support`
@@ -24,14 +24,14 @@
     @remote `https://nodejs.org/api/tls.html#tls_createsecurepair_context_isserver_requestcert_rejectunauthorized`
 */
 
-/**     @class SecurePair
+/*      @class SecurePair
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tls.html#tls_class_securepair`
 @event secure
     @remote `https://nodejs.org/api/tls.html#tls_event_secure`
 */
 
-/**     @class Server
+/*      @class Server
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tls.html#class_tls_server`
 @event secureConnection
@@ -58,14 +58,14 @@
     @remote `https://nodejs.org/api/tls.html#tls_server_connections`
 */
 
-/**     @class CryptoStream
+/*      @class CryptoStream
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tls.html#tls_class_cryptostream`
 @Number #bytesWritten
     @remote `https://nodejs.org/api/tls.html#tls_cryptostream_byteswritten`
 */
 
-/**     @class TLSSocket
+/*      @class TLSSocket
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tls.html#tls_class_tls_tlssocket_1`
 @event secureConnect

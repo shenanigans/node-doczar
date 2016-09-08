@@ -1,5 +1,5 @@
 
-/**     @module fs
+/*      @module fs
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/fs.html#fs_file_system`
 @class Stats

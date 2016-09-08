@@ -1,5 +1,5 @@
 
-/**     @module punycode
+/*      @module punycode
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/punycode.html#punycode_punycode`
 @Function decode

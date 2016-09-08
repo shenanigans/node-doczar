@@ -1,6 +1,6 @@
 
-/**     @module Test */
-/**     @class Foo
+/*      @module Test */
+/*      @class Foo
     These are the implicit `@spare details`.
 @property/Symbol able
     Simple [Symbol]() class prop.
@@ -17,10 +17,10 @@
 @spare [Test.Foo.able]~extra
     An extra document attached to a Symbol member with an inner declaration.
 */
-/**     @spare Foo.[Test.Foo.able]~fullExtra
+/*      @spare Foo.[Test.Foo.able]~fullExtra
     Another extra document attached to a Symbol member with a full declaration.
 */
-/**     @class Bar
+/*      @class Bar
     @root
 @property/Symbol alfa
     A static Symbol mapped to a String.

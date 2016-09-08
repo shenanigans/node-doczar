@@ -1,5 +1,5 @@
 
-/**     @module child_process
+/*      @module child_process
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process`
 @member/Function exec
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback`
@@ -16,7 +16,7 @@
 @member/Function execSync
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_execSync_command_options`
 */
-/**     @submodule/class ChildProcess
+/*      @submodule/class ChildProcess
     @remote https://nodejs.org/api/child_process.html#child_process_class_childprocess
 @event error
     @remote `https://nodejs.org/api/child_process.html#child_process_event_error`
@@ -54,7 +54,7 @@
     @remote `https://nodejs.org/api/child_process.html#child_process_asynchronous_process_creation`
 child_process.spawn(command[, args][, options])
 */
-/**     @submodule/class Options
+/*      @submodule/class Options
 @member/ cwd
     String Current working directory of the child process.
 @member/ env

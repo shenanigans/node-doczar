@@ -1,5 +1,5 @@
 
-/**     @module net
+/*      @module net
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/net.html#net_net`
 @class Server

@@ -1,5 +1,5 @@
 
-/**     @module os
+/*      @module os
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/os.html#os_os`
 @Function tmpdir

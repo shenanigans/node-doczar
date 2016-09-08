@@ -1,14 +1,14 @@
 
-/**     @class undefined
+/*      @class undefined
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined`
 */
-/**     @class null
+/*      @class null
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null`
 */
-/**     @class NaN
+/*      @class NaN
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN`
 */
-/**     @class Object
+/*      @class Object
 @Function create
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create`
 @Function defineProperty
@@ -70,7 +70,7 @@
 @Function #valueOf
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf`
 */
-/**     @class Array
+/*      @class Array
     @super Object
 @Function #concat
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat`
@@ -97,13 +97,13 @@
 @Function #unshift
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift`
 */
-/**     @class Boolean
+/*      @class Boolean
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean`
 */
-/**     @class Date
+/*      @class Date
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date`
 */
-/**     @class Function
+/*      @class Function
 @Function #apply
 @Function #call
 @Object #arguments
@@ -111,87 +111,87 @@
     property on the Function. This property is `null` at all other times.
 @Object #prototype
 */
-/**     @class Infinity
+/*      @class Infinity
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infiniuty`
 */
-/**     @class Number
+/*      @class Number
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number`
 */
-/**     @class RegExp
+/*      @class RegExp
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp`
 */
-/**     @class String
+/*      @class String
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String`
 */
-/**     @class Error
+/*      @class Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error`
 */
-/**     @class EvalError
+/*      @class EvalError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError`
 */
-/**     @class RangeError
+/*      @class RangeError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError`
 */
-/**     @class ReferenceError
+/*      @class ReferenceError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError`
 */
-/**     @class SyntaxError
+/*      @class SyntaxError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError`
 */
-/**     @class TypeError
+/*      @class TypeError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError`
 */
-/**     @class URIError
+/*      @class URIError
     @super Error
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError`
 */
-/**     @property/Function clearInterval
+/*      @property/Function clearInterval
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/clearInterval`
 */
-/**     @property/Function clearTimeout
+/*      @property/Function clearTimeout
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/clearTimeout`
 */
-/**     @property/Function decodeURI
+/*      @property/Function decodeURI
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI`
 */
-/**     @property/Function decodeURIComponent
+/*      @property/Function decodeURIComponent
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent`
 */
-/**     @property/Function encodeURI
+/*      @property/Function encodeURI
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI`
 */
-/**     @property/Function encodeURIComponent
+/*      @property/Function encodeURIComponent
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent`
 */
-/**     @property/Function eval
+/*      @property/Function eval
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval`
 */
-/**     @property/Function isFinite
+/*      @property/Function isFinite
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isFinite`
 */
-/**     @property/Function isNaN
+/*      @property/Function isNaN
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN`
 */
-/**     @property/Function parseFloat
+/*      @property/Function parseFloat
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat`
 */
-/**     @property/Function parseInt
+/*      @property/Function parseInt
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt`
 */
-/**     @property/Function setInterval
+/*      @property/Function setInterval
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval`
 */
-/**     @property/Function setTimeout
+/*      @property/Function setTimeout
     @remote `https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout`
 */
-/**     @property Math
+/*      @property Math
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math`
 */
-/**     @property JSON
+/*      @property JSON
     @remote `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON`
 */

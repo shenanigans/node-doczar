@@ -1,10 +1,10 @@
 
-/**     @module stream
+/*      @module stream
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/stream.html#stream_stream`
 */
 
-/**     @class Readable
+/*      @class Readable
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/stream.html#stream_class_stream_readable`
 @event readable
@@ -37,7 +37,7 @@
     @remote `https://nodejs.org/api/stream.html#stream_readable_wrap_stream`
 */
 
-/**     @class Writable
+/*      @class Writable
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/stream.html#stream_class_stream_writable`
 @Function #write
@@ -63,14 +63,14 @@
 
 */
 
-/**     @class Duplex
+/*      @class Duplex
     @super .Readable
     @super .Writable
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/stream.html#stream_class_stream_duplex`
 */
 
-/**     @class Transform
+/*      @class Transform
     @super .Readable
     @super .Writable
 @spare `Library Documentation`

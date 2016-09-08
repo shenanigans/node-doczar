@@ -1,5 +1,5 @@
 
-/**     @module dns
+/*      @module dns
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/dns.html#dns_dns`
 @spare `Error Codes`

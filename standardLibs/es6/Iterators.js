@@ -1,12 +1,12 @@
 
-/**     @class Iterable
+/*      @class Iterable
 
 */
 
-/**     @class Iterator
+/*      @class Iterator
 
 */
 
-/**     @class IteratorResult
+/*      @class IteratorResult
 
 */

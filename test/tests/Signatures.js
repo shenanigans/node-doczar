@@ -1,6 +1,6 @@
 
-/**     @module Test */
-/**     @property/Function foobarbazwhatever
+/*      @module Test */
+/*      @property/Function foobarbazwhatever
     No beer and no tee vee make Homer something something.
 @argument/Number|String able
 @argument/Number|undefined baker

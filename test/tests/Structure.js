@@ -1,11 +1,11 @@
 
-/**     @module Test
+/*      @module Test
     This is the implicit `@spare summary`.
 @spare details
     These are the explicit `@spare details`.
 */
 
-/**     @class Foo
+/*      @class Foo
     These are the implicit `@spare details`.
 @submodule `Interrupting Cow`
     Mooooooo!
@@ -26,7 +26,7 @@
     A complex-multi-type member.
 */
 
-/**     @member/Function doThings
+/*      @member/Function doThings
 @argument/String able
 @callback foo
     @argument/String able
@@ -49,7 +49,7 @@
     Return Object.
 */
 
-/**     @module/class Inline
+/*      @module/class Inline
     This module declaration tests some tricky inline argument structures.
 @argument/String|undefined constructorArg
 @callback constructorCallback
@@ -71,6 +71,6 @@
 @member/String memberString
 */
 
-/**     @module Next:Last
+/*      @module Next:Last
     Another module.
 */

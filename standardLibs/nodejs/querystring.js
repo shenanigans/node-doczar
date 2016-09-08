@@ -1,5 +1,5 @@
 
-/**     @module querystring
+/*      @module querystring
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/querystring.html#querystring_query_string`
 @Function stringify

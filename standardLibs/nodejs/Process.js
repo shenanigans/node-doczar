@@ -1,5 +1,5 @@
 
-/**     @property/Object process
+/*      @property/Object process
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/process.html#process_process`
 @spare `Exit Codes`
