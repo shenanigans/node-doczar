@@ -398,38 +398,47 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
         });
     }
 
+    var modules = [];
+    var globals = [];
+    for (var key in self.root)
+        if (self.root[key].ctype == 'module')
+            modules.push (self.root[key].final);
+        else
+            globals.push (self.root[key].final);
+
+    function sortItems (a, b) {
+        var an = a.pathstr.toLowerCase();
+        var bn = b.pathstr.toLowerCase();
+        if (an == bn) return 0;
+        if (an > bn) return 1;
+        return -1;
+    }
+    modules.sort (sortItems);
+    globals.sort (sortItems);
+
+    var timestring =
+        (options.date.getHours()%12||12)
+      + ':'
+      + (options.date.getMinutes())
+      + (options.date.getHours()<12?'am':'pm')
+      ;
+
     this.latency.log();
     async.parallel ([
-        function (callback) { fs.mkdirs (path.join (basedir, 'property'), callback); },
-        function (callback) { fs.mkdirs (path.join (basedir, 'module'), callback); },
+        function (callback) {
+            if (!globals.length)
+                return callback();
+            fs.mkdirs (path.join (basedir, 'property'), callback);
+        },
+        function (callback) {
+            if (!modules.length)
+                return callback();
+            fs.mkdirs (path.join (basedir, 'module'), callback);
+        }
     ], function (err) {
         if (err) return callback (err);
         self.latency.log ('file system');
-        if (options.json) {
-            var modules = [];
-            var globals = [];
-            for (var key in self.root)
-                if (self.root[key].ctype == 'module')
-                    modules.push (self.root[key].final);
-                else
-                    globals.push (self.root[key].final);
-
-            function sortItems (a, b) {
-                var an = a.pathstr.toLowerCase();
-                var bn = b.pathstr.toLowerCase();
-                if (an == bn) return 0;
-                if (an > bn) return 1;
-                return -1;
-            }
-            modules.sort (sortItems);
-            globals.sort (sortItems);
-            var timestring =
-                (options.date.getHours()%12||12)
-              + ':'
-              + (options.date.getMinutes())
-              + (options.date.getHours()<12?'am':'pm')
-              ;
-            self.latency.log();
+        if (options.json)
             return fs.writeFile (
                 path.join (basedir, 'index.json'),
                 JSON.stringify ({
@@ -440,7 +449,6 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
                 }),
                 writeChildren
             );
-        }
 
         self.latency.log();
         async.parallel ([

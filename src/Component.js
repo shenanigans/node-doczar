@@ -1165,12 +1165,15 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
                     JSON.stringify (self.final),
                     finalCall
                 );
-            else
+            else {
+                var renderStr = Templates.render (self);
+                self.context.latency.log ('rendering');
                 fs.writeFile (
                     path.join (basedir, 'index.html'),
-                    Templates.render (self),
+                    renderStr,
                     finalCall
                 );
+            }
         });
     });
 };
