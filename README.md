@@ -166,7 +166,7 @@ right into your documentation. For more information see the section on [Syntax P
 var timesGonna = "never";
 ```
 
-In python, any "triple" string literal that meets the first-line requirements is a document comment.
+In python, any "triple" string literal that starts with a declaration is considered a doc comment.
 ```python
 def referenceMontyPython (skit):
     """     @property/function referenceMontyPython
@@ -190,7 +190,7 @@ Finally, HTML comments are also supported.
 
 Indentation of a markdown section is automagically normalized to the least-indented line and you may
 include any number of tab and space characters before any Declaration. You can even break in the
-middle of a link definition.
+middle of a link, like so:
 ```c
 /*  @member/int foo
     A contracted document with
@@ -232,18 +232,19 @@ to the enclosing comment.
 
 
 ###Modules
-In some languages such as Java, the concept of a module is very specific and `@module` declarations
-always describe an importable structure. In environments like Node.js where directly importing
-submodules is rare, one might use a `@module` to describe a type that is involved in processing or
-may be returned but which is abstract or cannot be accessed directly.
 
 The `@module` Declaration has an infectious scope. Every Declaration after it is scoped to the
 module Component, as are value type paths that begin with a delimiter. See [crosslinking]
 (#crosslinking) for more information. If you want to semantically declare a `@module` without
 affecting the scope, use the `@submodule` declaration instead.
 
+In some languages such as Java, the concept of a module is very specific and `@module` declarations
+always describe an importable structure. In environments like Node.js where directly importing
+submodules is rare, one might use a `@module` to describe a type that is involved in processing or
+may be returned but which is abstract or cannot be accessed directly.
+
 The global namespace and the first level of modules live together. Beyond the root, modules possess
-their own namespace and are delimited with `:`.
+their own namespace and are delimited with forward slash (`/`).
 ```c
 /*      @module Foo
     The Foo module.
@@ -252,10 +253,10 @@ their own namespace and are delimited with `:`.
     The Foo.Bar class.
 */
 /*      @submodule/class Baz
-    The Foo:Baz class.
+    The Foo/Baz class.
 */
 /*      @property/Function createBar
-
+    The Foo.createBar function.
 */
 ```
 
@@ -276,8 +277,8 @@ character.
 ### Modifiers and Flags
 Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
-visibility and position of a Component and its children. Flags just render literally as helpful
-keywords in a contrasting color.
+visibility and position of a Component and its children. Flags simply appear in the final
+documentation as keywords in a contrasting color.
 ```c
 /*      @class MyClass
     @super LisasClass
@@ -291,7 +292,8 @@ keywords in a contrasting color.
 */
 ```
 
-Here is a list of the available Modifiers and Flags
+Here is a list of the available Modifiers and Flags:
+
 #### Modifiers
  * `@development` hides this Component unless the --dev flag is used
  * `@api` reveals this Component and its ancestors when the --api flag is used
@@ -299,6 +301,11 @@ Here is a list of the available Modifiers and Flags
  * `@super` inherits from a superclass
  * `@implements` associates an implemented Java interface
  * `@default` describes a default value. Always use backticks.
+ * `@root` causes any given Component to affect the document scope as if it were a Module.
+ * `@alias` copies the documentation from another path onto this Component
+ * `@patches` copies this Component's documentation into another path
+ * `@remote` replaces this Component's documentation with links to an internet url
+ * `@default` documents this Component's default value
 
 #### Flags
  * `@public`
@@ -307,6 +314,7 @@ Here is a list of the available Modifiers and Flags
  * `@abstract`
  * `@final`
  * `@volatile`
+ * `@const`
 
 
 

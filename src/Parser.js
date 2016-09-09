@@ -830,26 +830,43 @@ var JDOC_SPECIAL = {
 };
 function parseJavadocFlavorTag (docstr, scopeParent) {
     var lines = docstr.split (/\r?\n/g);
-    var summary = '';
-    var mount = { types:[], modifiers:[], extras };
+    var mount = { types:[], modifiers:[], extras:{} };
     var children = [];
     var currentChild;
+    var tagname;
+    if (!scopeParent['.docstr'])
+        scopeParent['.docstr'] = '';
     for (var i=0,j=lines.length; i<j; i++) {
-        var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1];
+        var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1] || '';
         if (cleanLine[0] !== '@') {
-            if (currentChild)
-                currentChild.docstr += ' ' + cleanLine;
-            else
-                summary += ' ' + cleanLine;
+            ( scopeParent || currentChild )['.docstr'] += cleanLine + ' \n';
             continue;
         }
 
-        // starting a new block
-        if (currentChild)
-            delete currentChild;
+        // starting a new tag
+        // wrap up the previous one
+        if (currentChild) {
+            if (tagname === 'example')
+                scopeParent['.docstr'] += '```\n\n';
 
-        // process block
+            delete tagname;
+            delete currentChild;
+        }
+        // consume the tag
+        var match = cleanLine.match (/@([a-zA-Z]+)(?:[ \t]+(.*))?/);
+        tagname = match[1];
+        cleanLine = match[2] || '';
+
+        // work the tag
+        if (tagname === 'example') {
+            scopeParent['.docstr'] += '\n### Example\n```javascript\n';
+            continue;
+        }
     }
+
+    // wrap up the last subtag
+    if (tagname === 'example')
+        scopeParent['.docstr'] += '```\n\n';
 }
 
 function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, processFile, sources) {
@@ -892,9 +909,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         { basedir:path.parse (fname).dir }
                     );
                 } catch (err) {
-                    logger.error ({
+                    logger.warn ({
                         from:   path.parse (fname).dir,
-                        to:     importName
+                        to:     expression.arguments[0].value
                     }, 'failed to resolve dependency');
                     return;
                 }
@@ -1416,6 +1433,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     var comment = level.leadingComments[i];
                     if (deadLine && comment.loc.start.line <= deadLine)
                         continue;
+
                     var match;
                     Patterns.tag.lastIndex = 0;
                     if (
@@ -1462,40 +1480,47 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     Patterns.tag.lastIndex = 0;
                     if (deadLine === undefined || comment.loc.start.line > deadLine) {
                         foundComment = true;
-                        if (match = Patterns.tag.exec ('/*'+comment.value+'*/')) {
-                            if (!node['.mount']) {
-                                // expression marked with a tag comment
-                                var ctype = match[1];
-                                // valtypes
-                                var valtype;
-                                if (match[2])
-                                    valtype = parseType (match[2], fileScope);
-                                else
-                                    valtype = [];
-                                var pathstr = match[3];
-                                var docstr = match[4] || '';
-                                var pathfrags = parsePath (pathstr, fileScope);
-                                if (defaultScope && !fileScope.length) {
-                                    pathfrags[0][0] = Patterns.delimitersInverse[ctype];
-                                    pathfrags = concatPaths (defaultScope, pathfrags);
-                                }
-
-                                if (!pathfrags[0][0])
-                                    if (pathfrags.length == 1)
-                                        pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                        // javadoc comment?
+                        if (comment.value.match (/^\*[^*]/))
+                            parseJavadocFlavorTag (comment.value, node);
+                        else {
+                            // normal or doczar comment
+                            if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/')))
+                                node['.docstr'] = comment.value;
+                            else {
+                                if (!node['.mount']) {
+                                    // expression marked with a tag comment
+                                    var ctype = match[1];
+                                    // valtypes
+                                    var valtype;
+                                    if (match[2])
+                                        valtype = parseType (match[2], fileScope);
                                     else
-                                        pathfrags[0][0] = '.';
+                                        valtype = [];
+                                    var pathstr = match[3];
+                                    var docstr = match[4] || '';
+                                    var pathfrags = parsePath (pathstr, fileScope);
+                                    if (defaultScope && !fileScope.length) {
+                                        pathfrags[0][0] = Patterns.delimitersInverse[ctype];
+                                        pathfrags = concatPaths (defaultScope, pathfrags);
+                                    }
 
-                                node['.mount'] = {
-                                    ctype:      ctype,
-                                    path:       pathfrags,
-                                    valType:    valtype,
-                                    docstr:     docstr,
-                                    fname:      fname
-                                };
+                                    if (!pathfrags[0][0])
+                                        if (pathfrags.length == 1)
+                                            pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                                        else
+                                            pathfrags[0][0] = '.';
+
+                                    node['.mount'] = {
+                                        ctype:      ctype,
+                                        path:       pathfrags,
+                                        valType:    valtype,
+                                        docstr:     docstr,
+                                        fname:      fname
+                                    };
+                                }
                             }
-                        } else
-                            node['.docstr'] = comment.value;
+                        }
                     }
                 }
             }
@@ -2197,11 +2222,11 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         { basedir:path.parse (fname).dir }
                     );
                 } catch (err) {
-                    logger.error ({
+                    logger.warn ({
                         from:   path.parse (fname).dir,
-                        to:     importName
+                        to:     path.resolve (process.cwd(), importName)
                     }, 'failed to resolve dependency');
-                    return;
+                    break;
                 }
                 var exports;
                 if (Object.hasOwnProperty.call (sources, modPathStr))

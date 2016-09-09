@@ -54,7 +54,7 @@
         </div>
     {{/satisfies}}
     <div class="info">
-        <span class="markdown">{{{markdown summaryDoc}}}</span>
+        <div class="markdown">{{{markdown summaryDoc}}}</div>
         {{#if signatures}}
             {{#signatures}}
 {{> signature}}

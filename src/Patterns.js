@@ -35,7 +35,7 @@ var tpath = util.format (
 module.exports.cpath = cpath;
 module.exports.tpath = tpath;
 var modtypes    = 'development|api|super|implements|public|protected|private|abstract|final'
-  + '|volatile|optional|const|root|alias|patches|remote|requires|default|environment'
+  + '|volatile|optional|const|root|alias|patches|remote|default'
   ;
 
 /*      @property/RegExp jpath
@@ -167,7 +167,7 @@ module.exports.typeSelectorWord = new RegExp (
 /*      @property/RegExp jdocLeadSplitter
 
 */
-module.exports.jdocLeadSplitter = /^[ \t]*(?:\*[ \t]+)?(.*)/;
+module.exports.jdocLeadSplitter = /^[ \t]*(?:\*(?:[ \t]+|$))?(.*)/;
 
 /*      @property/RegExp tag
     Selects a Declaration and its entire document comment. Groups out Component type, value type,

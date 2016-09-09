@@ -67,7 +67,7 @@
         </div>
     {{/interfaces}}
     <div class="info">
-<span class="markdown">{{{markdown summaryDoc}}}</span>
+<div class="markdown">{{{markdown summaryDoc}}}</div>
         {{#if isInline}}{{#unless isModule}}
 {{> children}}
         {{/unless}}{{/if}}
