@@ -501,7 +501,9 @@ function parseTag (
             if (Object.hasOwnProperty.call (loadedDocuments, filename))
                 loadedDoc = loadedDocuments[filename];
             else try {
+                context.latency.log ('parsing');
                 loadedDoc = fs.readFileSync (filename).toString();
+                context.latency.log ('file system');
             } catch (err) {
                 logger.warn (
                     { filename:filename },
@@ -719,7 +721,9 @@ function parseTag (
         if (Object.hasOwnProperty.call (loadedDocuments, filename))
             loadedDoc = loadedDocuments[filename];
         else try {
+                context.latency.log ('parsing');
             loadedDoc = fs.readFileSync (filename).toString();
+                context.latency.log ('file system');
         } catch (err) {
             logger.warn (
                 { filename:filename },
@@ -828,7 +832,7 @@ var JDOC_SPECIAL = {
         // apply documentation on this node to the class' node
     }
 };
-function parseJavadocFlavorTag (docstr, scopeParent) {
+function parseJavadocFlavorTag (docstr, scopeParent, logger) {
     var lines = docstr.split (/\r?\n/g);
     var mount = { types:[], modifiers:[], extras:{} };
     var children = [];
@@ -862,6 +866,67 @@ function parseJavadocFlavorTag (docstr, scopeParent) {
             scopeParent['.docstr'] += '\n### Example\n```javascript\n';
             continue;
         }
+
+        // // use this to consume errant doc text
+        var dummy = { '.docstr':'' };
+
+        // // simple flag modifiers
+        if (Object.hasOwnProperty.call (JDOC_MOUNT_FLAG, tagname)) {
+            mount.modifiers.push ({ mod:JDOC_MOUNT_FLAG[tagname] });
+            continue;
+        }
+
+        // // modifiers that accept a single mandatory path
+        if (Object.hasOwnProperty.call (JDOC_MOD_PATH, tagname)) {
+            // consume a path
+            var pathMatch = cleanLine.match (Patterns.jpathConsumer);
+            if (!pathMatch || !pathMatch[1] || !pathMatch[1].length) {
+                logger.debug ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
+                continue;
+            }
+            var path = parseJavadocFlavorPath (pathMatch[1]);
+
+        }
+
+        // modify the target's ctype
+        if (Object.hasOwnProperty.call (JDOC_CTYPE, tagname)) {
+
+        }
+
+        // add hacky flag properties to the target's `.extras` property
+        if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
+
+        }
+
+        // creates a flag and optionally alters the target's mount.type and mount.path
+        if (Object.hasOwnProperty.call (JDOC_MOUNT_FLAG, tagname)) {
+
+        }
+
+        // creates a hacky flag property in the target's `.extras` property AND
+        // optionally alters the target's mount.type and mount.path
+        if (Object.hasOwnProperty.call (JDOC_MOUNT_EXTRA, tagname)) {
+
+        }
+
+        // opens a new child tag and begins consuming documentation
+        if (Object.hasOwnProperty.call (JDOC_CHILD, tagname)) {
+
+        }
+
+        // special tags
+        if (Object.hasOwnProperty.call (JDOC_SPECIAL, tagname)) {
+            JDOC_SPECIAL[tagname] (cleanLine, mount, scopeParent);
+            continue;
+        }
+
+        logger.debug (
+            { tag:tagname, line:cleanLine, raw:lines[i] },
+            'unrecognized javadoc-flavor tag'
+        );
+        if (cleanLine.length && cleanLine.match (/[^ \t\n\r]/))
+            // consume documentation until a known tag appears or the comment ends
+            currentChild = dummy;
     }
 
     // wrap up the last subtag
@@ -970,8 +1035,10 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 var arg;
                 if (i < args.length)
                     arg = args[i];
-                else
+                else {
                     arg = args[i] = newNode();
+                    arg['.noSet'] = true;
+                }
                 divineTypes (arg, expression.arguments[i]);
             }
 
@@ -980,8 +1047,13 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 var callPack = [];
                 for (var i=0,j=expression.arguments.length; i<j; i++) {
                     var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode)
-                        callPack.push (argNode);
+                    if (argNode) {
+                        var dummy = newNode();
+                        dummy['.deref'].push (argNode);
+                        dummy['.noSet'] = true;
+                        // callPack.push (argNode);
+                        callPack.push (dummy);
+                    }
                 }
                 if (callNode['.waitingCalls'])
                     callNode['.waitingCalls'].push (callPack);
@@ -996,8 +1068,13 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 //     innerScope[key] = callNode['.scope'][key];
                 for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
                     var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode)
-                        innerScope[args[i].name] = argNode;
+                    if (argNode) {
+                        var dummy = newNode();
+                        dummy['.deref'].push (argNode);
+                        dummy['.noSet'] = true;
+                        // innerScope[args[i].name] = argNode;
+                        innerScope[args[i].name] = dummy;
+                    }
                 }
 
                 for (var i=0,j=callNode['.body'].length; i<j; i++) {
@@ -1096,8 +1173,10 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     var tsrt;
                     if (value.operator == '=') {
                         // single-equals side-effect syntax
-                        var targetNode = getNode (scope, value.left);
+                        var targetNode = getNode (scope, value.left, true);
                         if (!targetNode)
+                            return [];
+                        if (targetNode['.noSet'])
                             return [];
                         var gotTypes = divineTypes (targetNode, value.right);
                         for (var i=0,j=gotTypes.length; i<j; i++) {
@@ -1189,14 +1268,16 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                 args[i] = new filth.SafeMap ({
                                     '.name':    value.params[i].name,
                                     '.types':   [],
-                                    '.deref':   []
+                                    '.deref':   [],
+                                    '.noSet':   true
                                 });
                     } else
                         args = node['.arguments'] = value.params.map (function (param) {
                             return new filth.SafeMap ({
                                 '.name':    param.name,
                                 '.types':   [],
-                                '.deref':   []
+                                '.deref':   [],
+                                '.noSet':   true
                             });
                         });
                     // recurse to walkLevel from divineTypes
@@ -1321,6 +1402,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     for (var i=0,j=level.params.length; i<j; i++) {
                         var arg = newNode();
                         arg['.name'] = level.params[i].name;
+                        arg['.noSet'] = true;
                         args.push (arg);
                     }
                     anon['.return'] = newNode();
@@ -1482,7 +1564,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         foundComment = true;
                         // javadoc comment?
                         if (comment.value.match (/^\*[^*]/))
-                            parseJavadocFlavorTag (comment.value, node);
+                            parseJavadocFlavorTag (comment.value, node, logger);
                         else {
                             // normal or doczar comment
                             if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/')))
@@ -1651,6 +1733,8 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         node = getNode (scope, level.expression.left, true);
                         if (!node)
                             break;
+                        if (node['.noSet'])
+                            break;
                         // divine the type being set
                         divineTypes (node, level.expression.right);
                         break;
@@ -1794,7 +1878,8 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         args[i] = new filth.SafeMap ({
                             '.name':    param.name,
                             '.types':   [],
-                            '.deref':   []
+                            '.deref':   [],
+                            '.noSet':   true
                         });
                     divineTypes (param, args[i]);
                 }

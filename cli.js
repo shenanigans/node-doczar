@@ -647,7 +647,10 @@ function processSource (filenames) {
             return callback();
         }
 
+        context.latency.log();
         fs.readFile (fname, function (err, buf) {
+            context.latency.log ('file system');
+
             if (err)
                 return callback (err);
 
@@ -852,6 +855,7 @@ function processSource (filenames) {
                 return logger.fatal ({ err:err, parse:argv.parse }, 'failed to parse file');
             }
 
+            context.latency.log ('parsing');
             callback();
         });
     }, function (err) {
@@ -884,6 +888,7 @@ function processSource (filenames) {
 
         switch (argv.parse) {
             case 'js':
+                context.latency.log();
                 // remove the window self-ref
                 delete globalNode.window;
 
@@ -995,8 +1000,10 @@ function processSource (filenames) {
                             );
                         }
                 } while (didSubmit);
+                context.latency.log ('declaration generation');
                 break;
             case 'node':
+                context.latency.log();
                 // process deferred dereferences
                 var finishedARef;
                 do {
@@ -1105,6 +1112,7 @@ function processSource (filenames) {
                         }
                     }
                 } while (didSubmit);
+                context.latency.log ('declaration generation');
                 break;
             default:
                 // nothing to do when not parsing syntax
@@ -1125,8 +1133,9 @@ function processSource (filenames) {
             }
         else
             options.date = new Date();
-        logger.info ('compiling documentation');
+        logger.info ('finalizing documentation');
         context.finalize (options, function(){
+            context.latency.log ('finalization');
             logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
             if (argv.json)
                 options.json = true;
@@ -1136,6 +1145,10 @@ function processSource (filenames) {
                     return process.exit (1);
                 }
                 logger.info ('filesystem output complete');
+                var finalLatencies = context.latency.getFinalLatency();
+                finalLatencies.etc = finalLatencies[''];
+                delete finalLatencies[''];
+                logger.info (finalLatencies, 'latencies');
                 logger.info ('done');
                 return process.exit (0);
             });

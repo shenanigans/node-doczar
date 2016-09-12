@@ -49,7 +49,8 @@ var ARGUMENTS = {
 var SKIP = [
     "NodeParseModule.js",
     "NodeParseModules",
-    "ES6Modules"
+    "ES6Modules",
+    "Fauxsync.js"
 ];
 async.parallel ([
     function (callback) {
@@ -96,12 +97,14 @@ async.parallel ([
                         return callback();
                     child_process.exec (
                         htmlCommand,
+                        { maxBuffer: 5 * 1024 * 1024 },
                         callback
                     );
                 },
                 function (callback) {
                     child_process.exec (
                         jsonCommand,
+                        { maxBuffer: 5 * 1024 * 1024 },
                         callback
                     );
                 }

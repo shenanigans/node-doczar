@@ -207,7 +207,6 @@ ComponentCache.prototype.finalize = function (options, callback) {
                 namespace
             );
         }
-        self.latency.log ('finalization');
         callback();
     });
 };
@@ -393,10 +392,11 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
         }, function (err) {
             if (err)
                 return callback (err);
-            self.logger.info (self.latency.getFinalLatency(), 'latencies');
             callback();
         });
     }
+
+    this.latency.log();
 
     var modules = [];
     var globals = [];
@@ -423,7 +423,7 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
       + (options.date.getHours()<12?'am':'pm')
       ;
 
-    this.latency.log();
+
     async.parallel ([
         function (callback) {
             if (!globals.length)

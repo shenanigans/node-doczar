@@ -60,6 +60,7 @@ function runTest (name, args) {
                           ;
                         child_process.exec (
                             command,
+                            { maxBuffer: 5 * 1024 * 1024 },
                             function (err, stdout, stderr) {
                                 try {
                                     logs = stdout ?
@@ -87,6 +88,7 @@ function runTest (name, args) {
                           ;
                         child_process.exec (
                             command,
+                            { maxBuffer: 5 * 1024 * 1024 },
                             function (err, stdout, stderr) {
                                 try {
                                     logs = stdout ?
@@ -190,30 +192,38 @@ function runTest (name, args) {
                         return callback (new Error ('unmatched json file in output'));
                     if (!outputDoc && compareDoc)
                         return callback (new Error ('unmatched json file in sample'));
-                    if (outputDoc && compareDoc) try {
-                        assert.deepEqual (outputDoc, compareDoc);
-                    } catch (err) {
-                        for (var i=0,j=outputDoc.length; i<j; i++)
-                            if (outputDoc[i] != compareDoc[i]) {
-                                console.log (' model:', compareDoc.slice (i-10, i+100));
-                                console.log ('result:', outputDoc.slice (i-10, i+100));
-                                break;
-                            }
-                        return callback (new Error ('output documents do not match: '+level+'/index.json'));
-                    }
 
-                    if (outputDirs.length > compareDirs.length)
-                        return callback (new Error ('generated extra directory at: '+level));
-                    // if (outputDirs.length < compareDirs.length)
-                    //     return callback (new Error ('failed to generate directory at: '+level));
-                    for (var i=0,j=outputDirs.length; i<j; i++)
-                        if (compareDirs.indexOf (outputDirs[i]) < 0)
-                            return callback (new Error (
-                                'unmatched directory ('+outputDirs[i]+') generated at: '+level
-                            ));
                     async.each (outputDirs, function (dir, callback) {
                         checkLevel (level+'/'+dir, callback);
-                    }, callback);
+                    }, function (err) {
+                        if (err)
+                            return callback (err);
+                        if (outputDirs.length > compareDirs.length)
+                            return callback (new Error ('generated extra directory at: '+level));
+                        if (outputDirs.length < compareDirs.length)
+                            return callback (new Error ('failed to generate directory at: '+level));
+                        for (var i=0,j=outputDirs.length; i<j; i++)
+                            if (compareDirs.indexOf (outputDirs[i]) < 0)
+                                return callback (new Error (
+                                    'unmatched directory ('+outputDirs[i]+') generated at: '+level
+                                ));
+
+                        if (outputDoc && compareDoc) try {
+                            assert.deepEqual (outputDoc, compareDoc);
+                        } catch (err) {
+                            // for (var i=0,j=outputDoc.length; i<j; i++)
+                            //     if (outputDoc[i] != compareDoc[i]) {
+                            //         console.log ('----', level);
+                            //         console.log (' model:', compareDoc.slice (i-10, i+100));
+                            //         console.log ('result:', outputDoc.slice (i-10, i+100));
+                            //         console.log ('\n');
+                            //         break;
+                            //     }
+                            return callback (new Error ('output documents do not match: '+level+'/index.json'));
+                        }
+
+                        callback();
+                    });
                 });
             }
 

@@ -48,6 +48,11 @@ var jpath = util.format (
                         pathWord,                   pathWord
 );
 
+module.exports.jpathConsumer = new RegExp (util.format (
+    '[ \t]*(%s).*',
+            jpath
+));
+
 /*      @property/RegExp jtag
     Parses a
 */
@@ -167,7 +172,7 @@ module.exports.typeSelectorWord = new RegExp (
 /*      @property/RegExp jdocLeadSplitter
 
 */
-module.exports.jdocLeadSplitter = /^[ \t]*(?:\*(?:[ \t]+|$))?(.*)/;
+module.exports.jdocLeadSplitter = /^[ \t]*(?:\*(?:[ \t]|$))?(.*)/;
 
 /*      @property/RegExp tag
     Selects a Declaration and its entire document comment. Groups out Component type, value type,
