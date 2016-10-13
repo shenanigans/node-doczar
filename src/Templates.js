@@ -5,14 +5,14 @@
     [Component](doczar:Component) being rendered.
 */
 
-var path = require ('path');
-var fs = require ('fs-extra');
-var url = require ('url');
-var marked = require ('marked');
+var path       = require ('path');
+var fs         = require ('fs-extra');
+var url        = require ('url');
+var marked     = require ('marked');
 var Handlebars = require ('handlebars');
-var highlight = require ('highlight.js');
-var Patterns = require ('./Patterns');
-var Parser = require ('./Parser');
+var highlight  = require ('highlight.js');
+var Patterns   = require ('./Patterns');
+var Parser     = require ('./Parser');
 
 var logger;
 var currentContext;

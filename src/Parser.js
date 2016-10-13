@@ -9,11 +9,9 @@
     of a fragement path. That is, the delimiter, the String fragment name, and in the case that the
     fragment is an es6 symbol a third child contains another `Path` representing the parsed form of
     the fragment name. Examplia gratia:
-
     ```javascript
     [ [ ".", "name" ], ...]
     ```
-
     Or with a symbol:
     ```javascript
     [ [ ".", "Symbols.iterator", [ [ ".", "Symbols" ], [ ".", "iterator" ] ] ]
@@ -54,7 +52,6 @@
 /*      @submodule/class DocumentFragment
     Represents a single block of markdown text and wraps it with its context to ensure proper
     crosslinking.
-
     The same markdown doc is often rendered twice, once in a parent context and again on the
     Component's own page. To make generated docs compatible with local file view, either all links
     must be local paths or the entire page must be initialized to root with a `<base>`. Because
@@ -82,12 +79,12 @@
     All the modifiers in the declaration.
 */
 
-var fs = require ('fs-extra');
-var path = require ('path');
-var resolve = require ('resolve');
-var esprima = require ('esprima');
-var filth = require ('filth');
-var Patterns = require ('./Patterns');
+var fs                = require ('fs-extra');
+var path              = require ('path');
+var resolve           = require ('resolve');
+var esprima           = require ('esprima');
+var filth             = require ('filth');
+var Patterns          = require ('./Patterns');
 var getNodeModulePath = require ('./getNodeModulePath');
 
 // handy helpers
@@ -106,12 +103,12 @@ var cloneArr = function (a) {
     return b;
 }
 
-/*      @property/Function parsePath
+/*
     Convert a path String to a path Array. If no path is generated, `[ [ ] ]` is returned. This is
     because **all** paths have a length but the final element may be filled contextually rather than
     explicitly.
 @argument/String pathstr
-@returns/:Path
+@returns//Path
     Returns Arrays of path fragment Arrays. These are of the form `[ [ ".", "name" ], ...]` or when
     Symbols are used, `[ [ ".", "Symbols.iterator", [ [ ".", "Symbols" ], [ ".", "iterator" ] ] ]`.
 */
@@ -211,12 +208,12 @@ function parsePath (pathstr, fileScope) {
     return path;
 }
 
-/*      @local/Function parseType
+/*
     Parse a standard type String. This may include any number of pipe-delimited iterations of paths
     with optional generic types.
 @returns Array<Valtype>
     Each type in the pipe-delimited sequence (by default, length 1) represented as a [Valtype]
-    (:Valtype).
+    (/Valtype).
 */
 function parseType (typeStr, fileScope) {
     var valType = [];
@@ -274,7 +271,6 @@ function parseType (typeStr, fileScope) {
             name:       uglyvaltypepath.slice(1)
         });
     }
-
     return valType;
 }
 
@@ -282,13 +278,13 @@ function parseType (typeStr, fileScope) {
 /*      @property/Function parseFile
     @api
     Submit every Modifier and Declaration in a single source file to a [ComponentCache]
-    (doczar:ComponentCache) instance.
+    (doczar/ComponentCache) instance.
 @argument/String fname
     An OS-localized absolute filename to read.
-@argument/doczar:ComponentCache context
-    Parsed information will be [reported](doczar:ComponentCache#submit) to this [ComponentCache]
-    (doczar:ComponentCache) instance.
-@argument/bunyan:Logger logger
+@argument/doczar/ComponentCache context
+    Parsed information will be [reported](doczar/ComponentCache#submit) to this [ComponentCache]
+    (doczar/ComponentCache) instance.
+@argument/bunyan.Logger logger
 @callback processFile
     Called any number of times to request that additional files be processed.
     @argument/String fname
@@ -834,7 +830,7 @@ var JDOC_SPECIAL = {
 };
 function parseJavadocFlavorTag (docstr, scopeParent, logger) {
     var lines = docstr.split (/\r?\n/g);
-    var mount = { types:[], modifiers:[], extras:{} };
+    var mount = { '.types':[], '.modifiers':[], '.extras':[] };
     var children = [];
     var currentChild;
     var tagname;
@@ -869,10 +865,11 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
         // // use this to consume errant doc text
         var dummy = { '.docstr':'' };
+        currentChild = dummy;
 
         // // simple flag modifiers
-        if (Object.hasOwnProperty.call (JDOC_MOUNT_FLAG, tagname)) {
-            mount.modifiers.push ({ mod:JDOC_MOUNT_FLAG[tagname] });
+        if (Object.hasOwnProperty.call (JDOC_MOD_FLAG, tagname)) {
+            mount['.modifiers'].push ({ mod:JDOC_MOD_FLAG[tagname] });
             continue;
         }
 
@@ -881,32 +878,73 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
             // consume a path
             var pathMatch = cleanLine.match (Patterns.jpathConsumer);
             if (!pathMatch || !pathMatch[1] || !pathMatch[1].length) {
-                logger.debug ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
+                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
                 continue;
             }
             var path = parseJavadocFlavorPath (pathMatch[1]);
-
+            mount['.modifiers'].push ({ mod:JDOC_MOD_PATH[tagname], path:path });
+            continue;
         }
 
         // modify the target's ctype
         if (Object.hasOwnProperty.call (JDOC_CTYPE, tagname)) {
-
+            mount['.ctype'] = JDOC_CTYPE[tagname];
+            continue;
         }
 
         // add hacky flag properties to the target's `.extras` property
         if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
-
+            if (mount['.extras'].indexOf(JDOC_EXTRAS[tagname]) < 0)
+                mount['.extras'].push (JDOC_EXTRAS[tagname]);
+            continue;
         }
 
         // creates a flag and optionally alters the target's mount.type and mount.path
         if (Object.hasOwnProperty.call (JDOC_MOUNT_FLAG, tagname)) {
-
+            // try to consume either a path or type(s) and a path
+            var match = cleanLine.match (Patterns.jtagPaths);
+            if (!match) {
+                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
+                continue;
+            }
+            mount['.modifiers'].push ({ mod:JDOC_MOUNT_FLAG[tagname] });
+            var types = match[1];
+            if (types)
+                mount['.types'].push.apply (
+                    mount['.types'],
+                    types.split ('|').map (function (typeStr) {
+                        return { path:parseJavadocFlavorPath (typeStr) };
+                    })
+                );
+            var mountPath = match[2];
+            if (mountPath)
+                mount['.path'] = parseJavadocFlavorPath (mountPath);
+            continue;
         }
 
         // creates a hacky flag property in the target's `.extras` property AND
         // optionally alters the target's mount.type and mount.path
         if (Object.hasOwnProperty.call (JDOC_MOUNT_EXTRA, tagname)) {
-
+            // try to consume either a path or type(s) and a path
+            var match = cleanLine.match (Patterns.jtagPaths);
+            if (!match) {
+                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
+                continue;
+            }
+            if (mount['.extras'].indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
+                mount['.extras'].push (JDOC_MOUNT_EXTRA[tagname]);
+            var types = match[1];
+            if (types)
+                mount['.types'].push.apply (
+                    mount['.types'],
+                    types.split ('|').map (function (typeStr) {
+                        return { path:parseJavadocFlavorPath (typeStr) };
+                    })
+                );
+            var mountPath = match[2];
+            if (mountPath)
+                mount['.path'] = parseJavadocFlavorPath (mountPath);
+            continue;
         }
 
         // opens a new child tag and begins consuming documentation
@@ -920,13 +958,10 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
             continue;
         }
 
-        logger.debug (
+        logger.trace (
             { tag:tagname, line:cleanLine, raw:lines[i] },
             'unrecognized javadoc-flavor tag'
         );
-        if (cleanLine.length && cleanLine.match (/[^ \t\n\r]/))
-            // consume documentation until a known tag appears or the comment ends
-            currentChild = dummy;
     }
 
     // wrap up the last subtag
@@ -934,17 +969,84 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
         scopeParent['.docstr'] += '```\n\n';
 }
 
+function digDerefs (level) {
+    var chain = [];
+    var pointer = level;
+    var next;
+    while (
+        pointer['.deref']
+     && pointer['.deref'].length === 1
+     && chain.indexOf (next = pointer['.deref'][0]) < 0
+    )
+        chain.push (pointer = next);
+    return pointer;
+}
+
+function cloneFilter (key) {
+
+}
+function cloneShallowFilter (key) {
+    return key === '.body' || key === '.this';
+}
 function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, processFile, sources) {
     var fileScope = [];
     if (!baseNode['.root'])
         baseNode['.root'] = fileScope;
+    context.latency.log ('parsing');
     var tree = esprima.parse (fstr, {
         loc:            true,
         comment:        true,
         attachComment:  true,
+        tolerant:       true,
         sourceType:     'module'
     });
+    context.latency.log ('tokenization');
     var dirname = path.parse (fname).dir;
+
+    // hoist var statements and function declarations
+    function hoistNames (target, body) {
+        for (var i=0,j=body.length; i<j; i++) {
+            var loc = body[i];
+            switch (loc.type) {
+                case 'VariableDeclaration':
+                    for (var k=0,l=loc.declarations.length; k<l; k++) {
+                        var name = loc.declarations[k].id.name;
+                        if (!Object.hasOwnProperty.call (target, name))
+                            target[name] = newNode();
+                    }
+                    break;
+                case 'FunctionDeclaration':
+                    if (!loc.id)
+                        break;
+                    var name = loc.id.name;
+                    if (!Object.hasOwnProperty.call (target, name))
+                        target[name] = newNode();
+                    break;
+                case 'TryStatement':
+                    // recurse into block and handler
+                    hoistNames (target, loc.block.body);
+                    if (loc.handler)
+                        hoistNames (target, loc.handler.body);
+                    if (loc.finalizer)
+                        hoistNames (target, loc.finalizer.body);
+                    break;
+                case 'IfStatement':
+                    if (loc.consequent && loc.consequent.type === 'BlockStatement')
+                        hoistNames (target, loc.consequent.body);
+                    if (loc.alternate && loc.alternate.type === 'BlockStatement')
+                        hoistNames (target, loc.alternate.body);
+                    break;
+                case 'ForStatement':
+                case 'ForOfStatement':
+                case 'ForInStatement':
+                case 'WhileStatement':
+                case 'DoWhileStatement':
+                    hoistNames (target, loc.body);
+                    break;
+                default:
+            }
+        }
+    }
 
     function newNode (filepath) {
         return new filth.SafeMap ({
@@ -955,7 +1057,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
         });
     }
 
-    function walkLevel (level, scope, thisNode, deadLine, scopeParent, globalScope, fnChain) {
+    function walkLevel (level, scope, thisNode, deadLine, scopeParent, fnChain) {
         // apply an argument signature to a CallExpression
         function processCallExpression (expression, target) {
             // is this a require statement?
@@ -968,15 +1070,47 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
             ) {
                 // yes it is!
                 if (target) target['.silent'] = true;
+                // gather the module name
+                var depName;
+                if (expression.arguments[0].type === 'Literal')
+                    depName = expression.arguments[0].value;
+                else {
+                    // tricky source for the dependency name
+                    function getFragStr (level) {
+                        switch (level.type) {
+                            case 'Literal':
+                                if (typeof level.value !== 'string')
+                                    throw new Error ('invalid literal');
+                                return level.value;
+                            case 'BinaryExpression':
+                                if (level.operator !== '+')
+                                    throw new Error ('invalid binary expression');
+                                return getFragStr (level.left) + getFragStr (level.right);
+                            case 'AssignmentExpression':
+                                // assignment expression?
+                                if (level.operator !== '=')
+                                    throw new Error ('invalid assignment expression');
+                                return getFragStr (level.right);
+                            default:
+                                throw new Error ('invalid expression type');
+                        }
+                    }
+                    try {
+                        depName = getFragStr (expression.arguments[0]);
+                    } catch (err) {
+                        // could not generate dep name
+                        return;
+                    }
+                }
                 try {
                     var modPathStr = resolve.sync (
-                        expression.arguments[0].value,
+                        depName,
                         { basedir:path.parse (fname).dir }
                     );
                 } catch (err) {
                     logger.warn ({
                         from:   path.parse (fname).dir,
-                        to:     expression.arguments[0].value
+                        to:     depName
                     }, 'failed to resolve dependency');
                     return;
                 }
@@ -985,7 +1119,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         { required:expression.arguments[0].value, path:modPathStr },
                         'ignored core dependency'
                     );
-                    return;
+                    var dummy = newNode();
+                    dummy['.silent'] = true;
+                    return dummy;
                 }
                 var exports;
                 if (Object.hasOwnProperty.call (sources, modPathStr))
@@ -994,8 +1130,13 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     // resolve a module path for this file path
                     exports = new filth.SafeMap ({ '.types':[], '.deref':[] });
                     var referer = processFile (modPathStr, fname);
-                    sources[modPathStr] = new filth.SafeMap (baseNode, {
-                        '.root':    getNodeModulePath (logger, context.argv.root, referer, modPathStr),
+                    var currentRoot = baseNode['.root'].concat();
+                    if (currentRoot.length > context.argv.root.length)
+                        currentRoot.pop();
+                    sources[modPathStr] = new filth.SafeMap (baseNode.global, {
+                        // '.root':    getNodeModulePath (context, context.argv.root, referer, modPathStr),
+                        '.root':    getNodeModulePath (context, currentRoot, fname, modPathStr),
+                        global:     baseNode,
                         exports:    exports,
                         module:     new filth.SafeMap ({
                             '.types':   [],
@@ -1040,6 +1181,8 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     arg['.noSet'] = true;
                 }
                 divineTypes (arg, expression.arguments[i]);
+                if (callNode['.silent'])
+                    arg['.silent'] = true;
             }
 
             if (!callNode['.body']) {
@@ -1048,6 +1191,13 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 for (var i=0,j=expression.arguments.length; i<j; i++) {
                     var argNode = getNode (scope, expression.arguments[i]);
                     if (argNode) {
+                        if (argNode['.isCol']) {
+                            var dummyArg = newNode();
+                            if (callNode['.silent'])
+                                dummyArg['.silent'] = true;
+                            dummyArg['.instance'] = [ argNode ];
+                            argNode = dummyArg;
+                        }
                         var dummy = newNode();
                         dummy['.deref'].push (argNode);
                         dummy['.noSet'] = true;
@@ -1059,21 +1209,21 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     callNode['.waitingCalls'].push (callPack);
                 else
                     callNode['.waitingCalls'] = [ callPack ];
-            } else if (fnChain.indexOf (callNode) < 0) {
+            } else if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (callNode) < 0) {
                 var localChain = fnChain.concat();
                 localChain.push (callNode);
                 // run call test
                 var innerScope = new filth.SafeMap (scope, callNode['.scope']);
-                // for (var key in callNode['.scope'])
-                //     innerScope[key] = callNode['.scope'][key];
                 for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
                     var argNode = getNode (scope, expression.arguments[i]);
                     if (argNode) {
                         var dummy = newNode();
+                        if (callNode['.silent'])
+                            dummy['.silent'] = true;
                         dummy['.deref'].push (argNode);
                         dummy['.noSet'] = true;
-                        // innerScope[args[i].name] = argNode;
-                        innerScope[args[i].name] = dummy;
+                        innerScope[args[i]['.name']] = dummy;
+                        // innerScope[args[i]['.name']] = argNode;
                     }
                 }
 
@@ -1084,7 +1234,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         callNode['.this'],
                         localDeadLine,
                         callNode,
-                        globalScope,
                         localChain
                     );
                     localDeadLine = callNode['.body'][i].loc.end.line;
@@ -1102,18 +1251,32 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
         function divineTypes (node, value, localThisNode) {
             switch (value.type) {
                 case 'Identifier':
-                    if (Object.hasOwnProperty.call (scope, value.name))
+                    if (Object.hasOwnProperty.call (scope, value.name)) {
                         node['.deref'].push (scope[value.name]);
+                        if (scope[value.name]['.silent'])
+                            node['.silent'] = true;
+                    }
                     return [];
                 case 'MemberExpression':
                     var memberNode = getNode (scope, value);
-                    if (memberNode)
+                    if (memberNode) {
+                        if (memberNode['.isCol']) {
+                            var dummyMember = newNode();
+                            dummyMember['.instance'] = [ memberNode ];
+                            memberNode = dummyMember;
+                        }
                         node['.deref'].push (memberNode);
+                        if (memberNode['.silent'])
+                            node['.silent'] = true;
+                    }
                     return [];
                 case 'Literal':
                     var tstr = filth.getTypeStr (value.value);
                     if (tstr != 'null')
-                        tstr = tstr[0].toUpperCase() + tstr.slice (1);
+                        if (tstr === 'regexp')
+                            tstr = 'RegExp';
+                        else
+                            tstr = tstr[0].toUpperCase() + tstr.slice (1);
                     if (node['.types'].indexOf (tstr) < 0)
                         node['.types'].push (tstr);
                     return [ tstr ];
@@ -1148,7 +1311,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         else
                             propNode = props[propDef.key.name] = newNode();
                         propNode['.propName'] = propDef.key.name;
-                        divineTypes (propNode, propDef.value);
+                        divineTypes (propNode, propDef.value, node);
                         processComments (
                             propNode,
                             propDef,
@@ -1178,6 +1341,61 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             return [];
                         if (targetNode['.noSet'])
                             return [];
+                        if (targetNode['.isCol']) {
+                            // something like Foo.prototype = {
+                            // this node is the ['.members'] collection of Foo
+                            var dummy = newNode();
+                            divineTypes (dummy, value.right, targetNode['.parent']);
+                            // copy the dummy's props into the members collection
+                            context.latency.log ('parsing');
+                            if (node['.isCol']) {
+                                if (dummy['.props'])
+                                    for (var key in dummy['.props'])
+                                        if (key[0] !== '.')
+                                            node[key] =
+                                             targetNode[key] =
+                                             filth.circularClone (
+                                                dummy['.props'][key],
+                                                undefined,
+                                                cloneShallowFilter
+                                            );
+                                if (dummy['.members'])
+                                    for (var key in dummy['.members'])
+                                        if (key[0] !== '.')
+                                            node[key] =
+                                             targetNode[key] =
+                                             filth.circularClone (
+                                                dummy['.members'][key],
+                                                undefined,
+                                                cloneShallowFilter
+                                            );
+                            } else {
+                                if (!node['.members'])
+                                    node['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':node });
+                                if (dummy['.props'])
+                                    for (var key in dummy['.props'])
+                                        if (key[0] !== '.')
+                                            node['.members'][key] =
+                                             targetNode[key] =
+                                             filth.circularClone (
+                                                dummy['.props'][key],
+                                                undefined,
+                                                cloneShallowFilter
+                                            );
+                                if (dummy['.members'])
+                                    for (var key in dummy['.members'])
+                                        if (key[0] !== '.')
+                                            node['.members'][key] =
+                                             targetNode[key] =
+                                             filth.circularClone (
+                                                dummy['.members'][key],
+                                                undefined,
+                                                cloneShallowFilter
+                                            );
+                            }
+                            context.latency.log ('cloning');
+                            return [];
+                        }
                         var gotTypes = divineTypes (targetNode, value.right);
                         for (var i=0,j=gotTypes.length; i<j; i++) {
                             var tstr = gotTypes[i];
@@ -1202,24 +1420,32 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                      && value.callee.name == 'require'
                      && !Object.hasOwnProperty.call (scope, 'require')
                     ) {
-                        node['.deref'].push (processCallExpression (value, node));
+                        var returned = processCallExpression (value, node);
+                        if (returned) {
+                            node['.deref'].push (returned);
+                            if (returned['.silent'])
+                                node['.silent'] = true;
+                        }
                         return [];
                     }
                     var callNode = processCallExpression (value, node);
                     if (!callNode)
                         return [];
+                    // propagate silence
+                    if (callNode['.silent'])
+                        node['.silent'] = true;
                     // mark for later dereference of the function's return value
                     if (!callNode['.returns'])
                         callNode['.returns'] = newNode();
                     node['.deref'].push (callNode['.returns']);
+                    if (callNode['.returns']['.silent'])
+                        node['.silent'] = true;
                     return [];
                 case 'ClassExpression':
                     if (node['.types'].indexOf ('Function') < 0)
                         node['.types'].push ('Function');
 
-                    var innerScope = {};
-                    for (var key in scope)
-                        innerScope[key] = scope[key];
+                    var innerScope = filth.SafeMap (scope);
 
                     if (value.superClass) {
                         var superNode = getNode (scope, value.superClass);
@@ -1232,8 +1458,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         }
                     }
                     if (!node['.members'])
-                        node['.members'] = new filth.SafeMap ({ '.isCol':true });
+                        node['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':node });
                     var members = node['.members'];
+                    hoistNames (scope, value.body.body);
                     for (var i=0,j=value.body.body.length; i<j; i++) {
                         var declaration = value.body.body[i];
                         walkLevel (
@@ -1242,7 +1469,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             node,
                             declaration.loc.end.line,
                             scope,
-                            globalScope,
                             fnChain
                         );
                     }
@@ -1262,14 +1488,17 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     if (node['.arguments']) {
                         args = node['.arguments'];
                         for (var i=0,j=value.params.length; i<j; i++)
-                            if (i < args.length)
+                            if (i < args.length) {
                                 args[i]['.name'] = value.params[i].name;
-                            else
+                                if (node['.silent'])
+                                    args[i]['.silent'] = true;
+                            } else
                                 args[i] = new filth.SafeMap ({
                                     '.name':    value.params[i].name,
                                     '.types':   [],
                                     '.deref':   [],
-                                    '.noSet':   true
+                                    '.noSet':   true,
+                                    '.silent':  Boolean (node['.silent'])
                                 });
                     } else
                         args = node['.arguments'] = value.params.map (function (param) {
@@ -1277,13 +1506,12 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                 '.name':    param.name,
                                 '.types':   [],
                                 '.deref':   [],
-                                '.noSet':   true
+                                '.noSet':   true,
+                                '.silent':  Boolean (node['.silent'])
                             });
                         });
                     // recurse to walkLevel from divineTypes
-                    var innerScope = {};
-                    for (var key in scope)
-                        innerScope[key] = scope[key];
+                    var innerScope = new filth.SafeMap (scope);
                     for (var i=0,j=node['.arguments'].length; i<j; i++) {
                         var arg = node['.arguments'][i];
                         innerScope[arg['.name']] = arg;
@@ -1291,17 +1519,19 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     node['.scope'] = innerScope;
                     var localDeadLine = deadLine;
                     node['.body'] = value.body.body;
+                    if (!Object.hasOwnProperty.call (node, '.this'))
+                        node['.this'] = value.type == 'FunctionExpression' ?
+                            localThisNode || node
+                          : localThisNode || thisNode || node
+                          ;
+                    hoistNames (innerScope, value.body.body);
                     for (var i=0,j=value.body.body.length; i<j; i++) {
                         walkLevel (
                             value.body.body[i],
                             innerScope,
-                            value.type == 'FunctionExpression' ?
-                                node
-                              : (localThisNode || thisNode || node)
-                              ,
+                            node['.this'],
                             localDeadLine,
                             node,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = value.body.body[i].loc.end.line;
@@ -1321,10 +1551,10 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                     walkLevel (
                                         node['.body'][i],
                                         waitingInnerScope,
-                                        node || thisNode,
+                                        // node || thisNode,
+                                        node['.this'],
                                         localDeadLine,
                                         node,
-                                        globalScope,
                                         localChain
                                     );
                                     localDeadLine = node['.body'][i].loc.end.line;
@@ -1340,17 +1570,21 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     return [ 'Function' ];
                 case 'NewExpression':
                     // get the type of the item instantiated
-                    var typeNode = getNode (globalScope, value.callee);
+                    var typeNode = getNode (scope, value.callee);
                     if (!typeNode)
                         return;
-                    while (typeNode['.deref'].length == 1)
-                        typeNode = typeNode['.deref'][0];
-                    if (value.callee.type === 'Identifier' && value.callee.name === 'Thingy')
-                        typeNode['.TARGET'] = true;
+                    var chain = [ typeNode ];
+                    while (
+                        typeNode['.deref'].length == 1
+                     && chain.indexOf (typeNode['.deref'][0]) < 0
+                    )
+                        chain.push (typeNode = typeNode['.deref'][0]);
                     if (node['.instance'])
                         node['.instance'].push (typeNode);
                     else
                         node['.instance'] = [ typeNode ];
+                    if (typeNode['.silent'])
+                        node['.silent'] = true;
                     return [];
                 case 'UnaryExpression':
 
@@ -1367,18 +1601,22 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
 
         // get a descriptor node for the path
         function getNode (initialPointer, level, shallow) {
-            var pointer = initialPointer;
             if (level.computed)
                 return;
+            var pointer = initialPointer;
+            // var silent = Boolean (initialPointer['.silent']);
+            var silent = false;
             switch (level.type) {
                 case 'MemberExpression':
                     pointer = getNode (pointer, level.object, shallow);
                     if (!pointer)
                         return;
+                    if (pointer['.silent'])
+                        silent = true;
                     if (level.object.type == 'Super' || level.object.type == 'ThisExpression')
                         pointer =
                             pointer['.members']
-                         || ( pointer['.members'] = new filth.SafeMap ({ '.isCol':true }) )
+                         || ( pointer['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':pointer }) )
                          ;
                     break;
                 case 'ThisExpression':
@@ -1411,8 +1649,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     // take our first pass through the body
                     var innerScope = anon['.scope'] = new filth.SafeMap (scope);
                     for (var i=0,j=args.length; i<j; i++)
-                        innerScope[args[i].name] = args[i];
+                        innerScope[args[i]['.name']] = args[i];
                     var localDeadLine = deadLine;
+                    hoistNames (innerScope, level.body.body);
                     for (var i=0,j=level.body.body.length; i<j; i++) {
                         walkLevel (
                             level.body.body[i],
@@ -1420,7 +1659,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             anon['.this'],
                             localDeadLine,
                             anon,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
@@ -1454,7 +1692,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     if (pointer['.members'])
                         pointer = pointer['.members'];
                     else
-                        pointer = pointer['.members'] = new filth.SafeMap ({ '.isCol':true });
+                        pointer = pointer['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':pointer });
                     return pointer;
                 }
                 var lastStep = level.property.type == 'Identifier' ?
@@ -1464,25 +1702,35 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 if (pointer['.instance'] && pointer['.instance'].length) {
                     while (pointer['.instance'] && pointer['.instance'].length) {
                         if (pointer['.instance'].length > 1) {
-                            logger.debug ({}, 'ambiguous type');
+                            logger.trace ({}, 'ambiguous type');
                             return;
                         }
                         pointer = pointer['.instance'][0];
+                        // if (pointer['.silent'])
+                        //     silent = true;
                     }
                     if (pointer['.members'])
                         pointer = pointer['.members'];
                     else
-                        pointer = pointer['.members'] = new filth.SafeMap ({ '.isCol':true });
+                        pointer = pointer['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':pointer });
                 }
                 if (!pointer['.isCol'])
                     if (pointer['.props'])
                         pointer = pointer['.props'];
                     else
-                        pointer = pointer['.props'] = {};
+                        pointer = pointer['.props'] = filth.SafeMap ({ '.isCol':true });
+
+                // if (pointer['.parent'] && pointer['.parent']['.silent'])
+                //     silent = true;
+
                 if (Object.hasOwnProperty.call (pointer, lastStep))
                     pointer = pointer[lastStep];
                 else
                     pointer = pointer[lastStep] = newNode();
+
+                // propagate silence
+                if (silent)
+                    pointer['.silent'] = true;
 
                 // gotta deref again
                 if (!shallow) {
@@ -1503,12 +1751,18 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
 
 
         function processComments (node, level, deadLine) {
+            // line in document
+            if (node) {
+                node['.doc'] = fname;
+                node['.line'] = level.loc.start.line;
+            }
+
             // any documentation?
             // leading comments?
             var foundComment = false;
             if (level.leadingComments) {
                 for (
-                    var i=0,j=node?level.leadingComments.length-1:level.leadingComments.length;
+                    var i=0,j=node ? level.leadingComments.length-1 : level.leadingComments.length;
                     i<j;
                     i++
                 ) {
@@ -1537,7 +1791,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     var pathfrags = parsePath (pathstr, fileScope);
 
                     if (!pathfrags[0][0])
-                        if (pathfrags.length == 1)
+                        if (pathfrags.length === 1)
                             pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
                         else
                             pathfrags[0][0] = '.';
@@ -1557,51 +1811,66 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 }
 
                 // process final leading comment
-                if (node) {
-                    var comment = level.leadingComments[level.leadingComments.length-1];
-                    Patterns.tag.lastIndex = 0;
-                    if (deadLine === undefined || comment.loc.start.line > deadLine) {
-                        foundComment = true;
-                        // javadoc comment?
-                        if (comment.value.match (/^\*[^*]/))
+                var comment = level.leadingComments[level.leadingComments.length-1];
+                Patterns.tag.lastIndex = 0;
+                if (deadLine === undefined || comment.loc.start.line > deadLine) {
+                    foundComment = true;
+                    // javadoc comment?
+                    if (comment.value.match (/^\*[^*]/)) {
+                        if (node)
                             parseJavadocFlavorTag (comment.value, node, logger);
-                        else {
-                            // normal or doczar comment
-                            if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/')))
+                    } else {
+                        // normal or doczar comment
+                        if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/'))) {
+                            if (node) {
                                 node['.docstr'] = comment.value;
-                            else {
-                                if (!node['.mount']) {
-                                    // expression marked with a tag comment
-                                    var ctype = match[1];
-                                    // valtypes
-                                    var valtype;
-                                    if (match[2])
-                                        valtype = parseType (match[2], fileScope);
-                                    else
-                                        valtype = [];
-                                    var pathstr = match[3];
-                                    var docstr = match[4] || '';
-                                    var pathfrags = parsePath (pathstr, fileScope);
-                                    if (defaultScope && !fileScope.length) {
-                                        pathfrags[0][0] = Patterns.delimitersInverse[ctype];
-                                        pathfrags = concatPaths (defaultScope, pathfrags);
-                                    }
-
-                                    if (!pathfrags[0][0])
-                                        if (pathfrags.length == 1)
-                                            pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
-                                        else
-                                            pathfrags[0][0] = '.';
-
-                                    node['.mount'] = {
-                                        ctype:      ctype,
-                                        path:       pathfrags,
-                                        valType:    valtype,
-                                        docstr:     docstr,
-                                        fname:      fname
-                                    };
-                                }
+                                if (fileScope.length)
+                                    node['.overrideRoot'] = fileScope.concat();
                             }
+                        } else {
+                            // expression marked with a tag comment
+                            var ctype = match[1];
+                            // valtypes
+                            var valtype;
+                            if (match[2])
+                                valtype = parseType (match[2], fileScope);
+                            else
+                                valtype = [];
+                            var pathstr = match[3];
+                            var docstr = match[4] || '';
+                            var pathfrags = parsePath (pathstr, []);
+                            if (!pathfrags[0][0])
+                                if (pathfrags.length === 1)
+                                    pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                                else
+                                    pathfrags[0][0] = '.';
+
+                            if (ctype === 'module')
+                                fileScope = pathfrags.concat();
+                            if (!node) {
+                                // no related expression
+                                parseTag (
+                                    context,
+                                    logger,
+                                    processFile,
+                                    fname,
+                                    defaultScope,
+                                    fileScope,
+                                    concatPaths (fileScope, pathfrags),
+                                    ctype,
+                                    valtype,
+                                    docstr
+                                );
+                            } else if (node['.mount'])
+                                node['.mount'].docstr = match[4] || '';
+                            else
+                                node['.mount'] = {
+                                    ctype:      ctype,
+                                    path:       pathfrags,
+                                    valType:    valtype,
+                                    docstr:     docstr,
+                                    fname:      fname
+                                };
                         }
                     }
                 }
@@ -1619,7 +1888,11 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 else {
                     // try to parse it
                     Patterns.tag.lastIndex = 0;
-                    if (match = Patterns.tag.exec ('/*'+trailer.value+'*/')) {
+                    if (!(match = Patterns.tag.exec ('/*'+trailer.value+'*/'))) {
+                        node['.docstr'] = trailer.value;
+                        if (fileScope.length)
+                            node['.overrideRoot'] = fileScope.concat();
+                    } else {
                         // expression marked with a tag comment
                         var ctype = match[1];
                         // valtypes
@@ -1636,8 +1909,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                 pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
                             else
                                 pathfrags[0][0] = '.';
-                        if (defaultScope && !fileScope.length)
-                            pathfrags = concatPaths (defaultScope, pathfrags);
+
+                        if (ctype === 'module')
+                            fileScope = pathfrags.concat();
 
                         node['.mount'] = {
                             ctype:      ctype,
@@ -1646,8 +1920,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             docstr:     docstr,
                             fname:      fname
                         };
-                    } else
-                        node['.docstr'] = trailer.value;
+                    }
                 }
             }
         }
@@ -1666,7 +1939,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         localDeadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
                     localDeadLine = moreBlocks[i].loc.end.line;
@@ -1694,7 +1966,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
 
                     // self pointer?
                     if (declaration.init.type == 'ThisExpression') {
-                        node = scope[declaration.id.name] = thisNode;
+                        node = scope[declaration.id.name] = thisNode || newNode();
                         continue;
                     }
 
@@ -1707,9 +1979,10 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     divineTypes (node, declaration.init);
 
                     // what kind of declaration was this?
-                    if (level.kind == "let")
-                        level['.silent'] = true;
-                    else if (level.kind == "const")
+                    // if (level.kind == "let")
+                    //     level['.silent'] = true;
+                    // else if (level.kind == "const")
+                    if (level.kind == "const")
                         if (level['.mods']) {
                             if (level['.mods'].indexOf ('constant') < 0)
                                 level['.mods'].push ('constant');
@@ -1724,17 +1997,46 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             // either a self pointer, or set this-type to a prop/member
                             if (level.expression.left.type == 'Identifier') {
                                 // simple self pointer
-                                node = scope[level.expression.left.name] = thisNode;
+                                node = scope[level.expression.left.name] = thisNode || newNode();
                             } else {
                                 // set `this` into a prop somewhere
                             }
                             break;
                         }
-                        node = getNode (scope, level.expression.left, true);
+                        // node = getNode (scope, level.expression.left, true);
+                        node = getNode (scope, level.expression.left);
                         if (!node)
                             break;
                         if (node['.noSet'])
                             break;
+                        if (node['.isCol']) {
+                            // something like Foo.prototype = {
+                            // this node is the ['.members'] collection of Foo
+                            var dummy = newNode();
+                            divineTypes (dummy, level.expression.right, node['.parent']);
+                            // copy the dummy's props into the members collection
+                            context.latency.log ('parsing');
+                            if (dummy['.props'])
+                                for (var key in dummy['.props'])
+                                    if (key[0] !== '.')
+                                        node[key] = filth.circularClone (
+                                            dummy['.props'][key],
+                                            undefined,
+                                            cloneShallowFilter
+                                        );
+                            if (dummy['.members'])
+                                for (var key in dummy['.members'])
+                                    if (key[0] !== '.')
+                                        node[key] = filth.circularClone (
+                                            dummy['.members'][key],
+                                            undefined,
+                                            cloneShallowFilter
+                                        );
+                            // node = dummy;
+                            context.latency.log ('cloning');
+                            node = node['.parent'];
+                            break;
+                        }
                         // divine the type being set
                         divineTypes (node, level.expression.right);
                         break;
@@ -1760,7 +2062,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             deadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         var localDeadLine = deadLine;
@@ -1772,7 +2073,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         break;
@@ -1784,7 +2084,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             deadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         var localDeadLine = deadLine;
@@ -1796,7 +2095,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         if (level.expression.consequent.loc.end.line != level.expression.alternate.loc.start.line)
@@ -1807,12 +2105,11 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         break;
                     default:
-                        logger.debug (
+                        logger.trace (
                             { type:level.expression.type, line:level.loc.start.line },
                             'unknown expression type'
                         );
@@ -1827,7 +2124,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     deadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
                 var localDeadLine = deadLine;
@@ -1839,7 +2135,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
                 if (level.consequent.loc.end.line != level.alternate.loc.start.line)
@@ -1850,7 +2145,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
                 break;
@@ -1884,29 +2178,26 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     divineTypes (param, args[i]);
                 }
 
-                // mark missing arguments as optional on the node
-                for (var i=level.params.length, j=args.length; i<j; i++)
-                    args[i]['.optional'] = true;
-
                 // recurse into function body
                 var target = node || newNode();
                 if (target['.types'].indexOf ('Function') < 0)
                     target['.types'].push ('Function');
-                var innerScope = {};
-                for (var key in scope)
-                    innerScope[key] = scope[key];
-                if (node)
-                    node['.scope'] = innerScope;
+                var innerScope = new filth.SafeMap (scope);
+                for (var i=0,j=args.length; i<j; i++) {
+                    var arg = args[i];
+                    innerScope[arg['.name']] = arg;
+                }
+                node['.scope'] = innerScope;
                 var localDeadLine = deadLine;
                 node['.body'] = level.body.body; // comment to stop recursion crashes
+                node['.this'] = node;
                 for (var i=0,j=level.body.body.length; i<j; i++) {
                     walkLevel (
                         level.body.body[i],
                         innerScope,
-                        node || thisNode,
+                        node,
                         localDeadLine,
                         target,
-                        globalScope,
                         fnChain
                     );
                     localDeadLine = level.body.body[i].loc.end.line;
@@ -1921,8 +2212,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             var waitingInnerScope = new filth.SafeMap (scope);
                             for (var i=0,j=Math.min (args.length, callPack.length); i<j; i++)
                                 waitingInnerScope[args[i]['.name']] = callPack[i];
-                            // for (var key in callPack)
-                            //     waitingInnerScope[key] = callPack[key];
                             var localDeadLine = deadLine;
                             for (var i=0,j=level.body.body.length; i<j; i++) {
                                 walkLevel (
@@ -1931,7 +2220,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                     node || thisNode,
                                     localDeadLine,
                                     node,
-                                    globalScope,
                                     localChain
                                 );
                                 localDeadLine = level.body.body[i].loc.end.line;
@@ -1958,7 +2246,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
                 else {
@@ -1970,7 +2257,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = level.consequent.body[i].loc.end.line;
@@ -1986,7 +2272,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             deadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                     else {
@@ -1998,7 +2283,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                                 thisNode,
                                 localDeadLine,
                                 scopeParent,
-                                globalScope,
                                 fnChain
                             );
                             localDeadLine = level.alternate.body[i].loc.end.line;
@@ -2014,18 +2298,17 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
-                walkLevel (
-                    level.test,
-                    scope,
-                    thisNode,
-                    deadLine,
-                    scopeParent,
-                    globalScope,
-                    fnChain
-                );
+                if (level.test)
+                    walkLevel (
+                        level.test,
+                        scope,
+                        thisNode,
+                        deadLine,
+                        scopeParent,
+                        fnChain
+                    );
                 if (level.update)
                     walkLevel (
                         level.update,
@@ -2033,7 +2316,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
 
@@ -2045,7 +2327,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
                 else {
@@ -2057,7 +2338,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
@@ -2070,7 +2350,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 try {
                     var iteratedNode = getNode (level.left.declarations[0]);
                 } catch (err) {
-                    logger.debug (
+                    logger.trace (
                         { type:level.type, iterator:level.left, iterating:level.right },
                         'malformed for loop'
                     );
@@ -2085,7 +2365,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
                 else {
@@ -2097,7 +2376,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
@@ -2118,7 +2396,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         thisNode,
                         deadLine,
                         scopeParent,
-                        globalScope,
                         fnChain
                     );
                 else {
@@ -2130,7 +2407,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            globalScope,
                             fnChain
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
@@ -2149,7 +2425,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     deadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
 
@@ -2157,7 +2432,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
             case 'ExportNamedDeclaration':
                 // step into declaration
                 if (!scope['.exports'])
-                    scope['.exports'] = {};
+                    scope['.exports'] = newNode();
                 if (!level.declaration)
                     break;
 
@@ -2167,7 +2442,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     deadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
 
@@ -2184,9 +2458,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 if (node['.types'] && node['.types'].indexOf ('Function') < 0)
                     node['.types'].push ('Function');
 
-                var innerScope = {};
-                for (var key in scope)
-                    innerScope[key] = scope[key];
+                var innerScope = filth.SafeMap (scope);
 
                 if (level.superClass) {
                     var superNode = getNode (scope, level.superClass);
@@ -2199,7 +2471,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     }
                 }
                 if (!node['.members'])
-                    node['.members'] = new filth.SafeMap ({ '.isCol':true });
+                    node['.members'] = new filth.SafeMap ({ '.isCol':true, '.parent':node });
                 var members = node['.members'];
                 for (var i=0,j=level.body.body.length; i<j; i++) {
                     var declaration = level.body.body[i];
@@ -2209,7 +2481,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         node,
                         declaration.loc.end.line,
                         scope,
-                        globalScope,
                         fnChain
                     );
                 }
@@ -2255,7 +2526,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     deadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
                 var localDeadLine = deadLine;
@@ -2267,7 +2537,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    globalScope,
                     fnChain
                 );
                 break;
@@ -2276,7 +2545,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 break;
             default:
                 // unknown statement type
-                logger.debug (
+                logger.trace (
                     { type:level.type, line:level.loc.start.line },
                     'unknown statement type'
                 );
@@ -2284,8 +2553,8 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
         }
 
         // comments time!
-        if (node)
-            processComments (node, level, deadLine);
+        processComments (node, level, deadLine);
+        return node;
     }
 
     // hoist ES6 import and export-as statements
@@ -2365,13 +2634,12 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                     baseNode['.exports']['.props'] = new filth.SafeMap ({ '.isCol':true });
                 }
                 var defaultName = path.parse (fname).name;
-                var exportedNode;
                 if (Object.hasOwnProperty.call (baseNode['.exports']['.props'], defaultName))
-                    exportedNode = baseNode['.exports']['.props'][defaultName];
+                    node = baseNode['.exports']['.props'][defaultName];
                 else
-                    exportedNode = baseNode['.exports']['.props'][defaultName] = newNode();
+                    node = baseNode['.exports']['.props'][defaultName] = newNode();
                 if (level.declaration.id) // place in the local scope
-                    baseNode[level.declaration.id.name] = exportedNode;
+                    baseNode[level.declaration.id.name] = node;
                 break;
             case 'ExportNamedDeclaration':
                 if (!level.specifiers)
@@ -2386,15 +2654,19 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                         baseNode['.exports']['.props'],
                         spec.exported.name
                     ))
-                        baseNode[spec.local.name]
+                        node
+                         = baseNode[spec.local.name]
                          = baseNode['.exports']['.props'][spec.exported.name]
                          ;
                     else
-                        baseNode[spec.local.name]
+                        node
+                         = baseNode[spec.local.name]
                          = baseNode['.exports']['.props'][spec.exported.name]
                          = newNode()
                          ;
                 }
+                if (level.specifiers.length !== 1)
+                    node = undefined;
                 break;
         }
     }
@@ -2410,6 +2682,9 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
         baseNode[name] = specimen;
     }
 
+    // hoist the body's names
+    hoistNames (baseNode, tree.body);
+
     // normal body processing
     for (var i=0,j=tree.body.length; i<j; i++)
         walkLevel (
@@ -2418,7 +2693,6 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
             undefined,
             i ? tree.body[i-1].loc.end.line : undefined,
             undefined,
-            baseNode,
             [ tree.body[i] ]
         );
 
@@ -2450,7 +2724,7 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
                 valtype = [];
             var pathstr = match[3];
             var docstr = match[4] || '';
-            var pathfrags = parsePath (pathstr, fileScope);
+            var pathfrags = parsePath (pathstr, []);
 
             if (!pathfrags[0][0])
                 if (pathfrags.length == 1)
@@ -2519,10 +2793,11 @@ function parseJSTypes (fname, fstr, defaultScope, baseNode, context, logger, pro
 }
 
 module.exports = {
-    parseJSTypes:           parseJSTypes,
     parseFile:              parseFile,
     parsePath:              parsePath,
     parseType:              parseType,
     parseTag:               parseTag,
-    parseJavadocFlavorTag:  parseJavadocFlavorTag
+    parseJavadocFlavorTag:  parseJavadocFlavorTag,
+    digDerefs:              digDerefs,
+    parseJSTypes:           parseJSTypes
 };

@@ -54,11 +54,15 @@ module.exports.jpathConsumer = new RegExp (util.format (
 ));
 
 /*      @property/RegExp jtag
-    Parses a
+    Parses one or two paths, the first of which may be multiple paths separated by pipes `|`.
+
+     * `path`
+     * `{type} path`
+     * `{type0|type1} path`
 */
-module.exports.jtag = new RegExp (util.format (
-    '@(\\w+)(?:[ \\t]{(%s)})?(?:[ \\t]+(%s))?[ \\t]*(.*)',
-                       jpath,           jpath
+module.exports.jtagPaths = new RegExp (util.format (
+    '(?:[ \\t]{(%s(?:|%s)*)})?(?:[ \\t]+(%s))?[ \\t]*(.*)',
+                jpath,jpath,             jpath
 ));
 
 /*      @property/Object booleanModifiers
@@ -343,7 +347,7 @@ var HEIRARCHY = [
     "property",     "member",       "argument",     "kwarg",        "callback",     "returns",
     "throws"
 ];
-/*      @property/Object[String, Number] HEIRARCHY
+/*      @property/Object<String, Number> HEIRARCHY
     A map of Component types to Number sort priorities. This is used when sorting unordered child
     sets during [finalize](doczar.Component#finalize).
 */

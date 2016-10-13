@@ -3,18 +3,6 @@
 /*      @module doczar
     Select, load and parse source files for `doczar` format documentation comments. Render html
     output to a configured disk location.
-
-    | option         | description
-    | --------------:|---------------------------------
-    | o, out         | Selects a directory to fill with documentation output. The directory need not exist or be empty.
-    | i, in          | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
-    | j, js, jsmod   | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
-    | with           | Include a prebuilt standard library in the documentation.
-    | dev            | Display Components marked with the `@development` modifier.
-    | api            | Display **only** Components marked with the `@api` modifier.
-    | raw            | Log events as json strings instead of pretty printing them.
-    | json           | Create an `index.json` file in each directory instead of a rendered `index.html`.
-    | date           | Explicitly set the datestamp on each page with any Date-compatible string.
 @spare `README.md`
     This is the rendered output of the `doczar` source documentation.
     *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
@@ -24,25 +12,18 @@
 /*      @spare `GitHub.com Repository`
     @remote `https://github.com/shenanigans/node-doczar`
 */
-/*      @submodule/class Options
-    Options for generating the documentation.
-@member/Boolean json
-@member/Boolean showAPI
-@member/Boolean showDev
-@member/Date date
-*/
-var path = require ('path');
-var fs = require ('fs-extra');
-var async = require ('async');
-var required = require ('required');
-var resolve = require ('resolve');
-var glob = require ('glob');
-var bunyan = require ('bunyan');
-var filth = require ('filth');
-var Parser = require ('./src/Parser');
-var ComponentCache = require ('./src/ComponentCache');
+var path              = require ('path');
+var fs                = require ('fs-extra');
+var async             = require ('async');
+var required          = require ('required');
+var resolve           = require ('resolve');
+var glob              = require ('glob');
+var bunyan            = require ('bunyan');
+var filth             = require ('filth');
+var Parser            = require ('./src/Parser');
+var ComponentCache    = require ('./src/ComponentCache');
 var getNodeModulePath = require ('./src/getNodeModulePath');
-var Patterns = require ('./src/Patterns');
+var Patterns          = require ('./src/Patterns');
 require ('colors');
 
 function concatPaths(){
@@ -91,13 +72,20 @@ var OPTIONS = {
 };
 var unknownOptions = [];
 var ARGV_OPTIONS = {
-    default:        { out:'docs', verbose:'info', locals:'none', code:'github', optArgs:'none' },
+    default:        {
+        out:        'docs',
+        verbose:    'info',
+        locals:     'none',
+        code:       'github',
+        optArgs:    'none',
+        maxDepth:   '4'
+    },
     boolean:        [ 'dev', 'api', 'json', 'raw' ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
-        'parse',        'locals',       'root',         'fileRoot',     'optArgs'
+        'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth'
     ],
-    alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code' },
+    alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code', XD:'maxDepth' },
     unknown:        function (optionName) { unknownOptions.push (optionName); }
 };
 var argv = require ('minimist') (process.argv.slice (2), ARGV_OPTIONS);
@@ -147,6 +135,13 @@ for (var key in OPTIONS)
         );
         argv[key] = ARGV_OPTIONS.default[key];
     }
+
+// maxDepth a valid number?
+try {
+    argv.maxDepth = Number (argv.maxDepth);
+} catch (err) {
+    return process.fatal ({ input:argv.maxDepth }, 'invalid maxDepth argument');
+}
 
 // if --fileRoot is provided, it should be a real path to a directory
 if (!argv.fileRoot)
@@ -315,6 +310,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
 
     if (!localDefault)
         localDefault = defaultScope;
+    else if (level['.overrideRoot'])
+        localDefault = level['.overrideRoot'];
     var didSubmit = false;
 
     if (!level['.path']) {
@@ -326,7 +323,6 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             scope = path;
             types.push.apply (types, level['.mount'].valtype);
             docstr = level['.mount'].docstr;
-            localDefault = [];
         } else {
             path = scope;
             types.push.apply (types, level['.types']);
@@ -374,17 +370,12 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
         // submit, if we should
         if (
             !level['.silent']
+         && ( force || path.length || localDefault.length )
          && (
-                force
-             || (
-                    ( path.length || localDefault.length )
-                 && (
-                        level['.mount']
-                     || !isLocalPath (path)
-                     || argv.locals == 'all'
-                     || ( argv.locals == 'comments' && hasComments (level) )
-                 )
-             )
+                level['.mount']
+             || !isLocalPath (path)
+             || argv.locals === 'all'
+             || ( argv.locals === 'comments' && hasComments (level) )
          )
         ) {
             level['.force'] = -1; // marks already written
@@ -394,10 +385,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
                 logger,
                 function (fname) { nextFiles.push (fname); },
                 level['.fname'],
-                // localDefault,
                 path.length ? localDefault : [],
                 [],
-                // path,
                 path.length ? path : localDefault,
                 ctype,
                 types,
@@ -415,10 +404,8 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             logger,
             function (fname) { nextFiles.push (fname); },
             level['.fname'],
-            // localDefault,
             level['.localPath'].length ? localDefault : [],
             [],
-            // path,
             level['.localPath'].length ? level['.localPath'] : localDefault,
             level['.ctype'],
             level['.finalTypes'],
@@ -431,8 +418,13 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
 
     if (level['.alias']) {
         var pointer = level['.alias'];
-        while (pointer['.deref'] && pointer['.deref'].length === 1)
-            pointer = pointer['.deref'][0];
+        var aliasChain = [];
+        while (
+            pointer['.deref']
+         && pointer['.deref'].length === 1
+         && aliasChain.indexOf (pointer['.deref'][0]) < 0
+        )
+            aliasChain.push (pointer = pointer['.deref'][0]);
         if (pointer['.path']) {
             didSubmit = true;
             delete level['.alias'];
@@ -452,19 +444,26 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
         );
         for (var i=level['.instance'].length-1; i>=0; i--) {
             var constructor = level['.instance'][i];
-            // while (constructor['.deref'].length == 1 && !constructor['.path'])
-            var chain = [];
-            while (constructor['.deref'].length == 1 && chain.indexOf (constructor['.deref'][0]) < 0)
-                chain.push (constructor = constructor['.deref'][0]);
+            var aliasChain = [];
+            while (constructor['.deref'].length == 1 && aliasChain.indexOf (constructor['.deref'][0]) < 0)
+                aliasChain.push (constructor = constructor['.deref'][0]);
             if (!constructor['.path'])
                 continue;
             didSubmit = true;
-            if (!constructor['.force'] && (
+            function isRelevantPath (path) {
+                for (var i=0,j=path.length; i<j; i++) {
+                    var pathChar = path[i][0];
+                    if (pathChar === '(')
+                        return false;
+                }
+                return true;
+            }
+            if (!constructor['.force'] && isRelevantPath (level['.path']) && (
                 level['.force']
              || !isLocalPath (level['.path'])
              || argv.locals === 'all'
              || ( argv.locals === 'comments' && hasComments (level))
-            ))
+             ))
                 constructor['.force'] = 1;
             level['.instance'].splice (i, 1);
             var typePath = constructor['.path'].map (function (frag) {
@@ -490,8 +489,13 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
 
     if (level['.super']) for (var i=level['.super'].length-1; i>=0; i--) {
         var pointer = level['.super'][i];
-        while (pointer['.deref'] && pointer['.deref'].length == 1)
-            pointer = pointer['.deref'][0];
+        var superChain = [];
+        while (
+            pointer['.deref']
+         && pointer['.deref'].length == 1
+         && superChain.indexOf (pointer['.deref'][0]) < 0
+        )
+            superChain.push (pointer = pointer['.deref'][0]);
         if (!pointer['.path'])
             continue;
 
@@ -503,10 +507,16 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
     // recurse to various children
     if (level['.members']) {
         delete level['.members']['.isCol'];
+        delete level['.members']['.parent'];
         for (var key in level['.members']) {
             var pointer = level['.members'][key];
-            while (pointer['.deref'] && pointer['.deref'].length === 1)
-                pointer = pointer['.deref'][0];
+            var memberChain = [ pointer ];
+            while (
+                pointer['.deref']
+             && pointer['.deref'].length === 1
+             && memberChain.indexOf (pointer['.deref'][0]) < 0
+            )
+                memberChain.push (pointer = pointer['.deref'][0]);
             didSubmit += submitJSLevel (
                 level['.members'][key],
                 concatPaths (scope, [ [ '#', key ] ]),
@@ -521,8 +531,13 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
         delete level['.props']['.isCol'];
         for (var key in level['.props']) {
             var pointer = level['.props'][key];
-            while (pointer['.deref'] && pointer['.deref'].length === 1)
-                pointer = pointer['.deref'][0];
+            var propChain = [];
+            while (
+                pointer['.deref']
+             && pointer['.deref'].length === 1
+             && propChain.indexOf (pointer['.deref'][0]) < 0
+            )
+                propChain.push (pointer = pointer['.deref'][0]);
             didSubmit += submitJSLevel (
                 pointer,
                 concatPaths (scope, [ [ '.', key ] ]),
@@ -532,6 +547,7 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             );
         }
     }
+
     if (level['.arguments']) {
         for (var i=0,j=level['.arguments'].length; i<j; i++) {
             var arg = level['.arguments'][i];
@@ -544,6 +560,7 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             );
         }
     }
+
     if (level['.returns'] && level['.returns']['.types'].length) {
         didSubmit += submitJSLevel (
             level['.returns'],
@@ -553,6 +570,7 @@ function submitJSLevel (level, scope, localDefault, chain, force) {
             force
         );
     }
+
     if (level['.throws']) {
         didSubmit += submitJSLevel (
             level['.throws'],
@@ -656,6 +674,9 @@ function processSource (filenames) {
 
             logger.debug ({ filename:fname }, 'read file');
             var fileStr = buf.toString();
+            var shebangMatch = fileStr.match (/^#!.*\r?\n([^]*)$/);
+            if (shebangMatch)
+                fileStr = shebangMatch[1];
             var localDefaultScope = currentDefaultScope;
 
             function addToNextFiles (newName, newReferer) {
@@ -669,7 +690,7 @@ function processSource (filenames) {
 
             if (fileInfo.referer && fileInfo.referer != fileInfo.file)
                 // localDefaultScope = getNodeModulePath (logger, localDefaultScope, referer, fname);
-                localDefaultScope = getNodeModulePath (logger, argv.root, referer, fname);
+                localDefaultScope = getNodeModulePath (context, argv.root, referer, fname);
 
             try {
                 switch (argv.parse) {
@@ -698,6 +719,7 @@ function processSource (filenames) {
                                 addToNextFiles,
                                 nodeSourceFiles
                             );
+                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
                             break;
                         } catch (err) {
                             var scopePath = localDefaultScope
@@ -743,6 +765,7 @@ function processSource (filenames) {
                                 addToNextFiles,
                                 nodeSourceFiles
                             );
+                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
                             break;
                         } catch (err) {
                             var scopePath = localDefaultScope
@@ -759,26 +782,28 @@ function processSource (filenames) {
                             { filename:fname, referer:referer, mode:argv.parse },
                             'parsing file'
                         );
-                        if (!fileInfo.referer) try {
-                            Parser.parseJSTypes (
-                                fname,
-                                fileStr,
-                                localDefaultScope,
-                                globalNode,
-                                context,
-                                logger,
-                                addToNextFiles,
-                                nodeSourceFiles
-                            );
-                            break;
-                        } catch (err) {
-                            var scopePath = localDefaultScope
-                             .map (function (item) { return item.join (''); }).join ('')
-                             ;
-                            logger.error (
-                                { err:err, path:fname, scope:scopePath, parse:argv.parse },
-                                'parsing failed'
-                            );
+                        if (!fileInfo.referer) {
+                            try {
+                                Parser.parseJSTypes (
+                                    fname,
+                                    fileStr,
+                                    localDefaultScope,
+                                    new filth.SafeMap (globalNode, { global:globalNode }),
+                                    context,
+                                    logger,
+                                    addToNextFiles,
+                                    nodeSourceFiles
+                                );
+                                logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
+                            } catch (err) {
+                                var scopePath = localDefaultScope
+                                 .map (function (item) { return item.join (''); }).join ('')
+                                 ;
+                                logger.error (
+                                    { err:err, path:fname, scope:scopePath, parse:argv.parse },
+                                    'parsing failed'
+                                );
+                            }
                             break;
                         }
 
@@ -817,17 +842,17 @@ function processSource (filenames) {
                                 addToNextFiles,
                                 nodeSourceFiles
                             );
-                            break;
+                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
                         } catch (err) {
                             var scopePath = localDefaultScope
                              .map (function (item) { return item.join (''); }).join ('')
                              ;
                             logger.error (
-                                { err:err, path:fname, scope:scopePath, parse:argv.parse },
+                                { err:err, path:fname, scope:scopePath || '/', parse:argv.parse },
                                 'parsing failed'
                             );
-                            break;
                         }
+                        break;
                     default:
                         if (argv.parse)
                             return logger.fatal ({ mode:argv.parse }, 'unknown parsing mode');
@@ -877,12 +902,9 @@ function processSource (filenames) {
             // clean up the source documents
             for (var fname in nodeSourceFiles) {
                 var source = nodeSourceFiles[fname];
-                var dropped = 0;
                 for (var key in source)
-                    if (source[key] === globalNode[key]) {
-                        dropped++;
+                    if (source[key] === globalNode[key])
                         delete source[key];
-                    }
             }
         }
 
@@ -893,6 +915,7 @@ function processSource (filenames) {
                 delete globalNode.window;
 
                 // process deferred dereferences
+                logger.info ({ parse:argv.parse }, 'preprocessing types');
                 var finishedARef;
                 do {
                     finishedARef = false;
@@ -925,63 +948,42 @@ function processSource (filenames) {
                 } while (finishedARef);
 
                 // process source
+                logger.info ({ parse:argv.parse }, 'generating declarations');
                 var didSubmit;
                 do {
                     didSubmit = false;
                     for (var fname in nodeSourceFiles) {
                         var nodeSource = nodeSourceFiles[fname];
-                        if (
-                            !nodeSource['.exports']
-                         || !Object.keys (nodeSource['.exports']).length
-                        ) {
-                            // treat as a normal source file
-                            for (var key in nodeSource)
-                                if (key[0] == '.' || key == 'window')
-                                    continue;
-                                else try {
-                                    didSubmit += submitJSLevel (
-                                        nodeSource[key],
-                                        [ [ '.', key ] ],
-                                        undefined
-                                    );
-                                } catch (err) {
-                                    logger.error (
-                                        { err:err, path:fname, identifier:key, parse:argv.parse },
-                                        'failed to generate Declarations from source file'
-                                    );
-                                }
-                        } else {
-                            // treat as a module file
-                            try {
+
+                        if (node['.exports']) try {
+                            didSubmit += submitJSLevel (
+                                nodeSource['.exports'],
+                                [],
+                                nodeSource['.root']
+                            );
+                        } catch (err) {
+                            logger.error (
+                                { err:err, path:fname, parse:argv.parse },
+                                'failed to generate Declarations from source file'
+                            );
+                        }
+
+                        // work locals
+                        for (var key in nodeSource)
+                            if (key[0] == '.' || key == 'module' || key == 'globals')
+                                continue;
+                            else try {
                                 didSubmit += submitJSLevel (
-                                    nodeSource['.exports'],
-                                    [],
+                                    nodeSource[key],
+                                    [ [ '%', key ] ],
                                     nodeSource['.root']
                                 );
                             } catch (err) {
                                 logger.error (
-                                    { err:err, path:fname, parse:argv.parse },
-                                    'failed to generate Declarations from module source file'
+                                    { err:err, path:fname, identifier:key, parse:argv.parse },
+                                    'failed to generate Declarations from source file'
                                 );
                             }
-
-                            // work locals
-                            for (var key in nodeSource)
-                                if (key[0] == '.' || key == 'module' || key == 'globals')
-                                    continue;
-                                else try {
-                                    didSubmit += submitJSLevel (
-                                        nodeSource[key],
-                                        [ [ '%', key ] ],
-                                        nodeSource['.root']
-                                    );
-                                } catch (err) {
-                                    logger.error (
-                                        { err:err, path:fname, identifier:key, parse:argv.parse },
-                                        'failed to generate Declarations from module source file'
-                                    );
-                                }
-                        }
                     }
 
                     for (var key in globalNode)
@@ -1005,6 +1007,7 @@ function processSource (filenames) {
             case 'node':
                 context.latency.log();
                 // process deferred dereferences
+                logger.info ({ parse:argv.parse }, 'preprocessing types');
                 var finishedARef;
                 do {
                     finishedARef = false;
@@ -1037,6 +1040,7 @@ function processSource (filenames) {
                 } while (finishedARef);
 
                 // process source
+                logger.info ({ parse:argv.parse }, 'generating declarations');
                 var didSubmit;
                 do {
                     didSubmit = false;
@@ -1047,7 +1051,7 @@ function processSource (filenames) {
                             didSubmit += submitJSLevel (
                                 globalNode[key],
                                 [ [ '.', key ] ],
-                                undefined
+                                []
                             );
                         } catch (err) {
                             logger.error (
@@ -1071,6 +1075,7 @@ function processSource (filenames) {
                             } catch (err) {
                                 return logger.fatal (err, 'internal parsing error');
                             }
+                            continue;
                         }
                         var chain = [ exports ];
                         while (exports['.deref'].length == 1) {
@@ -1136,6 +1141,12 @@ function processSource (filenames) {
         logger.info ('finalizing documentation');
         context.finalize (options, function(){
             context.latency.log ('finalization');
+            //
+            var finalLatencies = context.latency.getFinalLatency();
+            finalLatencies.etc = finalLatencies[''];
+            delete finalLatencies[''];
+            logger.info (finalLatencies, 'latencies');
+            //
             logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
             if (argv.json)
                 options.json = true;

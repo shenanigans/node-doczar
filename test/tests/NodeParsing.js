@@ -1,5 +1,5 @@
 
-require ('async');
+require ('async' + '');
 require ('fs');
 
 var Thingy = require ('./NodeParseModules/Thingy');

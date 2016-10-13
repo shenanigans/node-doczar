@@ -421,6 +421,7 @@ things as paths than in any other document generator. Here they are:
 
 #### Special Delimiters
  * `~` `@spare`
+ * `/` `@module`
  * `.` `@property`
  * `#` `@member`
  * `(` `@argument`

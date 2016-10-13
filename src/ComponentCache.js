@@ -1,11 +1,11 @@
 
-/*      @module/class doczar:ComponentCache
-    Roots a document tree and builds all the [Components](doczar:Component) that live inside it.
-    [Looks up](#resolve) and [creates](#getComponent) [Components](doczar:Component) by path.
+/*      @module/class ComponentCache
+    Roots a document tree and builds all the [Components](/Component) that live inside it.
+    [Looks up](#resolve) and [creates](#getComponent) [Components](/Component) by path.
     Centralizes [finalization](#finalize) and [filesystem output](#writeFiles).
 @argument/bunyan:Logger logger
-    Any interesting events produced by any [Component](doczar:Component) generated on this cache
-    will be logged on this [Logger](bunyan:Logger).
+    Any interesting events produced by any [Component](/Component) generated on this cache
+    will be logged on this [Logger](bunyan.Logger).
 @member/Object root
     Stores the roots of the global `property` and `module` maps. `{ property:{ }, module:{ } }`.
 */
@@ -34,15 +34,16 @@ var ComponentCache = function (logger) {
     this.logger = logger;
     this.latency = new filth.LatencyLogger();
     this.root = Object.create (null);
+    this.resolvedDependencies = Object.create (null);
 };
 
 
-/*      @member/Function getComponent
-    Find or create a [Component](doczar:Component) for a given path. This is the only official way
+/*
+    Find or create a [Component](doczar/Component) for a given path. This is the only official way
     to create a Component.
-@argument/doczar:Parser:Path tpath
+@argument/doczar/Parser/Path tpath
     The path to retrieve or create.
-@returns/doczar:Component
+@returns/doczar/Component
     The retrieved or newly created component.
 */
 ComponentCache.prototype.getComponent = function (tpath) {
@@ -115,17 +116,17 @@ ComponentCache.prototype.getComponent = function (tpath) {
 };
 
 
-/*      @member/Function resolve
+/*
     Return an existing [Component](doczar:Component) for a path or throw an [Error]() if it is not
     found.
-@argument/doczar:Parser:Path tpath
+@argument/doczar/Parser/Path tpath
     The path to retrieve.
-@returns/doczar:Component
+@returns/doczar/Component
     The retrieved Component.
 @throws/Error `not found`
     An existing Component was not found on the specified path.
 @throws/Error `invalid path`
-    The path specified was not a valid [Path](doczar:Parser:Path), or was empty.
+    The path specified was not a valid [Path](doczar/Parser/Path), or was empty.
 */
 ComponentCache.prototype.resolve = function (tpath) {
     if (!tpath || !tpath.length || !tpath[0][1])
@@ -166,24 +167,26 @@ ComponentCache.prototype.resolve = function (tpath) {
 };
 
 
-/*      @member/Function submit
-    Retrieve an existing or new [Component](doczar:Component) from this cache by the specified path
-    and call [submit](doczar:Component#submit) on it with the provided `info` Object.
-@argument/doczar:Parser:Path tpath
+/*
+    Retrieve an existing or new [Component](doczar/Component) from this cache by the specified path
+    and call [submit](doczar/Component#submit) on it with the provided `info` Object.
+@argument/doczar/Parser/Path tpath
     A path to the Component that should contain the submitted information.
-@argument/doczar:Parser:Submission info
+@argument/doczar/Parser/Submission info
     An Object containing fresly-parsed data that will be overwritten into the requested [Component]
-    (doczar:Component).
+    (doczar/Component).
 */
 ComponentCache.prototype.submit = function (tpath, info) {
+    if (tpath.length > 1 && tpath[0][1] === 'test' && tpath[1][1] === 'Array')
+        console.trace();
     var pointer = this.getComponent (tpath);
     pointer.submit (info);
     return pointer;
 };
 
 
-/*      @member/Function finalize
-    [Prepare](doczar:Component#finalize) every [Component](doczar:Component) in the cache for
+/*
+    [Prepare](doczar/Component#finalize) every [Component](doczar/Component) in the cache for
     rendering and execute a callback.
 @argument/Object options
 @callback
@@ -202,7 +205,7 @@ ComponentCache.prototype.finalize = function (options, callback) {
         var keys = Object.keys (self.root);
         for (var i=0,j=keys.length; i<j; i++) {
             var child = self.root[keys[i]];
-            child.sanitaryName = sanitizeName (
+            child.sanitaryName = child.final.sanitaryName = sanitizeName (
                 child.final.name || child.path[child.path.length-1][1],
                 namespace
             );
@@ -212,13 +215,13 @@ ComponentCache.prototype.finalize = function (options, callback) {
 };
 
 
-/*      @member/Function getRelativeURLForType
+/*
     Attempt to produce a relative url to link from one Component's root output page to another. If
     this cannot be done for any reason, `"javascript:return false;"` is returned to produce a dead
     link.
-@argument/doczar:Parser:Path start
+@argument/doczar/Parser/Path start
     The Component whose root page is requesting this href.
-@argument/doczar:Parser:Path type
+@argument/doczar/Parser/Path type
     The Component to which the root page must link.
 @returns/String
     Either a relative url to the requested Component's root page, or `"javascript:return false;"`.
@@ -357,7 +360,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
 };
 
 
-/*      @member/Function writeFiles
+/*
     Create the requested base directory if it does not already exist. Configure and render the base
     `index.html` file for the root. Copy in global content from `./indexFiles`. Recursively work
     through the root and call [writeFiles](doczar:Component#writeFiles) on all immediate child
@@ -365,7 +368,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     if an Error interrupts the process.
 @argument/String basedir
     The full path of the root directory where Components should output their files.
-@argument/doczar:Options options
+@argument/doczar/Options options
 @callback
 */
 ComponentCache.prototype.writeFiles = function (basedir, options, callback) {

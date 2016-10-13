@@ -1,12 +1,12 @@
 
-var url             = require ('url');
-var fs              = require ('fs-extra');
-var path            = require ('path');
-var async           = require ('async');
-var filth           = require ('filth');
-var Patterns        = require ('./Patterns');
-var Templates       = require ('./Templates');
-var sanitizeName    = require ('./sanitizeName');
+var url          = require ('url');
+var fs           = require ('fs-extra');
+var path         = require ('path');
+var async        = require ('async');
+var filth        = require ('filth');
+var Patterns     = require ('./Patterns');
+var Templates    = require ('./Templates');
+var sanitizeName = require ('./sanitizeName');
 
 var INDENT_REGEX = /^(\s*)[^\s]+/;
 var SPECIAL_SPARES = { summary:true, details:true, constructor:true };
@@ -62,13 +62,8 @@ function matchPaths (able, baker) {
 }
 
 function componentSorter (able, baker) {
-    // var aPriority = Patterns.HEIRARCHY[able.ctype];
-    // var bPriority = Patterns.HEIRARCHY[baker.ctype];
-    // if (aPriority > bPriority)
-    //     return 1;
-    // if (aPriority < bPriority)
-    //     return -1;
-    // if (able.ctype == 'argument' || able.ctype == 'callback') return 0;
+    if (!able.name || !baker.name)
+        return 0;
     var an = able.name.toLowerCase();
     var bn = baker.name.toLowerCase();
     if (an > bn)
@@ -76,22 +71,16 @@ function componentSorter (able, baker) {
     if (an < bn)
         return -1;
     return 0;
-    // if (able.name > baker.name)
-    //     return 1;
-    // if (able.name < baker.name)
-    //     return -1;
-    // return 0;
 }
 
 
-/*      @module/class doczar:Component
-    @root
+/*      @module/class Component
     The quantum of doczar documentation. Every Component has its own directory and html page in the
     final output. Codifies type, expected location and useful information about a unit of data or
-    functionality. The ultimate goal is to produce and render a [Finalization](.Finalization).
-@argument/doczar:ComponentCache context
+    functionality. The ultimate goal is to produce and render a [Finalization](/Finalization).
+@argument/doczar/ComponentCache context
     Each new `Component` is a member of a specific `ComponentCache`.
-@argument/doczar:Parser:Path path
+@argument/doczar/Parser/Path path
     The type of the new `Component`, expressed as an Array of Arrays in the form
     `[ [ delimiter, name ], ...]`
 @Array #path
@@ -105,31 +94,31 @@ function componentSorter (able, baker) {
 @Array #valtype
     The working type(s) of the value described by this `Component`. This is simply an Array of
     String type paths.
-@.Finalization|undefined #final
+@/Finalization|undefined #final
     After [finalization](#finalize), `final` is an Object designed to be passed to the template
     engine ([Handlebars](http://handlebarsjs.com/)).
 @Array #doc
     An Array of String markdown documents that have been applied to this `Component`.
-@Object<String, doczar:Component> #spare
+@Object<String, doczar/Component> #spare
     A map of "spare document" names to `Component` instances representing these documents.
-@Object<String, doczar:Component> #property
+@Object<String, doczar/Component> #property
     A map of property names to `Component` instances representing these types.
-@Object<String, doczar:Component> #member
+@Object<String, doczar/Component> #member
     A map of property names to `Component` instances representing these types.
 @Array #argument
     An Array of `Component` instances representing function arguments for this `Component`. If our
     `ctype` is not `"member"` or `"property"` these arguments are rendered as belonging to a
     constructor function. (Further document this constructor by providing `@spare constructor`)
-@Object<String, doczar:Component> #argsByName
+@Object<String, doczar/Component> #argsByName
     A map of named items from `argument` to their `Component` instances.
-@Array<doczar:Component> #returns
+@Array<doczar/Component> #returns
     An array of Component instances representing return values for this Component.
-@Object<String, doczar:Component> #returnsByName
+@Object<String, doczar/Component> #returnsByName
     A map of named items from `returns` to their `Component` instances.
-@Array<doczar:Component> #throws
+@Array<doczar/Component> #throws
     An array of Component instances representing situations when code represented by this Component
     may throw an exception.
-@Object<String, doczar:Component> #throwsByName
+@Object<String, doczar/Component> #throwsByName
     A map of named items from `throws` to their `Component` instances.
 @Boolean #isTotallyEmpty
 @Boolean #isClassValtype
@@ -181,10 +170,10 @@ var Component = module.exports = function (context, tpath, parent, position, log
 };
 
 
-/*      @member/Function submit
+/*
     Merge additional information into this Component.
-@argument/doczar:Parser:Submission info
-    Document information hot off the [Parser](doczar:Parser).
+@argument/doczar/Parser/Submission info
+    Document information hot off the [Parser](doczar/Parser).
 */
 Component.prototype.submit = function (info) {
     for (var key in info)
@@ -243,17 +232,15 @@ Component.prototype.submit = function (info) {
                 }
             } else if (key == 'ctype' && this[key] == 'class' && info[key] == 'property' ) {
                 // nothing to do here
-            } else {
-                console.trace();
+            } else
                 this.logger.error (
                     { key:key, path:this.pathstr, from:this[key], to:info[key]},
                     'attempted to redefine a property'
                 );
-            }
 };
 
 
-/*      @class Finalization
+/*      @submodule/class Finalization
     This is how a Component presents itself to the Handlebars rendering engine.
 @String #elemID
     A unique identifier used as an id for this Component's outer Element when it is displayed as a
@@ -268,13 +255,13 @@ Component.prototype.submit = function (info) {
     Component type string, e.g. "module", "class", "property"...
 @String #simpleCtype
 @String #valtype
-@Array<.Finalization> #modules
-@Array<.Finalization> #statics
-@Array<.Finalization> #functions
-@Array<.Finalization> #members
-@Array<.Finalization> #methods
-@Array<.Finalization> #arguments
-@Array<.Finalization> #returns
+@Array</Finalization> #modules
+@Array</Finalization> #statics
+@Array</Finalization> #functions
+@Array</Finalization> #members
+@Array</Finalization> #methods
+@Array</Finalization> #arguments
+@Array</Finalization> #returns
 @Boolean #isClasslike
     Whether to display the "Constructor" section.
 @Boolean #isInherited
@@ -284,21 +271,9 @@ Component.prototype.submit = function (info) {
 @Boolean #isFunction
 @Boolean #isCallback
 */
-/*      @member/Function finalize
-    Create a representative document ready for rendering and save it to [final](#final).
-@argument/json options
-    @member/String options#codeStyle
-        The css document to use for syntax highlight.
-    @member/Boolean options#isAPI
-        Hide everything but `@api` Components and their ancestors.
-    @member/Boolean options#isDev
-        Reveal everything marked `@development`.
-@callback
-    Called without arguments when finalization is complete and this Component is ready to render.
-*/
-/*  @local/Array COPY_CHILDREN
+/*
     A list of all local child type names to [process](#finalize) into the [finalization]
-    (.Finalization).
+    (/Finalization).
 */
 var COPY_CHILDREN = [
     'module',
@@ -313,9 +288,8 @@ var COPY_CHILDREN = [
     'signature'
 ];
 
-
-/*  @local/Array SORT_CHILDREN
-    A list of all child type names from the [finalization](.Finalization) that should be sorted
+/*
+    A list of all child type names from the [finalization](/Finalization) that should be sorted
     after they are filled.
 */
 var SORT_CHILDREN = [
@@ -335,11 +309,10 @@ var SORT_CHILDREN = [
     'signatures'
 ];
 
-
-/*  @local/Object SPLIT_FUNCTIONS
+/*
     A handful of local child types should be split into different type names on the [finalization]
-    (.Finalization) depending on whether or not they are [marked callable]
-    (.Finalization#isFunction). These are mapped as `{ localName: [ "isFunction", "notFunction" ],
+    (/Finalization) depending on whether or not they are [marked callable]
+    (/Finalization#isFunction). These are mapped as `{ localName: [ "isFunction", "notFunction" ],
     }`.
 */
 var SPLIT_FUNCTIONS = {
@@ -348,10 +321,9 @@ var SPLIT_FUNCTIONS = {
     local:          [ 'localFunctions', 'localValues' ]
 };
 
-
-/*  @local/Object CONVERT_NAMES
+/*
     For dumb reasons, some local child type names are simply converted to a plural name in the
-    [finalization](.Finalization). This should be refactored out soon.
+    [finalization](/Finalization). This should be refactored out soon.
 */
 var CONVERT_NAMES = {
     module:     'modules',
@@ -362,7 +334,7 @@ var CONVERT_NAMES = {
 };
 
 
-/*  @local/Object SPECIAL_CTYPES
+/*
     A handful of Component [ctypes](#ctype) are important enough that they are [finalized]
     (#finalize) under their [ctype](#ctype) instead of their child type. Stored as a truth map.
 */
@@ -371,9 +343,8 @@ var SPECIAL_CTYPES = {
     enum:   'enums'
 };
 
-
-/*  @local/Array NATURALIZE_CHILDREN
-    Some child Component types should never be [marked as inherited](.Finalization#isInherited).
+/*
+    Some child Component types should never be [marked as inherited](/Finalization#isInherited).
 */
 var NATURALIZE_CHILDREN = {
     'argument': true,
@@ -386,8 +357,7 @@ var NATURALIZE_CHILDREN = {
 var nextElemID = 1;
 function getElemID(){ return 'component_'+nextElemID++; }
 
-
-/*  @local ALIAS_PROPS
+/*
 
 */
 var ALIAS_PROPS = [
@@ -397,12 +367,15 @@ var ALIAS_PROPS = [
 ];
 
 
+/*
 /*      @member/Function finalize
+    Create a representative document ready for rendering and save it to [final](#final).
+@spare details
     Stage 0: Accumulation
     ---------------------
     Every child Component on this Component is compiled into two Arrays: One is an Array of Arrays
     grouping children by the name they were stored under, the other is a flat Array of all children.
-    The [hasChildren](.Finalization#hasChildren) output Boolean and the [isTotallyEmpty]
+    The [hasChildren](/Finalization#hasChildren) output Boolean and the [isTotallyEmpty]
     (#isTotallyEmpty) local Boolean are processed. Implicit documentation (if any) is converted to
     either a `@summary` or `@details` child Component. Finally, [async.each]() calls `finalize` on
     every child Component before proceeding to Stage 2: Compilation.
@@ -414,10 +387,10 @@ var ALIAS_PROPS = [
     Empty containers are placed for all child types.
 
     If this Component is a `@spare` then markdown is rendered now. Modifiers are processed into the
-    [finalization](.Finalization). The local Booleans [ctype](#ctype), [isClassValtype]
+    [finalization](/Finalization). The local Booleans [ctype](#ctype), [isClassValtype]
     (#isClassValtype) and [isJSONValtype](#isJSONValtype) are processed into the output Booleans
-    [isFunction](.Finalization#isFunction), [isCallback](.Finalization#isCallback), [isClasslike]
-    (.Finalization#isClasslike) and [isInline](.Finalization#isInline).
+    [isFunction](/Finalization#isFunction), [isCallback](/Finalization#isCallback), [isClasslike]
+    (/Finalization#isClasslike) and [isInline](/Finalization#isInline).
 
     At this point, the `finalize` call returns. After a trip around the event loop, Stage 2 begins
     to process from the trunk outward to the leaves.
@@ -430,6 +403,15 @@ var ALIAS_PROPS = [
 
     Every expected variety of child Component is enumerated and a source set picked from either the
     inheritence document (preferentially) or the local Component.
+@argument/json options
+    @member/String options#codeStyle
+        The css document to use for syntax highlight.
+    @member/Boolean options#isAPI
+        Hide everything but `@api` Components and their ancestors.
+    @member/Boolean options#isDev
+        Reveal everything marked `@development`.
+@callback
+    Called without arguments when finalization is complete and this Component is ready to render.
 */
 Component.prototype.finalize = function (options, callback) {
     var self = this;
@@ -510,7 +492,7 @@ Component.prototype.finalize = function (options, callback) {
                 var namespace = Object.create (null);
                 for (var k=0,l=set.length; k<l; k++) {
                     var child = set[k];
-                    child.sanitaryName = sanitizeName (
+                    child.sanitaryName = child.final.sanitaryName = sanitizeName (
                         child.final.name || child.path[child.path.length-1][1],
                         namespace
                     );
@@ -877,7 +859,7 @@ Component.prototype.finalize = function (options, callback) {
         }
     }
 
-    // process value types and check whether this Component lists "f|Function" or "class" as a type\
+    // process value types and check whether this Component lists "f|Function" or "class" as a type
     for (var i=0,j=this.valtype.length; i<j; i++) {
         var thistype = this.valtype[i].path;
         if (thistype.length != 1)
@@ -917,11 +899,11 @@ Component.prototype.finalize = function (options, callback) {
 };
 
 
-/*      @member/Function inherit
+/*
     Gather children from superclasses and merge them, in order, into a document representing this
     Component's inheritence. **Note:** this Component's children will *also* be merged in, producing
     a pre-compiled inheritence result and *not* just the inherited children.
-@returns/doczar:Component
+@returns/doczar/Component
     The assembled inheritence document is returned. It looks like an incomplete Component instance,
     containing only child Components.
 */
@@ -1093,11 +1075,11 @@ Component.prototype.inherit = function (loops) {
 };
 
 
-/*      @member/Function writeFiles
+/*
     Create a directory, write an index.html and recursively call for child Components.
 @argument/String basedir
 @argument/String baseTagPath
-@argument/doczar:Options options
+@argument/Object options
 @callback callback
     @argument/Error err
         Filesystem errors and critical failures which hault document assembly will be returned.

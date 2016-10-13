@@ -3,3 +3,5 @@ node_modules
 docs
 index.html
 test/out
+
+fish.js

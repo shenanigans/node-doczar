@@ -4,6 +4,7 @@ var assert = require ('assert');
 var child_process = require ('child_process');
 var async = require ('async');
 var fs = require ('fs-extra');
+var filth = require ('filth');
 
 function killDir (dir, callback) {
     var tries = 0;
@@ -35,6 +36,68 @@ function killDir (dir, callback) {
             });
         });
     });
+}
+
+function compareLevel (path, able, baker) {
+    // match keys
+    for (var bKey in baker)
+        if (!Object.hasOwnProperty.call (able, bKey)) {
+            path.push (bKey);
+            throw new Error ('missing key ' + path.join ('/'));
+        }
+
+    for (var aKey in able) {
+        if (aKey === 'elemID')
+            continue;
+        var aItem = able[aKey];
+        var subpath = path.concat();
+        subpath.push (aKey);
+        if (!Object.hasOwnProperty.call (baker, aKey))
+            throw new Error ('novel key ' + subpath.join ('/'));
+        var bItem = baker[aKey];
+        var aType = filth.typeof (aItem);
+        var bType = filth.typeof (bItem);
+        if (aType !== bType)
+            throw new Error ('type mismatch ' + subpath.join ('/'));
+        switch (aType) {
+            case 'object':
+                compareLevel (subpath, aItem, bItem);
+                continue;
+            case 'array':
+                compareArray (subpath, aItem, bItem);
+                continue;
+            default:
+                if (aItem !== bItem)
+                    throw new Error ('value mismatch ' + subpath.join ('/'));
+        }
+    }
+}
+
+function compareArray (path, able, baker) {
+    if (able.length !== baker.length)
+        throw new Error ('array length mismatch ' + path.join ('/'));
+    for (var i=0,j=able.length; i<j; i++) {
+        var subpath = path.concat();
+        var aItem = able[i];
+        var bItem = baker[i];
+        if (aItem && aItem.sanitaryName)
+            subpath.push (aItem.sanitaryName);
+        var aType = filth.typeof (aItem);
+        var bType = filth.typeof (bItem);
+        if (aType !== bType)
+            throw new Error ('type mismatch ' + subpath.join ('/'));
+        switch (aType) {
+            case 'object':
+                compareLevel (subpath, aItem, bItem);
+                continue;
+            case 'array':
+                compareArray (path, aItem, bItem);
+                continue;
+            default:
+                if (aItem !== bItem)
+                    throw new Error ('value mismatch ' + subpath.join ('/'));
+        }
+    }
 }
 
 function runTest (name, args) {
@@ -188,6 +251,8 @@ function runTest (name, args) {
                     }
                 ], function (err) {
                     if (err) return callback (err);
+                    if (!outputDoc && !compareDoc)
+                        return callback();
                     if (outputDoc && !compareDoc)
                         return callback (new Error ('unmatched json file in output'));
                     if (!outputDoc && compareDoc)
@@ -208,18 +273,14 @@ function runTest (name, args) {
                                     'unmatched directory ('+outputDirs[i]+') generated at: '+level
                                 ));
 
-                        if (outputDoc && compareDoc) try {
-                            assert.deepEqual (outputDoc, compareDoc);
+                        try {
+                            compareLevel (
+                                [ level + '::' ],
+                                JSON.parse (outputDoc),
+                                JSON.parse (compareDoc)
+                            );
                         } catch (err) {
-                            // for (var i=0,j=outputDoc.length; i<j; i++)
-                            //     if (outputDoc[i] != compareDoc[i]) {
-                            //         console.log ('----', level);
-                            //         console.log (' model:', compareDoc.slice (i-10, i+100));
-                            //         console.log ('result:', outputDoc.slice (i-10, i+100));
-                            //         console.log ('\n');
-                            //         break;
-                            //     }
-                            return callback (new Error ('output documents do not match: '+level+'/index.json'));
+                            return callback (err);
                         }
 
                         callback();
