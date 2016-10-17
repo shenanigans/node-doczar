@@ -4,13 +4,13 @@ var fs           = require ('fs-extra');
 var path         = require ('path');
 var async        = require ('async');
 var filth        = require ('filth');
-var Patterns     = require ('./Patterns');
+var Patterns     = require ('./Parser/Patterns');
 var Templates    = require ('./Templates');
 var sanitizeName = require ('./sanitizeName');
 
 var INDENT_REGEX = /^(\s*)[^\s]+/;
 var SPECIAL_SPARES = { summary:true, details:true, constructor:true };
-var DEFAULT_NAMES = { argument:'', callback:'callback', args:'arguments', kwargs:'namedArguments' };
+var DEFAULT_NAMES = { callback:'callback', args:'arguments', kwargs:'namedArguments' };
 function values (a) { var out = []; for (var b in a) out.push (a[b]); return out; };
 function concatArrs () {
     var out = [];

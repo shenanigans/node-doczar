@@ -22,8 +22,8 @@ var bunyan            = require ('bunyan');
 var filth             = require ('filth');
 var Parser            = require ('./src/Parser');
 var ComponentCache    = require ('./src/ComponentCache');
-var getNodeModulePath = require ('./src/getNodeModulePath');
-var Patterns          = require ('./src/Patterns');
+var getNodeModulePath = require ('./src/node_modules/getNodeModulePath');
+var Patterns          = require ('./src/Parser/Patterns');
 require ('colors');
 
 function concatPaths(){
@@ -38,16 +38,74 @@ function concatPaths(){
 
 function isArray (a) { return a.__proto__ === Array.prototype; }
 
-var STDLIBS = {
-    es5:        true,
-    es6:        true,
-    nodejs:     true,
-    browser:    true
+var LIB_SYNONYMS = {
+    javascript:     'es5',
+    ES5:            'es5',
+    ES6:            'es6',
+    Node:           'nodejs',
+    node:           'nodejs',
+    'Node.js':      'nodejs',
+    'node.js':      'nodejs',
+    'IO.js':        'nodejs',
+    'io.js':        'nodejs',
+    'io':           'nodejs',
+    'iojs':         'nodejs',
+    'Browser':      'browser',
+    'ie':           'browser',
+    'IE':           'browser',
+    'firefox':      'browser',
+    'Firefox':      'browser',
+    'chrome':       'browser',
+    'Chrome':       'browser',
+    'opera':        'browser',
+    'Opera':        'browser',
+    strict:         'browser-strict',
+    'use-strict':   'browser-strict'
+};
+var LIB_DEPENDENCIES = {
+    nodejs:             [ 'es5' ],
+    iojs:               [ 'nodejs', 'es6' ],
+    browser:            [ 'es5' ],
+    'browser-strict':   [ 'browser', 'es6' ],
+    es6:                [ 'es5' ]
+};
+var LIB_BLANK = {
+    'browser-strict':   'browser'
 };
 
+var PARSE_SYNONYMS_DEP = {
+    'node.js':          'node',
+    'Node.js':          'node',
+    'nodejs':           'node',
+    'io':               'node',
+    'iojs':             'node',
+    'io.js':            'node',
+    'browser':          'browser',
+    'browser-modern':   'browser-strict',
+    'modern':           'browser-strict',  // subject to future change
+    'strict':           'browser-strict'  // subject to future change
+};
+var PARSE_LIB_DEPS = {
+    node:               [ 'es6' ],
+    js:                 [ 'es5' ],
+    browser:            [ 'browser' ],
+    'browser-strict':   [ 'browser', 'es6' ]
+};
+var PARSE_SYNONYMS = {
+    browser:            'js',
+    'browser-strict':   'js',
+    node:               'node',
+    js:                 'js'
+};
+for (var name in PARSE_SYNONYMS_DEP)
+    if (!Object.hasOwnProperty.call (PARSE_SYNONYMS, name))
+        PARSE_SYNONYMS[name] = PARSE_SYNONYMS_DEP[name];
+
+var DELIMIT = process.platform == 'win32' ? '\\' : '/';
+var allFilenames = {};
+
 var OPTIONS = {
-    verbose:    [ 'trace', 'debug', 'info', 'warning', 'error', 'fatal' ],
-    parse:      [ 'js', 'node' ],
+    parse:      Object.keys (PARSE_SYNONYMS),
     locals:     [ 'none', 'comments', 'all' ],
     optArgs:    [ 'none', 'leading', 'trailing' ],
     code:       [
@@ -70,6 +128,7 @@ var OPTIONS = {
         'zenburn'
     ]
 };
+var OPTIONS_VERBOSE = [ 'trace', 'debug', 'info', 'warning', 'error', 'fatal' ];
 var unknownOptions = [];
 var ARGV_OPTIONS = {
     default:        {
@@ -80,7 +139,7 @@ var ARGV_OPTIONS = {
         optArgs:    'none',
         maxDepth:   '4'
     },
-    boolean:        [ 'dev', 'api', 'json', 'raw' ],
+    boolean:        [ 'dev', 'api', 'json', 'raw', 'noImply', 'noDeps' ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
         'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth'
@@ -96,31 +155,64 @@ var BG_COLORS = { 10:'blueBG', 20:'cyanBG', 30:'greenBG', 40:'yellowBG', 50:'red
 var LVL_NAME = { 10:'  trace ', 20:'  debug ', 30:'   info ', 40:'warning ', 50:'  error ', 60:'  fatal ' };
 var RESERVED = { v:true, level:true, name:true, hostname:true, pid:true, time:true, msg:true, src:true };
 var logger;
-if (argv.raw)
-    logger = bunyan.createLogger ({ name:"doczar", level:argv.verbose });
-else
-    logger = bunyan.createLogger ({
-    name:       "doczar",
-    streams:    [ { level:argv.verbose, type:'raw', stream:{ write:function (doc) {
-        var color = COLORS[doc.level];
-        var bgColor = BG_COLORS[doc.level];
-        var msg = (' '+LVL_NAME[doc.level])[bgColor].black+' '+doc.msg[color];
-        var finalStr;
-        for (var key in doc)
-            if (!Object.hasOwnProperty.call (RESERVED, key)) {
-                var item = doc[key];
-                if (key == 'err' && item.stack)
-                    finalStr = '  ' + item.stack;
-                else {
-                    var itemStr = typeof doc[key] == 'string' ? item : JSON.stringify (doc[key]);
-                    msg += ( '  ' + key + '=' + itemStr ).grey;
-                }
+
+var spinning = false;
+function outputLogLine (doc) {
+    var color = COLORS[doc.level];
+    var bgColor = BG_COLORS[doc.level];
+    var msg = (' '+LVL_NAME[doc.level])[bgColor].black+' '+doc.msg[color];
+    var finalStr;
+    for (var key in doc)
+        if (!Object.hasOwnProperty.call (RESERVED, key)) {
+            var item = doc[key];
+            if (key == 'err' && item.stack)
+                finalStr = '  ' + item.stack;
+            else {
+                var itemStr = typeof doc[key] == 'string' ? item : JSON.stringify (doc[key]);
+                msg += ( '  ' + key + '=' + itemStr ).grey;
             }
-        if (finalStr)
-            msg += finalStr;
-        console.log (msg);
-    } } } ]
-});
+        }
+    if (finalStr)
+        msg += finalStr;
+    if (spinning) {
+        process.stdout.clearLine();
+        process.stdout.cursorTo (0);
+    }
+    console.log (msg);
+    if (spinning)
+        process.stdout.write (spinning.green);
+}
+if (OPTIONS_VERBOSE.indexOf (argv.verbose) < 0) {
+    outputLogLine ({ level:60, verbose:argv.verbose, msg:'unknown verbosity level' });
+    return process.exit (1);
+}
+if (argv.raw) {
+    logger = bunyan.createLogger ({ name:"doczar", level:argv.verbose });
+    logger.setTask = function(){ };
+} else {
+    logger = bunyan.createLogger ({
+        name:       "doczar",
+        streams:    [ { level:argv.verbose, type:'raw', stream:{ write:outputLogLine } } ]
+    });
+    logger.setTask = function (task) {
+        if (spinning) {
+            process.stdout.clearLine();
+            process.stdout.cursorTo (0);
+        }
+        if (task)
+            process.stdout.write (task.green);
+        spinning = task;
+    };
+}
+function createChildFactory (childFactory) {
+    return function(){
+        var child = childFactory.apply (this, arguments);
+        child.setTask = logger.setTask;
+        child.child = createChildFactory (child.child);
+        return child;
+    }
+}
+logger.child = createChildFactory (logger.child);
 
 // log any unknown options
 for (var i=0,j=unknownOptions.length; i<j; i++)
@@ -179,1028 +271,9 @@ if (defaultScope.length)
 
 var sourceFiles = [];
 
-// tools for javascript syntax parsing
-function workJSDerefs (level, target, chain) {
-    var didFinishDeref = false;
-    if (!target)
-        target = level;
-    if (!chain)
-        chain = [ target ];
-
-    function recurse (level, target) {
-        if (chain.indexOf (level) >= 0)
-            return false;
-        var newChain = chain.concat();
-        newChain.push (level);
-        return workJSDerefs (level, target, newChain);
-    }
-
-    if (level['.deref']) for (var i=0,j=level['.deref'].length; i<j; i++) {
-        var ref = level['.deref'][i];
-        if (chain.indexOf (ref) >= 0)
-            return didFinishDeref;
-        chain.push (ref);
-        recurse (ref, target);
-        var possibilities = ref['.types'];
-        for (var k=0,l=possibilities.length; k<l; k++)
-            if (target['.types'].indexOf (possibilities[k]) < 0) {
-                target['.types'].push (possibilities[k]);
-                didFinishDeref = true;
-            }
-    }
-
-    // process arguments and returns
-    if (level['.arguments'])
-        for (var i=0,j=level['.arguments'].length; i<j; i++)
-            didFinishDeref += recurse (level['.arguments'][i]);
-    if (level['.returns'])
-        didFinishDeref += recurse (level['.returns']);
-
-    // recurse
-    if (typeof level == 'string') throw new Error();
-    for (var key in level)
-        if (key[0] == '.')
-            continue;
-        else
-            didFinishDeref += workJSDerefs (level[key], undefined, chain);
-    if (level['.members'])
-        for (var key in level['.members']) {
-            if (key[0] == '.')
-                continue;
-            var nextTarget = level['.members'][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-    if (level['.props'])
-        for (var key in level['.props']) {
-            if (key[0] == '.')
-                continue;
-            var nextTarget = level['.props'][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-    return didFinishDeref;
-}
-
-// recursively submit all the information built into the namespace
-var SANITY = 0;
-function submitJSLevel (level, scope, localDefault, chain, force) {
-    if (!chain)
-        chain = [ level ];
-    else if (chain.indexOf (level) >= 0)
-        return false;
-    else {
-        chain = chain.concat();
-        chain.push (level);
-    }
-
-    // dig to the bottom of any derefs
-    // if (level['.deref'] && level['.deref'].length === 1 && !level['.path'] && !level['.mount'])
-    //     return submitJSLevel (level['.deref'][0], scope, localDefault, chain, force);
-
-    function isLocalPath (path) {
-        for (var i=0,j=path.length; i<j; i++)
-            if (path[i][0] == '%')
-                return true;
-        return false;
-    }
-
-    function hasComments (level, chain) {
-        if (!chain)
-            chain = [ level ];
-        else {
-            if (chain.indexOf (level) >= 0)
-                return false;
-            chain.push (level);
-        }
-        if (level['.docstr'])
-            return true;
-        for (var key in level)
-            if (key[0] == '.')
-                continue;
-            else if (hasComments (level[key], chain.concat()))
-                return true;
-        if (level['.members']) for (var key in level['.members'])
-            if (key[0] == '.')
-                continue;
-            else if (hasComments (level['.members'][key], chain.concat()))
-                return true;
-        if (level['.props']) for (var key in level['.props'])
-            if (key[0] == '.')
-                continue;
-            else if (hasComments (level['.props'][key], chain.concat()))
-                return true;
-        if (level['.arguments']) for (var key in level['.arguments'])
-            if (key[0] == '.')
-                continue;
-            else if (hasComments (level['.arguments'][key], chain.concat()))
-                return true;
-        if (level['.throws']) for (var key in level['.throws'])
-            if (key[0] == '.')
-                continue;
-            else if (hasComments (level['.throws'][key], chain.concat()))
-                return true;
-        if (level['.returns'] && hasComments (level['.returns'], chain.concat()))
-            return true;
-        if (level['.deref']) for (var i=0,j=level['.deref'].length; i<j; i++)
-            if (hasComments (level['.deref'], chain.concat()))
-                return true;
-        return false;
-    }
-
-    if (!localDefault)
-        localDefault = defaultScope;
-    else if (level['.overrideRoot'])
-        localDefault = level['.overrideRoot'];
-    var didSubmit = false;
-
-    if (!level['.path']) {
-        didSubmit = true;
-        var path, ctype, docstr, types = [];
-        if (level['.mount']) {
-            ctype = level['.mount'].ctype;
-            path = level['.mount'].path;
-            scope = path;
-            types.push.apply (types, level['.mount'].valtype);
-            docstr = level['.mount'].docstr;
-        } else {
-            path = scope;
-            types.push.apply (types, level['.types']);
-            types = Parser.parseType (types.join ('|'));
-            if (level['.members'])
-                ctype = 'class';
-            else
-                // ctype = 'property';
-                ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
-            docstr = level['.docstr'] || '';
-        }
-        level['.localPath'] = path;
-        var fullpath = level['.path'] = concatPaths (localDefault, path);
-        if (ctype == 'class') for (var i=types.length-1; i>=0; i--) {
-            var type = types[i];
-            if (type.name == 'function' || type.name == 'Function')
-                types.splice (i, 1);
-        }
-        if (fullpath.length && (
-            fullpath[fullpath.length-1][0] == '/' || fullpath[fullpath.length-1][0] == ':'
-        )) {
-            if (ctype == 'class') {
-                var foundClass = false;
-                for (var i=types.length-1; i>=0; i--) {
-                    if (types[i].name == 'class') {
-                        foundClass = true;
-                        break;
-                    }
-                }
-                if (!foundClass)
-                    types.push (Parser.parseType ('class')[0]);
-            }
-            ctype = 'module';
-            var i = level['.types'].indexOf ('Object');
-            if (i >= 0)
-                types.splice (i, 1);
-            i = level['.types'].indexOf ('json');
-            if (i >= 0)
-                types.splice (i, 1);
-        }
-
-        level['.ctype'] = ctype;
-        level['.finalTypes'] = types;
-
-        // submit, if we should
-        if (
-            !level['.silent']
-         && ( force || path.length || localDefault.length )
-         && (
-                level['.mount']
-             || !isLocalPath (path)
-             || argv.locals === 'all'
-             || ( argv.locals === 'comments' && hasComments (level) )
-         )
-        ) {
-            level['.force'] = -1; // marks already written
-            force = true;
-            Parser.parseTag (
-                context,
-                logger,
-                function (fname) { nextFiles.push (fname); },
-                level['.fname'],
-                path.length ? localDefault : [],
-                [],
-                path.length ? path : localDefault,
-                ctype,
-                types,
-                docstr
-            );
-        }
-    } else if ( !level['.silent'] && (
-        ( level['.force'] && level['.force'] > 0 )
-     || ( force && ( !level['.force'] || level['.force'] > 0 ) )
-    ) ) {
-        level['.force'] = -1;
-        force = true;
-        Parser.parseTag (
-            context,
-            logger,
-            function (fname) { nextFiles.push (fname); },
-            level['.fname'],
-            level['.localPath'].length ? localDefault : [],
-            [],
-            level['.localPath'].length ? level['.localPath'] : localDefault,
-            level['.ctype'],
-            level['.finalTypes'],
-            ( level['.mount'] ? level['.mount']['.docstr'] : level['.docstr'] ) || ''
-        );
-    } else {
-        scope = level['.path'];
-        localDefault = [];
-    }
-
-    if (level['.alias']) {
-        var pointer = level['.alias'];
-        var aliasChain = [];
-        while (
-            pointer['.deref']
-         && pointer['.deref'].length === 1
-         && aliasChain.indexOf (pointer['.deref'][0]) < 0
-        )
-            aliasChain.push (pointer = pointer['.deref'][0]);
-        if (pointer['.path']) {
-            didSubmit = true;
-            delete level['.alias'];
-            context.submit (level['.path'], { modifiers:[ {
-                mod:    'alias',
-                path:   pointer['.path']
-            } ] });
-        }
-    }
-
-    // are we waiting to add complex paths to the types list?
-    if (level['.instance']) {
-        var writeAndForce = Boolean (
-            !isLocalPath (level['.path'])
-         || argv.locals === 'all'
-         || ( argv.locals === 'comments' && hasComments (level))
-        );
-        for (var i=level['.instance'].length-1; i>=0; i--) {
-            var constructor = level['.instance'][i];
-            var aliasChain = [];
-            while (constructor['.deref'].length == 1 && aliasChain.indexOf (constructor['.deref'][0]) < 0)
-                aliasChain.push (constructor = constructor['.deref'][0]);
-            if (!constructor['.path'])
-                continue;
-            didSubmit = true;
-            function isRelevantPath (path) {
-                for (var i=0,j=path.length; i<j; i++) {
-                    var pathChar = path[i][0];
-                    if (pathChar === '(')
-                        return false;
-                }
-                return true;
-            }
-            if (!constructor['.force'] && isRelevantPath (level['.path']) && (
-                level['.force']
-             || !isLocalPath (level['.path'])
-             || argv.locals === 'all'
-             || ( argv.locals === 'comments' && hasComments (level))
-             ))
-                constructor['.force'] = 1;
-            level['.instance'].splice (i, 1);
-            var typePath = constructor['.path'].map (function (frag) {
-                return frag[0] + frag[1];
-            }).join ('');
-            if (writeAndForce && level['.types'].indexOf (typePath) < 0) {
-                level['.types'].push (typePath);
-                Parser.parseTag (
-                    context,
-                    logger,
-                    function (fname) { nextFiles.push (fname); },
-                    level['.fname'],
-                    localDefault,
-                    [],
-                    scope,
-                    level['.ctype'],
-                    Parser.parseType (typePath),
-                    ''
-                );
-            }
-        }
-    }
-
-    if (level['.super']) for (var i=level['.super'].length-1; i>=0; i--) {
-        var pointer = level['.super'][i];
-        var superChain = [];
-        while (
-            pointer['.deref']
-         && pointer['.deref'].length == 1
-         && superChain.indexOf (pointer['.deref'][0]) < 0
-        )
-            superChain.push (pointer = pointer['.deref'][0]);
-        if (!pointer['.path'])
-            continue;
-
-        context.submit (level['.path'], { modifiers:[ { mod:'super', path:pointer['.path'] } ] });
-        didSubmit = true;
-        level['.super'].splice (i, 1);
-    }
-
-    // recurse to various children
-    if (level['.members']) {
-        delete level['.members']['.isCol'];
-        delete level['.members']['.parent'];
-        for (var key in level['.members']) {
-            var pointer = level['.members'][key];
-            var memberChain = [ pointer ];
-            while (
-                pointer['.deref']
-             && pointer['.deref'].length === 1
-             && memberChain.indexOf (pointer['.deref'][0]) < 0
-            )
-                memberChain.push (pointer = pointer['.deref'][0]);
-            didSubmit += submitJSLevel (
-                level['.members'][key],
-                concatPaths (scope, [ [ '#', key ] ]),
-                localDefault,
-                chain,
-                force
-            );
-        }
-    }
-
-    if (level['.props']) {
-        delete level['.props']['.isCol'];
-        for (var key in level['.props']) {
-            var pointer = level['.props'][key];
-            var propChain = [];
-            while (
-                pointer['.deref']
-             && pointer['.deref'].length === 1
-             && propChain.indexOf (pointer['.deref'][0]) < 0
-            )
-                propChain.push (pointer = pointer['.deref'][0]);
-            didSubmit += submitJSLevel (
-                pointer,
-                concatPaths (scope, [ [ '.', key ] ]),
-                localDefault,
-                chain,
-                force
-            );
-        }
-    }
-
-    if (level['.arguments']) {
-        for (var i=0,j=level['.arguments'].length; i<j; i++) {
-            var arg = level['.arguments'][i];
-            didSubmit += submitJSLevel (
-                arg,
-                concatPaths (scope, [ [ '(', arg['.name'] ] ]),
-                localDefault,
-                chain,
-                force
-            );
-        }
-    }
-
-    if (level['.returns'] && level['.returns']['.types'].length) {
-        didSubmit += submitJSLevel (
-            level['.returns'],
-            concatPaths (scope, [ [ ')', '' ] ]),
-            localDefault,
-            chain,
-            force
-        );
-    }
-
-    if (level['.throws']) {
-        didSubmit += submitJSLevel (
-            level['.throws'],
-            concatPaths (scope, [ [ '!', undefined ] ]),
-            localDefault,
-            chain,
-            force
-        );
-    }
-
-    for (var key in level)
-        if (key[0] == '.')
-            continue;
-        else {
-            didSubmit += submitJSLevel (
-                level[key],
-                concatPaths (scope, [ [ '.', key ] ]),
-                localDefault,
-                chain
-            );
-        }
-
-    if (level['.scope']) {
-        for (var key in level['.scope'])
-            if (key[0] == '.')
-                continue;
-            else
-                didSubmit += submitJSLevel (
-                    level['.scope'][key],
-                    concatPaths (scope, [ [ '%', key ] ]),
-                    localDefault,
-                    chain
-                );
-    }
-
-    delete level['.scope'];
-    return didSubmit;
-}
-
-// =================================================================================================
-// this is the main processing function
-var globalNode = new filth.SafeMap ({ '.types':[], '.deref':[] });
-switch (argv.parse) {
-    case 'js':
-        var jsRoot = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'js.json')).toString()
-        );
-        for (var key in jsRoot)
-            globalNode[key] = jsRoot[key];
-        var browserRoot = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'browser.json')).toString()
-        );
-        for (var key in browserRoot)
-            globalNode[key] = browserRoot[key];
-        break;
-    case 'node':
-        var jsRoot = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'js.json')).toString()
-        );
-        for (var key in jsRoot)
-            globalNode[key] = jsRoot[key];
-        var es6Root = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'browser.json')).toString()
-        );
-        for (var key in es6Root)
-            globalNode[key] = es6Root[key];
-        break;
-    default:
-}
-var nodeSourceFiles = {};
-var DELIMIT = process.platform == 'win32' ? '\\' : '/';
-var allFilenames = {};
-function processSource (filenames) {
-    var nextFiles = [];
-    async.eachSeries (filenames, function (fileInfo, callback) {
-        if (Object.hasOwnProperty.call (allFilenames, fileInfo.file))
-            return callback();
-        allFilenames[fileInfo.file] = fileInfo.referer;
-
-        try {
-            var fname = path.resolve (process.cwd(), fileInfo.file);
-            var referer;
-            if (fileInfo.referer)
-                referer = path.resolve (process.cwd(), fileInfo.referer);
-            else
-                referer = path.parse (fname).dir;
-        } catch (err) {
-            logger.error (
-                { path:fileInfo.file, error:err },
-                'unable to resolve source file path'
-            );
-            return callback();
-        }
-
-        context.latency.log();
-        fs.readFile (fname, function (err, buf) {
-            context.latency.log ('file system');
-
-            if (err)
-                return callback (err);
-
-            logger.debug ({ filename:fname }, 'read file');
-            var fileStr = buf.toString();
-            var shebangMatch = fileStr.match (/^#!.*\r?\n([^]*)$/);
-            if (shebangMatch)
-                fileStr = shebangMatch[1];
-            var localDefaultScope = currentDefaultScope;
-
-            function addToNextFiles (newName, newReferer) {
-                var useReferer = newReferer || referer;
-                nextFiles.push ({
-                    file:       newName,
-                    referer:    useReferer
-                });
-                return path.resolve (process.cwd(), fileInfo.referer || referer || useReferer);
-            }
-
-            if (fileInfo.referer && fileInfo.referer != fileInfo.file)
-                // localDefaultScope = getNodeModulePath (logger, localDefaultScope, referer, fname);
-                localDefaultScope = getNodeModulePath (context, argv.root, referer, fname);
-
-            try {
-                switch (argv.parse) {
-                    case 'js':
-                        logger.debug (
-                            { filename:fname, referer:referer, mode:argv.parse },
-                            'parsing file'
-                        );
-                        globalNode.window = globalNode;
-
-                        // work as a global script?
-                        if (
-                            !argv.root.length
-                         && (
-                                !fileInfo.referer
-                             || fileInfo.referer == fileInfo.file
-                         )
-                        ) try {
-                            Parser.parseJSTypes (
-                                fname,
-                                fileStr,
-                                localDefaultScope,
-                                globalNode,
-                                context,
-                                logger,
-                                addToNextFiles,
-                                nodeSourceFiles
-                            );
-                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
-                            break;
-                        } catch (err) {
-                            var scopePath = localDefaultScope
-                             .map (function (item) { return item.join (''); }).join ('')
-                             ;
-                            logger.error (
-                                { err:err, path:fname, scope:scopePath, parse:argv.parse },
-                                'parsing failed'
-                            );
-                            break;
-                        }
-
-                        var modPathStr = path.resolve (process.cwd(), fname);
-                        var moduleNode;
-                        if (Object.hasOwnProperty.call (nodeSourceFiles, modPathStr)) {
-                            moduleNode = nodeSourceFiles[modPathStr];
-                            if (
-                                !moduleNode['.root']
-                             || ( fileInfo.referer && fileInfo.referer != fileInfo.file )
-                            )
-                                moduleNode['.root'] = localDefaultScope;
-                        } else
-                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap (
-                                globalNode,
-                                {
-                                    '.root':    localDefaultScope,
-                                    window:     globalNode,
-                                    '.exports': filth.clone ({
-                                        '.types':   [],
-                                        '.deref':   [],
-                                        '.props':   { '.isCol':true }
-                                    })
-                                }
-                            );
-                        try {
-                            Parser.parseJSTypes (
-                                fname,
-                                fileStr,
-                                localDefaultScope,
-                                moduleNode,
-                                context,
-                                logger,
-                                addToNextFiles,
-                                nodeSourceFiles
-                            );
-                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
-                            break;
-                        } catch (err) {
-                            var scopePath = localDefaultScope
-                             .map (function (item) { return item.join (''); }).join ('')
-                             ;
-                            logger.error (
-                                { err:err, path:fname, scope:scopePath, parse:argv.parse },
-                                'parsing failed'
-                            );
-                            break;
-                        }
-                    case 'node':
-                        logger.debug (
-                            { filename:fname, referer:referer, mode:argv.parse },
-                            'parsing file'
-                        );
-                        if (!fileInfo.referer) {
-                            try {
-                                Parser.parseJSTypes (
-                                    fname,
-                                    fileStr,
-                                    localDefaultScope,
-                                    new filth.SafeMap (globalNode, { global:globalNode }),
-                                    context,
-                                    logger,
-                                    addToNextFiles,
-                                    nodeSourceFiles
-                                );
-                                logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
-                            } catch (err) {
-                                var scopePath = localDefaultScope
-                                 .map (function (item) { return item.join (''); }).join ('')
-                                 ;
-                                logger.error (
-                                    { err:err, path:fname, scope:scopePath, parse:argv.parse },
-                                    'parsing failed'
-                                );
-                            }
-                            break;
-                        }
-
-                        var modPathStr = path.resolve (process.cwd(), fname);
-                        var moduleNode;
-                        if (Object.hasOwnProperty.call (nodeSourceFiles, modPathStr)) {
-                            moduleNode = nodeSourceFiles[modPathStr];
-                            if (!moduleNode['.root'])
-                                moduleNode['.root'] = localDefaultScope;
-                        } else {
-                            var exports = new filth.SafeMap ({ '.types':[], '.deref':[] });
-                            moduleNode = nodeSourceFiles[modPathStr] = new filth.SafeMap (
-                                globalNode,
-                                {
-                                    '.root':    localDefaultScope,
-                                    global:     globalNode,
-                                    exports:    exports,
-                                    module:     new filth.SafeMap ({
-                                        '.types':   [],
-                                        '.deref':   [],
-                                        '.props':   {
-                                            exports:    exports
-                                        }
-                                    })
-                                }
-                            );
-                        }
-                        try {
-                            Parser.parseJSTypes (
-                                fname,
-                                fileStr,
-                                localDefaultScope,
-                                moduleNode,
-                                context,
-                                logger,
-                                addToNextFiles,
-                                nodeSourceFiles
-                            );
-                            logger.debug ({ parse:argv.parse, path:fname }, 'parsed a source file');
-                        } catch (err) {
-                            var scopePath = localDefaultScope
-                             .map (function (item) { return item.join (''); }).join ('')
-                             ;
-                            logger.error (
-                                { err:err, path:fname, scope:scopePath || '/', parse:argv.parse },
-                                'parsing failed'
-                            );
-                        }
-                        break;
-                    default:
-                        if (argv.parse)
-                            return logger.fatal ({ mode:argv.parse }, 'unknown parsing mode');
-                        try {
-                            Parser.parseFile (
-                                fname,
-                                fileStr,
-                                localDefaultScope,
-                                context,
-                                logger,
-                                addToNextFiles
-                            );
-                        } catch (err) {
-                            var scopePath = localDefaultScope
-                             .map (function (item) { return item.join (''); }).join ('')
-                             ;
-                            logger.error (
-                                { err:err, path:fname, scope:scopePath },
-                                'parsing failed'
-                            );
-                            break;
-                        }
-                }
-            } catch (err) {
-                return logger.fatal ({ err:err, parse:argv.parse }, 'failed to parse file');
-            }
-
-            context.latency.log ('parsing');
-            callback();
-        });
-    }, function (err) {
-        if (err) {
-            logger.fatal ({ err:err }, 'unexpected error');
-            return process.exit (1);
-        }
-
-        currentDefaultScope = defaultScope;
-        if (sourceFiles.length) {
-            nextFiles.push.apply (nextFiles, sourceFiles);
-            sourceFiles = [];
-        }
-        if (nextFiles.length)
-            return processSource (nextFiles);
-
-        if (argv.parse) {
-            logger.info ({ parse:argv.parse }, 'finished parsing');
-            // clean up the source documents
-            for (var fname in nodeSourceFiles) {
-                var source = nodeSourceFiles[fname];
-                for (var key in source)
-                    if (source[key] === globalNode[key])
-                        delete source[key];
-            }
-        }
-
-        switch (argv.parse) {
-            case 'js':
-                context.latency.log();
-                // remove the window self-ref
-                delete globalNode.window;
-
-                // process deferred dereferences
-                logger.info ({ parse:argv.parse }, 'preprocessing types');
-                var finishedARef;
-                do {
-                    finishedARef = false;
-                    for (var fname in nodeSourceFiles) {
-                        var node = nodeSourceFiles[fname];
-                        delete node.globals;
-                        for (var key in node)
-                            if (key[0] == '.')
-                                continue;
-                            else try {
-                                finishedARef += workJSDerefs (node[key]);
-                            } catch (err) {
-                                logger.error (
-                                    { err:err, path:fname, parse:argv.parse },
-                                    'failed to process deferred types'
-                                );
-                            }
-                    }
-                    for (var key in globalNode)
-                        if (key[0] == '.')
-                            continue;
-                        else try {
-                            finishedARef += workJSDerefs (globalNode[key]);
-                        } catch (err) {
-                            logger.error (
-                                { err:err, path:fname, parse:argv.parse },
-                                'failed to process deferred types'
-                            );
-                        }
-                } while (finishedARef);
-
-                // process source
-                logger.info ({ parse:argv.parse }, 'generating declarations');
-                var didSubmit;
-                do {
-                    didSubmit = false;
-                    for (var fname in nodeSourceFiles) {
-                        var nodeSource = nodeSourceFiles[fname];
-
-                        if (node['.exports']) try {
-                            didSubmit += submitJSLevel (
-                                nodeSource['.exports'],
-                                [],
-                                nodeSource['.root']
-                            );
-                        } catch (err) {
-                            logger.error (
-                                { err:err, path:fname, parse:argv.parse },
-                                'failed to generate Declarations from source file'
-                            );
-                        }
-
-                        // work locals
-                        for (var key in nodeSource)
-                            if (key[0] == '.' || key == 'module' || key == 'globals')
-                                continue;
-                            else try {
-                                didSubmit += submitJSLevel (
-                                    nodeSource[key],
-                                    [ [ '%', key ] ],
-                                    nodeSource['.root']
-                                );
-                            } catch (err) {
-                                logger.error (
-                                    { err:err, path:fname, identifier:key, parse:argv.parse },
-                                    'failed to generate Declarations from source file'
-                                );
-                            }
-                    }
-
-                    for (var key in globalNode)
-                        if (key[0] == '.' || key == 'window')
-                            continue;
-                        else try {
-                            didSubmit += submitJSLevel (
-                                globalNode[key],
-                                [ [ '.', key ] ],
-                                undefined
-                            );
-                        } catch (err) {
-                            logger.error (
-                                { err:err, identifier:key, parse:argv.parse },
-                                'failed to generate Declarations for global identifier'
-                            );
-                        }
-                } while (didSubmit);
-                context.latency.log ('declaration generation');
-                break;
-            case 'node':
-                context.latency.log();
-                // process deferred dereferences
-                logger.info ({ parse:argv.parse }, 'preprocessing types');
-                var finishedARef;
-                do {
-                    finishedARef = false;
-                    for (var fname in nodeSourceFiles) {
-                        var node = nodeSourceFiles[fname];
-                        delete node.globals;
-                        for (var key in node)
-                            if (key[0] == '.')
-                                continue;
-                            else try {
-                                finishedARef += workJSDerefs (node[key]);
-                            } catch (err) {
-                                logger.error (
-                                    { err:err, path:fname, parse:argv.parse },
-                                    'failed to process deferred types'
-                                );
-                            }
-                    }
-                    for (var key in globalNode)
-                        if (key[0] == '.')
-                            continue;
-                        else try {
-                            finishedARef += workJSDerefs (globalNode[key]);
-                        } catch (err) {
-                            logger.error (
-                                { err:err, path:fname, parse:argv.parse },
-                                'failed to process deferred types'
-                            );
-                        }
-                } while (finishedARef);
-
-                // process source
-                logger.info ({ parse:argv.parse }, 'generating declarations');
-                var didSubmit;
-                do {
-                    didSubmit = false;
-                    for (var key in globalNode)
-                        if (key[0] == '.')
-                            continue;
-                        else try {
-                            didSubmit += submitJSLevel (
-                                globalNode[key],
-                                [ [ '.', key ] ],
-                                []
-                            );
-                        } catch (err) {
-                            logger.error (
-                                { err:err, identifier:key, parse:argv.parse },
-                                'failed to generate Declarations for global identifier'
-                            );
-                        }
-                    for (var fname in nodeSourceFiles) {
-                        var nodeSource = nodeSourceFiles[fname];
-                        // work module.exports
-                        try {
-                            var exports = nodeSource.module['.props'].exports;
-                        } catch (err) {
-                            // ES6 import?
-                            try {
-                                didSubmit += submitJSLevel (
-                                    nodeSource['.exports'],
-                                    [],
-                                    nodeSource['.root']
-                                );
-                            } catch (err) {
-                                return logger.fatal (err, 'internal parsing error');
-                            }
-                            continue;
-                        }
-                        var chain = [ exports ];
-                        while (exports['.deref'].length == 1) {
-                            exports = exports['.deref'][0];
-                            if (chain.indexOf (exports) < 0)
-                                chain.push (exports);
-                            else
-                                break;
-                        }
-                        try {
-                            didSubmit += submitJSLevel (
-                                exports,
-                                [],
-                                nodeSource['.root']
-                            );
-                        } catch (err) {
-                            logger.error (
-                                { err:err, path:fname, parse:argv.parse },
-                                'failed to generate Declarations from module source file'
-                            );
-                        }
-
-                        // work locals
-                        for (var key in nodeSource) {
-                            if (key[0] == '.' || key == 'module' || key == 'exports' || key == 'global')
-                                continue;
-                            try {
-                                didSubmit += submitJSLevel (
-                                    nodeSource[key],
-                                    [ [ '%', key ] ],
-                                    nodeSource['.root']
-                                );
-                            } catch (err) {
-                                logger.error (
-                                    { err:err, path:fname, identifier:key, parse:argv.parse },
-                                    'failed to generate Declarations from module source file'
-                                );
-                            }
-                        }
-                    }
-                } while (didSubmit);
-                context.latency.log ('declaration generation');
-                break;
-            default:
-                // nothing to do when not parsing syntax
-        }
-
-        var options = {
-            codeStyle:  argv.code,
-            showDev:    argv.dev,
-            showAPI:    argv.api,
-            verbose:    argv.verbose
-        };
-        if (argv.date)
-            try {
-                options.date = new Date (argv.date);
-            } catch (err) {
-                logger.error ('invalid datestamp');
-                return process.exit (1);
-            }
-        else
-            options.date = new Date();
-        logger.info ('finalizing documentation');
-        context.finalize (options, function(){
-            context.latency.log ('finalization');
-            //
-            var finalLatencies = context.latency.getFinalLatency();
-            finalLatencies.etc = finalLatencies[''];
-            delete finalLatencies[''];
-            logger.info (finalLatencies, 'latencies');
-            //
-            logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
-            if (argv.json)
-                options.json = true;
-            context.writeFiles (argv.out, options, function (err) {
-                if (err) {
-                    logger.error (err, 'unexpected error while writing to filesystem');
-                    return process.exit (1);
-                }
-                logger.info ('filesystem output complete');
-                var finalLatencies = context.latency.getFinalLatency();
-                finalLatencies.etc = finalLatencies[''];
-                delete finalLatencies[''];
-                logger.info (finalLatencies, 'latencies');
-                logger.info ('done');
-                return process.exit (0);
-            });
-        });
-    });
-}
-
-var libsIncluded = {};
-var LIB_SYNONYMS = {
-    javascript:     'es5',
-    ES5:            'es5',
-    ES6:            'es6',
-    Node:           'nodejs',
-    node:           'nodejs',
-    'Node.js':      'nodejs',
-    'node.js':      'nodejs',
-    'IO.js':        'iojs',
-    'Browser':      'browser',
-    'ie':           'browser',
-    'IE':           'browser',
-    'firefox':      'browser',
-    'Firefox':      'browser',
-    'chrome':       'browser',
-    'Chrome':       'browser',
-    'opera':        'browser',
-    'Opera':        'browser',
-    strict:         'browser-strict',
-    'use-strict':   'browser-strict'
-};
-var LIB_DEPENDENCIES = {
-    nodejs:             [ 'es5' ],
-    iojs:               [ 'nodejs', 'es6' ],
-    browser:            [ 'es5' ],
-    'browser-strict':   [ 'browser', 'es6' ],
-    es6:                [ 'es5' ]
-};
-var LIB_BLANK = {
-    'browser-strict':   'browser'
-};
 var stdDir = path.join (__dirname, 'standardLibs');
 var libFiles = [];
+var libsIncluded = {};
 function includeLib (libname) {
     if (Object.hasOwnProperty.call (LIB_SYNONYMS, libname))
         libname = LIB_SYNONYMS[libname];
@@ -1236,15 +309,26 @@ function includeLib (libname) {
 }
 
 var currentDefaultScope = [];
-if (argv.with) {
-    if (isArray (argv.with))
-        for (var i=0, j=argv.with.length; i<j; i++)
-            includeLib (argv.with[i]);
-    else
-        includeLib (argv.with);
+if (!argv.noImply) {
+    if (argv.with) {
+        if (isArray (argv.with))
+            for (var i=0, j=argv.with.length; i<j; i++)
+                includeLib (argv.with[i]);
+        else
+            includeLib (argv.with);
+    }
+    if (argv.jsmod)
+        includeLib ('es5');
 }
-if (argv.jsmod)
-    includeLib ('es5');
+if (!argv.noImply && argv.parse) {
+    var canonical = Object.hasOwnProperty.call (PARSE_SYNONYMS_DEP, argv.parse) ?
+        PARSE_SYNONYMS_DEP
+      : argv.parse
+      ;
+    if (Object.hasOwnProperty.call (PARSE_LIB_DEPS, canonical))
+        for (var i=0,j=PARSE_LIB_DEPS[canonical].length; i<j; i++)
+            includeLib (PARSE_LIB_DEPS[canonical][i]);
+}
 
 if (argv.in)
     if (isArray (argv.in))
@@ -1289,8 +373,11 @@ if (argv.in)
         }
     }
 
-if (!argv.jsmod)
+// start submitting things
+if (!argv.jsmod) {
+    context.latency.log ('setup');
     return processSource (libFiles);
+}
 
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
@@ -1335,6 +422,166 @@ async.eachSeries (modules, function (mod, callback) {
 }, function (err) {
     if (err)
         return process.nextTick (1);
-
+    context.latency.log ('setup');
     processSource (libFiles);
 });
+
+function processSource (filenames) {
+    var nextFiles = [];
+    async.eachSeries (filenames, function (fileInfo, callback) {
+        if (Object.hasOwnProperty.call (allFilenames, fileInfo.file))
+            return callback();
+        allFilenames[fileInfo.file] = fileInfo.referer;
+
+        try {
+            var fname = path.resolve (process.cwd(), fileInfo.file);
+            var referer;
+            if (fileInfo.referer)
+                referer = path.resolve (process.cwd(), fileInfo.referer);
+            else
+                referer = path.parse (fname).dir;
+        } catch (err) {
+            logger.error (
+                { path:fileInfo.file, error:err },
+                'unable to resolve source file path'
+            );
+            return callback();
+        }
+
+        context.latency.log();
+        fs.readFile (fname, function (err, buf) {
+            context.latency.log ('file system');
+
+            if (err)
+                return callback (err);
+
+            logger.debug ({ filename:fname }, 'read file');
+            var fileStr = buf.toString();
+            var shebangMatch = fileStr.match (/^#!.*(\r?\n[^]*)$/);
+            if (shebangMatch)
+                fileStr = shebangMatch[1];
+            var localDefaultScope = currentDefaultScope;
+
+            function addToNextFiles (newName, newReferer) {
+                var useReferer = newReferer || referer;
+                nextFiles.push ({
+                    file:       newName,
+                    referer:    useReferer
+                });
+                return path.resolve (process.cwd(), fileInfo.referer || referer || useReferer);
+            }
+
+            // if (fileInfo.referer && fileInfo.referer != fileInfo.file)
+            //     localDefaultScope = getNodeModulePath (
+            //         context,
+            //         argv.root,
+            //         localDefaultScope,
+            //         referer,
+            //         fname
+            //     );
+
+            logger.setTask ('parsing ' + fname);
+            try {
+                if (argv.parse)
+                    Parser.parseSyntaxFile (
+                        context,
+                        fname,
+                        fileStr,
+                        PARSE_SYNONYMS[argv.parse],
+                        localDefaultScope,
+                        addToNextFiles
+                    );
+                else
+                    Parser.parseFile (
+                        fname,
+                        fileStr,
+                        localDefaultScope,
+                        context,
+                        logger,
+                        addToNextFiles
+                    );
+            } catch (err) {
+                var scopePath = localDefaultScope
+                 .map (function (item) { return item.join (''); }).join ('')
+                 ;
+                logger.error (
+                    { err:err, path:fname, scope:scopePath },
+                    'parsing failed'
+                );
+            }
+
+            context.latency.log ('parsing');
+            callback();
+        });
+    }, function (err) {
+        if (err) {
+            logger.fatal ({ err:err }, 'unexpected error');
+            return process.exit (1);
+        }
+
+        currentDefaultScope = defaultScope;
+        if (sourceFiles.length) {
+            nextFiles.push.apply (nextFiles, sourceFiles);
+            sourceFiles = [];
+        }
+        if (nextFiles.length)
+            return processSource (nextFiles);
+
+        if (argv.parse) {
+            logger.info ({ parse:argv.parse }, 'finished parsing');
+            logger.setTask ('cleaning up roots');
+            // clean up the source documents
+            for (var rootPath in context.source) {
+                var source = context.source[rootPath];
+                for (var key in source)
+                    if (source[key] === globalNode[key])
+                        delete source[key];
+            }
+        }
+
+        if (argv.parse) {
+            logger.setTask ('generating Components');
+            Parser.generateComponents (context, PARSE_SYNONYMS[argv.parse], defaultScope);
+        }
+
+        var renderOptions = {
+            codeStyle:  argv.code,
+            showDev:    argv.dev,
+            showAPI:    argv.api,
+            verbose:    argv.verbose
+        };
+        if (argv.date)
+            try {
+                renderOptions.date = new Date (argv.date);
+            } catch (err) {
+                logger.error ('invalid datestamp');
+                return process.exit (1);
+            }
+        else
+            renderOptions.date = new Date();
+        context.latency.log();
+        // logger.info ('finalizing documentation');
+        logger.setTask ('finalizing documentation');
+        context.finalize (renderOptions, function(){
+            context.latency.log ('finalization');
+            logger.info ({ directory:path.join (process.cwd(), argv.out) }, 'writing to filesystem');
+            if (argv.json)
+                renderOptions.json = true;
+            logger.setTask ('writing to filesystem');
+            context.writeFiles (argv.out, renderOptions, function (err) {
+                if (err) {
+                    logger.error (err, 'unexpected error while writing to filesystem');
+                    return process.exit (1);
+                }
+                logger.setTask();
+                logger.info ('filesystem output complete');
+                var finalLatencies = context.latency.getFinalLatency();
+                finalLatencies.etc = finalLatencies[''];
+                delete finalLatencies[''];
+                logger.info (finalLatencies, 'latencies');
+                logger.info ('done');
+                return process.exit (0);
+            });
+        });
+    });
+}

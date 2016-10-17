@@ -47,7 +47,7 @@ function compareLevel (path, able, baker) {
         }
 
     for (var aKey in able) {
-        if (aKey === 'elemID')
+        if (aKey === 'elemID' || aKey === 'pathname' || aKey === 'pathstr' || aKey === 'path')
             continue;
         var aItem = able[aKey];
         var subpath = path.concat();
@@ -66,22 +66,35 @@ function compareLevel (path, able, baker) {
             case 'array':
                 compareArray (subpath, aItem, bItem);
                 continue;
+            case 'string':
+                if (aItem !== bItem)
+                    if (aItem.length < 64 && bItem.length < 64)
+                        throw new Error (
+                            'value mismatch "'
+                           + aItem
+                           + '" != "'
+                           + bItem
+                           + '" '
+                           + subpath.join ('/')
+                        );
+                    else
+                        throw new Error ('value mismatch ' + subpath.join ('/'));
             default:
                 if (aItem !== bItem)
-                    throw new Error ('value mismatch ' + subpath.join ('/'));
+                    throw new Error ('value mismatch (' + aType + ') ' + subpath.join ('/'));
         }
     }
 }
 
 function compareArray (path, able, baker) {
-    if (able.length !== baker.length)
-        throw new Error ('array length mismatch ' + path.join ('/'));
-    for (var i=0,j=able.length; i<j; i++) {
+    for (var i=0,j=Math.min (able.length, baker.length); i<j; i++) {
         var subpath = path.concat();
         var aItem = able[i];
         var bItem = baker[i];
         if (aItem && aItem.sanitaryName)
             subpath.push (aItem.sanitaryName);
+        else
+            subpath.push (i);
         var aType = filth.typeof (aItem);
         var bType = filth.typeof (bItem);
         if (aType !== bType)
@@ -91,13 +104,35 @@ function compareArray (path, able, baker) {
                 compareLevel (subpath, aItem, bItem);
                 continue;
             case 'array':
-                compareArray (path, aItem, bItem);
+                compareArray (subpath, aItem, bItem);
                 continue;
+            case 'string':
+                if (aItem !== bItem)
+                    if (aItem.length < 64 && bItem.length < 64)
+                        throw new Error (
+                            'value mismatch "'
+                           + aItem
+                           + '" != "'
+                           + bItem
+                           + '" '
+                           + subpath.join ('/')
+                        );
+                    else
+                        throw new Error ('value mismatch ' + subpath.join ('/'));
             default:
                 if (aItem !== bItem)
-                    throw new Error ('value mismatch ' + subpath.join ('/'));
+                    throw new Error ('value mismatch (' + aType + ') ' + subpath.join ('/'));
         }
     }
+    if (able.length !== baker.length)
+        throw new Error (
+            'array length mismatch: '
+          + able.length
+          + ' != '
+          + baker.length
+          + ' at '
+          + path.join ('/')
+        );
 }
 
 function runTest (name, args) {

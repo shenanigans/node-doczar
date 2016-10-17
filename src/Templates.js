@@ -11,7 +11,7 @@ var url        = require ('url');
 var marked     = require ('marked');
 var Handlebars = require ('handlebars');
 var highlight  = require ('highlight.js');
-var Patterns   = require ('./Patterns');
+var Patterns   = require ('./Parser/Patterns');
 var Parser     = require ('./Parser');
 
 var logger;

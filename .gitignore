@@ -1,7 +1,8 @@
 node_modules
+!src/node_modules
 !test/**/node_modules
 docs
 index.html
 test/out
-
-fish.js
+roots
+testbed.js

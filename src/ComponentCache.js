@@ -15,7 +15,7 @@ var async           = require ('async');
 var fs              = require ('fs-extra');
 var filth           = require ('filth');
 var Component       = require ('./Component');
-var Patterns        = require ('./Patterns');
+var Patterns        = require ('./Parser/Patterns');
 var Templates       = require ('./Templates');
 var sanitizeName    = require ('./sanitizeName');
 
@@ -35,6 +35,7 @@ var ComponentCache = function (logger) {
     this.latency = new filth.LatencyLogger();
     this.root = Object.create (null);
     this.resolvedDependencies = Object.create (null);
+    this.sources = Object.create (null);
 };
 
 
@@ -164,54 +165,6 @@ ComponentCache.prototype.resolve = function (tpath) {
         }
     }
     return pointer;
-};
-
-
-/*
-    Retrieve an existing or new [Component](doczar/Component) from this cache by the specified path
-    and call [submit](doczar/Component#submit) on it with the provided `info` Object.
-@argument/doczar/Parser/Path tpath
-    A path to the Component that should contain the submitted information.
-@argument/doczar/Parser/Submission info
-    An Object containing fresly-parsed data that will be overwritten into the requested [Component]
-    (doczar/Component).
-*/
-ComponentCache.prototype.submit = function (tpath, info) {
-    if (tpath.length > 1 && tpath[0][1] === 'test' && tpath[1][1] === 'Array')
-        console.trace();
-    var pointer = this.getComponent (tpath);
-    pointer.submit (info);
-    return pointer;
-};
-
-
-/*
-    [Prepare](doczar/Component#finalize) every [Component](doczar/Component) in the cache for
-    rendering and execute a callback.
-@argument/Object options
-@callback
-    Called when ready to [output files](#writeFiles). No arguments.
-*/
-ComponentCache.prototype.finalize = function (options, callback) {
-    this.latency.log();
-    var self = this;
-    var namespace = {};
-    var keys = Object.keys (this.root);
-    async.each (keys, function (propname, callback) {
-        self.root[propname].finalize (options, callback);
-    }, function (err) {
-        if (err) return callback (err);
-
-        var keys = Object.keys (self.root);
-        for (var i=0,j=keys.length; i<j; i++) {
-            var child = self.root[keys[i]];
-            child.sanitaryName = child.final.sanitaryName = sanitizeName (
-                child.final.name || child.path[child.path.length-1][1],
-                namespace
-            );
-        }
-        callback();
-    });
 };
 
 
@@ -357,6 +310,51 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     if (pointer.remotePath)
         return pointer.remotePath;
     return str;
+};
+
+
+/*
+    Retrieve an existing or new [Component](doczar/Component) from this cache by the specified path
+    and call [submit](doczar/Component#submit) on it with the provided `info` Object.
+@argument/doczar/Parser/Path tpath
+    A path to the Component that should contain the submitted information.
+@argument/doczar/Parser/Submission info
+    An Object containing fresly-parsed data that will be overwritten into the requested [Component]
+    (doczar/Component).
+*/
+ComponentCache.prototype.submit = function (tpath, info) {
+    var pointer = this.getComponent (tpath);
+    pointer.submit (info);
+    return pointer;
+};
+
+
+/*
+    [Prepare](doczar/Component#finalize) every [Component](doczar/Component) in the cache for
+    rendering and execute a callback.
+@argument/Object options
+@callback
+    Called when ready to [output files](#writeFiles). No arguments.
+*/
+ComponentCache.prototype.finalize = function (options, callback) {
+    var self = this;
+    var namespace = {};
+    var keys = Object.keys (this.root);
+    async.each (keys, function (propname, callback) {
+        self.root[propname].finalize (options, callback);
+    }, function (err) {
+        if (err) return callback (err);
+
+        var keys = Object.keys (self.root);
+        for (var i=0,j=keys.length; i<j; i++) {
+            var child = self.root[keys[i]];
+            child.sanitaryName = child.final.sanitaryName = sanitizeName (
+                child.final.name || child.path[child.path.length-1][1],
+                namespace
+            );
+        }
+        callback();
+    });
 };
 
 
