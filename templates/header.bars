@@ -66,6 +66,11 @@
                     Implements <a class="super" href="{{link path}}">{{name}}</a>
                 </div>
             {{/interfaces}}
+            {{#if sourceFile}}
+                <div class="source file">
+                    {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+                </div>
+            {{/if}}
         </div>
         {{#unless isSpare}}
 {{> TOC}}
@@ -98,15 +103,15 @@
                 </h1>
             {{/if}}
             <!-- basic document info -->
-            <div id="details">
-                {{#if doc}}
+            <div id="details">{{#if doc}}
                     <div class="markdown">{{{markdown doc}}}</div>
+                    <div class="clear"></div>
                 {{else}}
                     {{#if details}}
                         <div class="markdown">{{{markdown details}}}</div>
+                        <div class="clear"></div>
                     {{/if}}
                 {{/if}}
-                <div class="clear"></div>
                 {{#if spares}}
                     <!-- extra document info -->
                     <h1>Additional Documentation Pages</h1>
@@ -360,5 +365,4 @@
                             {{/if}}
                         </div>
                     {{/if}}
-                {{/if}}
-            </div>
+                {{/if}}</div>

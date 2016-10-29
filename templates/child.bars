@@ -66,6 +66,11 @@
             Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
     {{/interfaces}}
+    {{#if sourceFile}}
+        <div class="source file">
+            {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+        </div>
+    {{/if}}
     <div class="info">
 <div class="markdown">{{{markdown summaryDoc}}}</div>
         {{#if isInline}}{{#unless isModule}}

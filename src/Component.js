@@ -232,11 +232,13 @@ Component.prototype.submit = function (info) {
                 }
             } else if (key == 'ctype' && this[key] == 'class' && info[key] == 'property' ) {
                 // nothing to do here
-            } else
+            } else {
                 this.logger.error (
                     { key:key, path:this.pathstr, from:this[key], to:info[key]},
                     'attempted to redefine a property'
                 );
+                // console.trace();
+            }
 };
 
 
@@ -714,6 +716,11 @@ Component.prototype.finalize = function (options, callback) {
         returnsSymbols:     [],
         hasChildren:        this.hasChildren
     };
+
+    if (this.sourceFile) {
+        this.final.sourceFile = this.sourceFile;
+        this.final.sourceLine = this.sourceLine;
+    }
 
     // copy ~summary and ~details into the finalization
     if (this.spare.summary)

@@ -87,6 +87,15 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0.1em 0 0 0.4em;
 }
 
+#header .source.file {
+    font-size: 50%;
+}
+
+.sourceLine {
+    color: #63B0DB;
+    font-size: 90%;
+}
+
 .default .value {
     color: #000;
     font-size: 120%;
@@ -155,13 +164,18 @@ p {
 }
 
 .child {
-    margin-bottom: 2em;
+    padding-top: 2em;
     min-height: 1.6em;
     transition:         border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
     -webkit-transition: border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
     -moz-transition:    border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
     -o-transition:      border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
 }
+
+.child:first-child {
+    margin-top: -2em;
+}
+
 .child.callback {
 }
 
@@ -181,8 +195,8 @@ p {
     background-color: #fff;
 }
 .child:target {
-    background-color: #FFEAFC;
-    box-shadow: -0.5em 0.5em 1em -0.4em #FFEAFC;
+    /*background-color: #FFEAFC;*/
+    /*box-shadow: -0.5em 0.5em 1em -0.4em #FFEAFC;*/
 }
 .child:target > .info {
     border-color: #FFEAFC;
@@ -195,6 +209,10 @@ p {
 
 #details p {
     max-width: 37em;
+}
+
+#details:empty {
+    display: none;
 }
 
 .valtype {

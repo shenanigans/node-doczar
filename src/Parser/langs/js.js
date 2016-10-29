@@ -63,12 +63,14 @@ function getGlobalNode (context) {
     return globalNode;
 }
 
-function getRoot (context, filepath) {
+function getRoot (context, filepath, root) {
     if (Object.hasOwnProperty.call (context.sources, filepath))
         return context.sources[filepath];
     var newRoot = new filth.SafeMap (getGlobalNode (context));
-    newRoot[EXPORTS] = tools.newNode();
-    newRoot[EXPORTS][PROPS] = tools.newCollection();
+    newRoot[ROOT] = root;
+    var exports = newRoot[EXPORTS] = tools.newNode();
+    exports[ROOT] = root;
+    exports[PROPS] = tools.newCollection();
     context.sources[filepath] = newRoot;
     return newRoot;
 }

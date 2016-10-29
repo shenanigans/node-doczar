@@ -53,6 +53,11 @@
             Satisfies interface <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
     {{/satisfies}}
+    {{#if sourceFile}}
+        <div class="source file">
+            {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+        </div>
+    {{/if}}
     <div class="info">
         <div class="markdown">{{{markdown summaryDoc}}}</div>
         {{#if signatures}}

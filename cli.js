@@ -318,7 +318,7 @@ if (!argv.noImply) {
             includeLib (argv.with);
     }
     if (argv.jsmod)
-        includeLib ('es5');
+        includeLib ('es6');
 }
 if (!argv.noImply && argv.parse) {
     var canonical = Object.hasOwnProperty.call (PARSE_SYNONYMS_DEP, argv.parse) ?
@@ -347,7 +347,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    fname
+                        referer:    path.parse (fname).dir
                     };
                 }));
             } else
@@ -363,7 +363,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    fname
+                        referer:    path.parse (fname).dir
                     };
                 }));
             } else
@@ -379,18 +379,50 @@ if (!argv.jsmod) {
     return processSource (libFiles);
 }
 
+if (argv.parse) {
+    if (argv.parse !== 'node')
+        return logger.fatal (
+            { jsmod:true, parse:argv.parse },
+            'The --jsmod option is only compatible with the "node" parsing mode'
+        );
+
+    var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
+    for (var i=0,j=modules.length; i<j; i++) {
+        var mod = modules[i];
+        try {
+            var modPath = resolve.sync (mod, { basedir:process.cwd() });
+        } catch (err) {
+            logger.error (
+                {},
+                'Failed to resolve a module path for the --jsmod option'
+            );
+            continue;
+        }
+        sourceFiles.push ({
+            file:       modPath,
+            referer:    path.parse (modPath).dir
+        });
+        logger.debug (
+            { jsmod:mod, filename:modPath },
+            'added resolved javascript module with --jsmod/--parse teamwork'
+        );
+    }
+    context.latency.log ('setup');
+    return processSource (libFiles);
+}
+
 var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
     try {
-        mod = resolve.sync (mod, { basedir:process.cwd() });
+        var modPath = resolve.sync (mod, { basedir:process.cwd() });
     } catch (err) {
-        logger.error ({ path:mod }, 'cannot process path');
+        logger.error ({ path:modPath }, 'Failed to resolve a module path for the --jsmod option');
         return callback();
     }
-    dfnames.push (mod);
-    logger.trace ({ filename:mod }, 'resolve javascript dependencies');
-    required (mod, { ignoreMissing:true, silent:true }, function (err, deps) {
+    dfnames.push (modPath);
+    logger.trace ({ filename:modPath }, 'resolve javascript dependencies');
+    required (modPath, { ignoreMissing:true, silent:true }, function (err, deps) {
         if (err) return callback (err);
         var toProcess = deps;
         var next = [];
@@ -403,7 +435,10 @@ async.eachSeries (modules, function (mod, callback) {
                 if (Object.hasOwnProperty.call (done, dep.filename))
                     continue;
                 done[dep.filename] = true;
-                logger.debug ({ source:mod, filename:dep.filename }, 'add resolved javascript module');
+                logger.debug (
+                    { source:modPath, filename:dep.filename },
+                    'add resolved javascript module'
+                );
                 dfnames.push (dep.filename);
                 next.push.apply (next, dep.deps)
             }
@@ -414,7 +449,7 @@ async.eachSeries (modules, function (mod, callback) {
         sourceFiles.push.apply (sourceFiles, dfnames.map (function (fname) {
             return {
                 file:       fname,
-                referer:    fname
+                referer:    path.parse (fname).dir
             };
         }));
         callback();
@@ -486,6 +521,7 @@ function processSource (filenames) {
                     Parser.parseSyntaxFile (
                         context,
                         fname,
+                        fileInfo.referer,
                         fileStr,
                         PARSE_SYNONYMS[argv.parse],
                         localDefaultScope,

@@ -65,14 +65,34 @@ ComponentCache.prototype.getComponent = function (tpath) {
 
     for (var i=1,j=tpath.length; i<j; i++) {
         var step = tpath[i];
+        var stepType = typeof step[1];
         var fragCType = Patterns.delimiters[step[0]];
         var location = pointer[fragCType];
         var fragName = step[1] || '';
         try {
             if (isArr (location))
-                if (step[1] && Object.hasOwnProperty.call (pointer[fragCType+'ByName'], step[1]))
+                if (
+                    stepType === 'string'
+                 && Object.hasOwnProperty.call (pointer[fragCType+'ByName'], step[1])
+                )
                     pointer = pointer[fragCType+'ByName'][step[1]];
-                else {
+                else if (stepType === 'number') {
+                    if (step[1] < location.length)
+                        pointer = location[step[1]];
+                    else {
+                        var newComponent = new Component (
+                            this,
+                            tpath.slice (0, i+1),
+                            pointer !== this.root ? pointer : undefined,
+                            fragCType,
+                            this.logger
+                        );
+                        location.push (newComponent);
+                        var unname = newComponent.path[newComponent.path.length-1][1];
+                        pointer[fragCType+'ByName'][unname] = newComponent;
+                        pointer = newComponent;
+                    }
+                } else {
                     var newComponent = new Component (
                         this,
                         tpath.slice (0, i+1),
@@ -141,6 +161,7 @@ ComponentCache.prototype.resolve = function (tpath) {
 
     for (var i=1,j=tpath.length; i<j; i++) {
         var step = tpath[i];
+        var stepType = step[1];
         if (step[1][0] == '`')
             step = [ step[0], step[1].slice (1, -1), step[2] ];
         var stepCType = Patterns.delimiters[step[0]||'.'];
@@ -151,8 +172,10 @@ ComponentCache.prototype.resolve = function (tpath) {
             location = pointer[stepCType];
         var fragName = step[1] || '';
         if (isArr (location))
-            if (step[1] && Object.hasOwnProperty.call (pointer[stepCType+'ByName'], step[1]))
+            if (Object.hasOwnProperty.call (pointer[stepCType+'ByName'], step[1]))
                 pointer = pointer[stepCType+'ByName'][step[1]];
+            // else if (stepType === 'number' && step[1] < location.length)
+            //     pointer = location[step[1]];
             else
                 throw new Error ('not found');
         else {
