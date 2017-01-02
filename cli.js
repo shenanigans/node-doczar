@@ -9,9 +9,6 @@
     @load
         ./README.md
 */
-/*      @spare `GitHub.com Repository`
-    @remote `https://github.com/shenanigans/node-doczar`
-*/
 var path              = require ('path');
 var fs                = require ('fs-extra');
 var async             = require ('async');
@@ -139,12 +136,25 @@ var ARGV_OPTIONS = {
         optArgs:    'none',
         maxDepth:   '4'
     },
-    boolean:        [ 'dev', 'api', 'json', 'raw', 'noImply', 'noDeps' ],
+    boolean:        [ 'dev', 'api', 'json', 'raw', 'noImply', 'noDeps', 'node' ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
         'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth'
     ],
-    alias:          { o:'out', i:'in', js:'jsmod', j:'jsmod', v:'verbose', c:'code', XD:'maxDepth' },
+    alias:          {
+        o:              'out',
+        i:              'in',
+        js:             'jsmod',
+        j:              'jsmod',
+        v:              'verbose',
+        c:              'code',
+        XD:             'maxDepth',
+        xd:             'maxDepth',
+        nodeps:         'noDeps',
+        nodep:          'noDeps',
+        noimply:        'noImply',
+        noimp:          'noImply'
+    },
     unknown:        function (optionName) { unknownOptions.push (optionName); }
 };
 var argv = require ('minimist') (process.argv.slice (2), ARGV_OPTIONS);
@@ -174,12 +184,12 @@ function outputLogLine (doc) {
         }
     if (finalStr)
         msg += finalStr;
-    if (spinning) {
+    if (spinning && process.stdout.clearLine) {
         process.stdout.clearLine();
         process.stdout.cursorTo (0);
     }
     console.log (msg);
-    if (spinning)
+    if (spinning && process.stdout.clearLine)
         process.stdout.write (spinning.green);
 }
 if (OPTIONS_VERBOSE.indexOf (argv.verbose) < 0) {
@@ -195,12 +205,14 @@ if (argv.raw) {
         streams:    [ { level:argv.verbose, type:'raw', stream:{ write:outputLogLine } } ]
     });
     logger.setTask = function (task) {
-        if (spinning) {
-            process.stdout.clearLine();
-            process.stdout.cursorTo (0);
+        if (process.stdout.clearLine) {
+            if (spinning) {
+                process.stdout.clearLine();
+                process.stdout.cursorTo (0);
+            }
+            if (task)
+                process.stdout.write (task.green);
         }
-        if (task)
-            process.stdout.write (task.green);
         spinning = task;
     };
 }
@@ -255,6 +267,21 @@ else {
 // when using the --date option, check in advance that it's a valid date string
 if (argv.date) try { new Date (argv.date); } catch (err) {
     return logger.fatal ({ date:argv.date }, 'invalid date/time string');
+}
+
+// --node project option
+if (argv.node) {
+    try {
+        var pack = JSON.parse (fs.readFileSync (path.join (process.cwd(), 'package.json')));
+    } catch (err) {
+        return logger.fatal (err, 'unable to read package.json');
+    }
+    if (argv.in)
+        argv.in.push (pack.main);
+    else
+        argv.in = [ pack.main ];
+    argv.root = pack.name;
+    argv.parse = 'node';
 }
 
 // begin building the documentation context

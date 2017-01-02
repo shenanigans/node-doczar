@@ -1,6 +1,7 @@
 
 function foo (able, baker) {
     this.num = able * baker;
+    this.prototype.bad = "should not appear directly on foo";
 }
 
 foo.prototype = {
@@ -10,8 +11,8 @@ foo.prototype = {
     }
 };
 
-function makeProto (able) {
-    return { first:able };
+function makeProto (method) {
+    return { first:method };
 }
 function bar(){}
 bar.prototype = makeProto (function (able) { this.cheese = "string"; });
@@ -30,10 +31,23 @@ twoAy.prototype = twoBee.prototype = makeProto();
 function onion(){}
 onion.prototype = 9001;
 
+function wrap (able) { return able; }
+function slick (able) {
+    this.value = wrap (able);
+}
+slick.prototype.method = function (able) {
+    this.methodValue = wrap (able);
+};
+(new slick (42)).bloop = 'blap';
+new slick ([]);
+var target = new slick ('42');
+target.method (/42/);
+
 module.exports = {
     foo:    foo,
     bar:    bar,
     oneAy:  oneAy,
     twoAy:  twoAy,
-    onion:  onion
+    onion:  onion,
+    slick:  slick
 };

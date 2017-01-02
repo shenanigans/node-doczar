@@ -73,14 +73,22 @@ function componentSorter (able, baker) {
     return 0;
 }
 
+function pathStr (type) {
+    return type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('').slice (1);
+}
 
-/*      @module/class Component
+
+/*      @module:class
     The quantum of doczar documentation. Every Component has its own directory and html page in the
     final output. Codifies type, expected location and useful information about a unit of data or
     functionality. The ultimate goal is to produce and render a [Finalization](/Finalization).
-@argument/doczar/ComponentCache context
+@argument:doczar/src/ComponentCache context
     Each new `Component` is a member of a specific `ComponentCache`.
-@argument/doczar/Parser/Path path
+@argument:doczar/src/Parser/Path path
     The type of the new `Component`, expressed as an Array of Arrays in the form
     `[ [ delimiter, name ], ...]`
 @Array #path
@@ -99,26 +107,26 @@ function componentSorter (able, baker) {
     engine ([Handlebars](http://handlebarsjs.com/)).
 @Array #doc
     An Array of String markdown documents that have been applied to this `Component`.
-@Object<String, doczar/Component> #spare
+@Object<String, doczar/src/Component> #spare
     A map of "spare document" names to `Component` instances representing these documents.
-@Object<String, doczar/Component> #property
+@Object<String, doczar/src/Component> #property
     A map of property names to `Component` instances representing these types.
-@Object<String, doczar/Component> #member
+@Object<String, doczar/src/Component> #member
     A map of property names to `Component` instances representing these types.
 @Array #argument
     An Array of `Component` instances representing function arguments for this `Component`. If our
     `ctype` is not `"member"` or `"property"` these arguments are rendered as belonging to a
     constructor function. (Further document this constructor by providing `@spare constructor`)
-@Object<String, doczar/Component> #argsByName
+@Object<String, doczar/src/Component> #argsByName
     A map of named items from `argument` to their `Component` instances.
-@Array<doczar/Component> #returns
+@Array<doczar/src/Component> #returns
     An array of Component instances representing return values for this Component.
-@Object<String, doczar/Component> #returnsByName
+@Object<String, doczar/src/Component> #returnsByName
     A map of named items from `returns` to their `Component` instances.
-@Array<doczar/Component> #throws
+@Array<doczar/src/Component> #throws
     An array of Component instances representing situations when code represented by this Component
     may throw an exception.
-@Object<String, doczar/Component> #throwsByName
+@Object<doczar/src/Component> #throwsByName
     A map of named items from `throws` to their `Component` instances.
 @Boolean #isTotallyEmpty
 @Boolean #isClassValtype
@@ -173,7 +181,7 @@ var Component = module.exports = function (context, tpath, parent, position, log
 /*
     Merge additional information into this Component.
 @argument/doczar/Parser/Submission info
-    Document information hot off the [Parser](doczar/Parser).
+    Document information hot off the [Parser](doczar/src/Parser).
 */
 Component.prototype.submit = function (info) {
     for (var key in info)
@@ -230,8 +238,15 @@ Component.prototype.submit = function (info) {
                         continue;
                     }
                 }
-            } else if (key == 'ctype' && this[key] == 'class' && info[key] == 'property' ) {
+            } else if (key === 'ctype' && (
+                ( this.ctype === 'class' && info.ctype === 'property' )
+             || ( this.ctype === 'callback' && info.ctype === 'argument' )
+            ) ) {
                 // nothing to do here
+            } else if (key === 'ctype' && this.ctype === 'argument' && info.ctype === 'callback') {
+                this.ctype = info.ctype;
+            } else if (key === 'sourceLine') {
+                // drop redefinitions of the source file location
             } else {
                 this.logger.error (
                     { key:key, path:this.pathstr, from:this[key], to:info[key]},
@@ -369,8 +384,7 @@ var ALIAS_PROPS = [
 ];
 
 
-/*
-/*      @member/Function finalize
+/*      @member:Function finalize
     Create a representative document ready for rendering and save it to [final](#final).
 @spare details
     Stage 0: Accumulation
@@ -646,13 +660,15 @@ Component.prototype.finalize = function (options, callback) {
             }
 
             // classes
-            if (self.isClasslike || self.isClassValtype)
+            if (self.isClasslike || self.isClassValtype || self.final.members.length)
                 self.final.hasConstructorInfo = Boolean (
                     self.final.constructorDoc
                  || self.final.arguments.length
                  || self.final.returns.length
                  || self.final.throws.length
                 );
+            else
+                self.final.hasConstructorInfo = false;
 
             callback();
         });
@@ -812,7 +828,11 @@ Component.prototype.finalize = function (options, callback) {
                     this.interfaces.push (this.context.resolve (mod.path));
                 } catch (err) {
                     this.logger.warn (
-                        { modifier:'implements', type:this.pathstr, failed:mod.path },
+                        {
+                            modifier:   'implements',
+                            type:       this.pathstr,
+                            target:     pathStr (mod.path)
+                        },
                         'modifier could not resolve path'
                     );
                 }
@@ -826,12 +846,23 @@ Component.prototype.finalize = function (options, callback) {
                     this.aliasTo = this.context.resolve (mod.path);
                 } catch (err) {
                     this.logger.warn (
-                        { modifier:'alias', type:this.pathstr, failed:mod.path },
+                        {
+                            modifier:   'alias',
+                            type:       this.pathstr,
+                            target:     pathStr (mod.path)
+                        },
                         'modifier could not resolve path'
                     );
                 }
             else
-                this.logger.warn ({ modifier:'alias', type:this.pathstr }, 'modifier missing path');
+                this.logger.warn (
+                    {
+                        modifier:   'alias',
+                        type:       this.pathstr,
+                        target:     pathStr (mod.path)
+                    },
+                    'modifier missing path'
+                );
         }
         if (mod.mod == 'patches') {
             if (mod.path)
@@ -843,7 +874,11 @@ Component.prototype.finalize = function (options, callback) {
                         this.patchTargets = [ target ];
                 } catch (err) {
                     this.logger.warn (
-                        { modifier:'patches', type:this.pathstr, failed:mod.path },
+                        {
+                            modifier:   'patches',
+                            type:       this.pathStr,
+                            target:     pathStr (mod.path)
+                        },
                         'modifier could not resolve path'
                     );
                 }
@@ -910,7 +945,7 @@ Component.prototype.finalize = function (options, callback) {
     Gather children from superclasses and merge them, in order, into a document representing this
     Component's inheritence. **Note:** this Component's children will *also* be merged in, producing
     a pre-compiled inheritence result and *not* just the inherited children.
-@returns/doczar/Component
+@returns:doczar/Component
     The assembled inheritence document is returned. It looks like an incomplete Component instance,
     containing only child Components.
 */
@@ -1103,6 +1138,7 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
 
     if (!this.hasChildren)
         return callback();
+    // console.log (this.final.pathstr, this.final.hasConstructorInfo);
 
     this.context.latency.log();
     var self = this;

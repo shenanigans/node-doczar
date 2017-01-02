@@ -3,7 +3,7 @@ var foo = 'bar';
 /*  @class Drinky
     The bar class.
 */
-var bar = function (able, baker) {
+function bar (able, baker) {
     // barge info.
     var barge = 9; // Ignore.
     /* cheese
@@ -33,6 +33,8 @@ var bar = function (able, baker) {
     var tricky = this.complex;
     this.trickyDeref = tricky.baker.able;
     this.finalStuff = this.doStuff (9);
+
+    setTimeout (function(){ self.block = { foo:'bar' }; }, 100);
 };
 bar.prototype.bilge = 'full';
 

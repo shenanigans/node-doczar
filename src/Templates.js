@@ -1,8 +1,8 @@
 
-/*      @module doczar:Templates
+/*      @module
     Loads and prepares the Marked and Handlebars renderers. Registers a link renderer with Marked
     and a number of helpers with Handlebars. Associates link rendering calls from Marked with the
-    [Component](doczar:Component) being rendered.
+    [Component](doczar/src/Component) being rendered.
 */
 
 var path       = require ('path');
@@ -219,10 +219,10 @@ var RootTemplate = Handlebars.compile (
 );
 
 /*      @property/Function render
-    Produce an html rendering of a [Component](doczar:Component).
-@argument/doczar:Component component
+    Produce an html rendering of a [Component](doczar/src/Component).
+@argument:doczar/src/Component component
     The Component to render.
-@returns/String
+@returns:String
     The rendered html document.
 */
 var compy;
@@ -235,13 +235,13 @@ function render (component) {
 };
 
 /*      @property/Function renderRoot
-    Produce an html rendering of the [Components](doczar:Component) on a [context]
-    (doczar:ComponentCache) root.
-@argument/Object root
+    Produce an html rendering of the [Components](doczar/src/Component) on a [context]
+    (doczar/src/ComponentCache) root.
+@argument:Object root
     The cache root to render.
-@argument/doczar:ComponentCache context
-    The parent [ComponentCache](doczar:ComponentCache) context object.
-@returns/String
+@argument:doczar/src/ComponentCache context
+    The parent [ComponentCache](doczar/src/ComponentCache) context object.
+@returns:String
     The rendered html document.
 */
 function renderRoot (root, context, logInst) {

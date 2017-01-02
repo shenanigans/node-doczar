@@ -4,7 +4,6 @@ var fs = require ('fs-extra');
 var esprima = require ('esprima');
 var tools = require ('tools');
 var filth = require ('filth');
-var getNodeModulePath = require ('getNodeModulePath')
 
 function tokenize (fstr) {
     return esprima.parse (fstr, {

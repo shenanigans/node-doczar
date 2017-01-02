@@ -5,6 +5,7 @@ var fs = require ('graceful-fs');
 var child_process = require ('child_process');
 var argv = require ('minimist')(process.argv, {
     default:    { html:false },
+    string:     [ 'test' ],
     boolean:    [ 'html' ]
 });
 
@@ -44,7 +45,9 @@ var ARGUMENTS = {
     "ES6Parsing.js":                "--parse js",
     "LocalsAll.js":                 "--parse node --root test --locals all",
     "LocalsComments.js":            "--parse node --root test --locals comments",
-    "LocalsNone.js":                "--parse node --root test"
+    "LocalsNone.js":                "--parse node --root test",
+    "__proto__.js":                 "--parse node --root test",
+    "Prototype.js":                 "--parse node --root test"
 };
 var SKIP = [
     "NodeParseModule.js",
@@ -54,10 +57,16 @@ var SKIP = [
 ];
 async.parallel ([
     function (callback) {
-        killDir (path.resolve ('test/out'), callback);
+        if (argv.test)
+            killDir (path.resolve ('test/out/'+argv.test), callback);
+        else
+            killDir (path.resolve ('test/out'), callback);
     },
     function (callback) {
-        killDir (path.resolve ('test/compare'), callback);
+        if (argv.test)
+            killDir (path.resolve ('test/compare/'+argv.test), callback);
+        else
+            killDir (path.resolve ('test/compare'), callback);
     }
 ], function (err) {
     if (err && err.code != 'ENOENT') {
@@ -71,6 +80,8 @@ async.parallel ([
         }
         async.eachSeries (list, function (testName, callback) {
             if (SKIP.indexOf (testName) >= 0)
+                return callback();
+            if (argv.test && testName !== argv.test)
                 return callback();
 
             var targetStr =

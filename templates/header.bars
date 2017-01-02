@@ -243,7 +243,7 @@
                         <h1>constructor</h1>
                         <div id="constructor" class="section constructor">
                             <h2 class="signature">
-                                {{name}} (
+                                new {{name}} (
                                     {{#arguments}}
 {{> argument}}
                                     {{/arguments}}

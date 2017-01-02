@@ -89,6 +89,7 @@ option             | description
 --o, --out         | Selects a directory to fill with documentation output. The directory need not exist or be empty.
 --i, --in          | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
 --j, --js, --jsmod | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
+--node             | Automatically fills the `--jsmod`, `--parse` and `--root` options for a Node.js module by reading `./package.json`.
 --with             | Include a prebuilt standard library in the documentation. Standard libraries may be selected automatically when using other options (such as `--jsmod` or `--parse`) which imply a specific environment.
 --parse            | [Parse](#syntax-parsing) selected files as source code using inline documentation. Mimics the more familiar behavior of javadoc-derived documentation systems.
 --root             | Prefixes a path to every documented or parser-generated declaration. The root path is overridden by the first `@module` directive found in each file. The path of a `@module` tag is **never** affected by the `--root` option. The `--parse` option does not apply the root path to external dependencies.
@@ -101,8 +102,7 @@ option             | description
 
 Development
 -----------
-`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. He is very
-poor. If you want to see continued development on `doczar`, please help Kevin
+`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. If you want to see continued development on `doczar`, please help Kevin
 [pay his bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
 
 
@@ -456,11 +456,11 @@ Feel free to document a type as being a pointer or array.
 ```c
 /*      @struct Node
     A linked list node.
-@member/Node* previous
+@member:Node* previous
     Previous Node in the chain.
-@member/Node* next
+@member:Node* next
     Next Node in the chain.
-@member/String[] payload
+@member:char[] payload
     Data stored by this node in the chain.
 */
 ```
@@ -479,10 +479,10 @@ type path with a delimiter.
 /*      @class MyClass
     A simple class.
 */
-/*      @property/Function clone
-@argument/.MyClass source
+/*      @property:Function clone
+@argument:.MyClass source
     The [MyClass](.MyClass) instance to clone.
-@returns/MyModule.MyClass
+@returns:MyModule.MyClass
     The fresh [MyClass](MyModule.MyClass) instance.
 */
 ```
@@ -566,13 +566,13 @@ normal Declaration.
 Here is a simple Function Declaration with `@argument` and `@returns` declarations. You may name
 your arguments and return values, or not.
 ```c
-/*      @property/Function doTheDew
+/*      @property:Function doTheDew
     Do the Dew until you can't even.
-@argument/Number volume
+@argument:Number volume
     Volume of Dew to do, in fluid ounces.
-@argument/String method
+@argument:String method
     How to do the Dew.
-@returns/String message
+@returns:String message
     Returns a hip phase, such as "Totally radical!!!".
 */
 ```
@@ -580,20 +580,20 @@ your arguments and return values, or not.
 ```c
 /*      @property/Function sortItems
     A sorting function for Item instances.
-@argument/Item
+@argument:Item
     The first Item.
-@argument/Item
+@argument:Item
     The second Item.
-@returns/Number
+@returns:Number
     -1, 0, or 1.
 */
 ```
 
 Keyword arguments are as easy as replacing `@argument` with `@kwarg`.
 ```c
-/*      @property/Function tellParrotJoke
+/*      @property:Function tellParrotJoke
     Repeat some Monty Python jokes about a parrot.
-@kwarg/String parrotType
+@kwarg:String parrotType
     Type of parrot to joke about.
 */
 ```
@@ -604,41 +604,40 @@ The `@callback` Declaration expands the `@argument` scope in order to document t
 Function's arguments. You may reclose this scope with any unnamed `@returns` Declaration. You may
 name your callbacks, or not.
 ```c
-/*      @property/Function loadDefinitions
+/*      @property:Function loadDefinitions
     Load definition file from the remote server.
-@argument/String hostname
+@argument:String hostname
     URL of the remote server.
 @callback
-    @argument/Error|undefined error
+    @argument:Error|undefined error
         If a fatal Error prevented the file from
         being loaded properly, it is passed to
         the callback.
-    @argument/Buffer|undefined definitionsFile
+    @argument:Buffer|undefined definitionsFile
         The loaded definitions file, or `undefined`
         if an Error occured.
     @returns
-@argument/Boolean devLogging
+@argument:Boolean devLogging
     @optional
     Activate development-mode logging messages.
 */
 ```
 
-Although I've never seen this pattern used, it is possible to document multiple (pythonic)
-`@returns` Declarations on a `@callback`. You can still close the scope manually with a blank
-`@returns` Declaration.
+It is possible to document multiple `@returns` Declarations on a `@callback`. You can still close
+the scope manually with a blank `@returns` Declaration.
 ```c
-/*      @property/Function getJiggyWithIt
+/*      @property:Function getJiggyWithIt
     Get jiggy with it.
 @callback onError
     Called if a fatal Exception occured.
-    @returns/function responseAction
+    @returns:function responseAction
         What to do about the Exception.
-    @returns/Number priority
+    @returns:Number priority
         How important this reaction is.
     @returns
 @callback onSuccess
     Called if we got jiggy successfully.
-    @argument/Number jigginessLevel
+    @argument:Number jigginessLevel
         Maximum level of jigginess achieved.
 */
 ```
@@ -655,16 +654,16 @@ When you create a `@signature` with an Inner Declaration, the scope rules for Fu
 /*      @property/Function writeBuffer
     Interprets the contents of a Buffer as UTF-8
     and writes it in the sky with smoke signals.
-@signature/Number (content)
+@signature:Number (content)
     Write out the entire Buffer and return the
     number of bytes written.
-@signature/Number|undefined (content, bytes)
+@signature:Number|undefined (content, bytes)
     Write up to `bytes` bytes of text from
     `content`. If there is content remaining,
     returns the number of unwritten bytes.
-@argument/Buffer content
+@argument:Buffer content
     Text content to skywrite.
-@argument/Number bytes
+@argument:Number bytes
     Limit output to a set number of bytes.
 */
 ```
@@ -726,16 +725,16 @@ Java interfaces are also supported, with `@interface` and `@implements`.
 ```c
 /*      @interface UniversalRemote
     The common interface for a universal remote control.
-@member/Function volumeUp
+@member:Function volumeUp
     Increase speaker volume.
-@member/Function volumeDown
+@member:Function volumeDown
     Decrease speaker volume.
 */
 /*      @class Tamtung_Model042_3
     @implements .UniversalRemote
-@member/Function volumeUp
+@member:Function volumeUp
     Increase speaker volume.
-@member/Function volumeDown
+@member:Function volumeDown
     Decrease speaker volume.
 */
 ```
@@ -824,9 +823,9 @@ locally rooted paths in Symbols.
 
 /*      @class FooList
     An Iterable collection of Foos.
-@member/Function [Symbol.iterator]
+@member:Function [Symbol.iterator]
     Create an [Iterator]() that lists all our Foos.
-@property/Symbol staticSymbol
+@property:Symbol staticSymbol
     A Symbol stored statically on the FooList class.
 */
 
@@ -836,17 +835,16 @@ locally rooted paths in Symbols.
 */
 ```
 
-![The History Channel Presents: Ancient Symbols](http://i.imgur.com/0hZXyFo.jpg)
 ```c
 /*      @class Foo
     @root
-@property/Symbol alfa
+@property:Symbol alfa
     A static Symbol mapped to a String.
-@property/Symbol [.alfa]
+@property:Symbol [.alfa]
     A static Symbol mapped to a static Symbol.
-@property/Symbol [.[.alfa]]
+@property:Symbol [.[.alfa]]
     Another static Symbol mapped to a static Symbol.
-@member/String [.[.[.alfa]]]
+@member:String [.[.[.alfa]]]
     A String mapped to a static Symbol.
 */
 ```
@@ -855,11 +853,11 @@ locally rooted paths in Symbols.
 To document use of the `rest` keyword or "spread" syntax to accept arbitrary numbers of arguments,
 use the `@args` declaration.
 ```c
-/*      @member/Function Foo#methodAlfa
+/*      @member:Function Foo#methodAlfa
     A method that takes at least one argument.
-@argument/String firstArgument
+@argument:String firstArgument
     The first, mandatory argument.
-@args/Number restArguments
+@args:Number restArguments
     An arbitrary number of additional arguments.
 */
 ```

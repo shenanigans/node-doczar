@@ -29,6 +29,8 @@ var bar = function (able, baker) {
     var tricky = this.complex;
     this.trickyDeref = tricky.baker.able;
     this.doStuff (9);
+
+    setTimeout (function(){ self.block = { foo:'bar' }; }, 100);
 };
 bar.prototype.bilge = 'full';
 
