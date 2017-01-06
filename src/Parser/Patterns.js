@@ -4,24 +4,24 @@
 */
 var util = require ('util');
 
-/*      @property/String pathWord
+/*
     String rep of a RegExp that selects an individual path word, without delimiter, potentially from
     among a complex path.
 */
 var pathWord = '[\\w\\$_@\x7f-\xff]+';
 module.exports.pathWord = pathWord;
-/*      @local:String pathDelimit
+/*
     A character class, as a String, containing all available path delimiters.
 */
 var pathDelimit = '[/:\\.#~\\(\\)+%]';
-/*      @local:String cpath
+/*
     A selector, as a String, for a standard Component path string. Stands for Component Path.
 */
 var cpath =
     '[\\w\\$_@/:\\.#~\\(\\)+%\\[]?' // delimiter or [
   + '(?:[/:\\.#~\\(\\)+%]\\[|[\\w\\$_@\x7f-\xff:\\.#~\\(\\)+%\\]])+' // delimiter-[ or non-[
   ;
-/*      @local:String tpath
+/*
     A selector, as a String, for either a [cpath](%cpath), an es6 symbol (a [cpath](%cpath) wrapped
     in square brackets) or an arbitrary String wrapped in backticks. Stands for Tricky Path.
 
@@ -37,7 +37,7 @@ var modtypes    = 'development|api|super|implements|public|protected|private|abs
   + '|volatile|optional|const|root|alias|patches|remote|default'
   ;
 
-/*      @property:RegExp jpath
+/*
     Splits a javadoc-flavor path.
 */
 module.exports.jpathSplitter = new RegExp (util.format ('(event:|module:)?(%s)', pathWord));
@@ -52,7 +52,7 @@ module.exports.jpathConsumer = new RegExp (util.format (
             jpath
 ));
 
-/*      @property:RegExp jtag
+/*
     Parses one or two paths, the first of which may be multiple paths separated by pipes `|`.
      * `path`
      * `{type} path`
@@ -63,7 +63,7 @@ module.exports.jtagPaths = new RegExp (util.format (
                 jpath,jpath,             jpath
 ));
 
-/*      @property:Object booleanModifiers
+/*
     Truth map of Modifier types which are considered to be simple booleans. Many of these are also
     "flag" modifiers.
 */
@@ -80,7 +80,7 @@ module.exports.booleanModifiers = {
     const:          true
 };
 
-/*      @property:Object flagModifiers
+/*
     A truthmap of modifiers which become "flags", such as `@private` and `@const`.
 */
 module.exports.flagModifiers = {
@@ -95,7 +95,7 @@ module.exports.flagModifiers = {
     constant:   true
 };
 
-/*      @property:Object ctypes
+/*
     Simple map of valid Component types which may be used to start a new comment, to `true`.
 */
 module.exports.ctypes = {
@@ -120,7 +120,7 @@ module.exports.ctypes = {
 };
 var ctypes = Object.keys (module.exports.ctypes).join ('|');
 
-/*      @property:Object innerCtypes
+/*
     Simple map of valid Component types for inner declarations or new comments, to `true`.
 */
 module.exports.innerCtypes = {
@@ -151,7 +151,7 @@ module.exports.innerCtypes = {
 };
 var inCT = Object.keys (module.exports.innerCtypes).join ('|');
 
-/*      @property:String typeSelector
+/*
     String rep of a RegExp that Selects a complex type descriptor. For example,
     `Object[String, MyMod.FooClass]|Array[String]|undefined`.
 */
@@ -160,7 +160,7 @@ var tSel = module.exports.typeSelector = util.format (
      tpath,              tpath,                tpath,       tpath,          tpath,         tpath
 );
 
-/*      @property:RegExp typeSelectorWord
+/*
     String rep of a RegExp that Selects a single type descriptor. For example,
     `Object[String, MyMod.FooClass]`.
 */
@@ -171,12 +171,12 @@ module.exports.typeSelectorWord = new RegExp (
     )
 );
 
-/*      @property:RegExp jdocLeadSplitter
+/*
 
 */
 module.exports.jdocLeadSplitter = /^[ \t]*(?:\*(?:[ \t]|$))?(.*)/;
 
-/*      @property:RegExp tag
+/*
     Selects a Declaration and its entire document comment. Groups out Component type, value type,
     Component path, and the remaining document after the first line.
 */
@@ -190,7 +190,7 @@ module.exports.tag = new RegExp (
     'mg'
 );
 
-/*      @property:RegExp innerTag
+/*
     Selects an inner Declaration line and the contents afterward. Groups out Component type, value
     type, and Component path.
 */
@@ -206,7 +206,7 @@ module.exports.innerTag = new RegExp (
      + ')?\\r?[\\n\\r]((?:.|[\\n\\r])*)'
 );
 
-/*      @property:RegExp modifier
+/*
     Select a Modifier line. Does not select contents afterward. Groups out Modifier type and
     Modifier path.
 */
@@ -217,7 +217,7 @@ module.exports.modifier = new RegExp (
     )
 );
 
-/*      @property:RegExp word
+/*
     Used for splitting paths. Groups out a delimiter/name pair.
 */
 module.exports.word = new RegExp (
@@ -227,7 +227,7 @@ module.exports.word = new RegExp (
     )
 );
 
-/*      @property:RegExp signatureTag
+/*
     Selects an entire comment tag dedicated to a `@signature` Declaration.
 */
 module.exports.signatureTag = new RegExp (
@@ -244,7 +244,7 @@ module.exports.signatureTag = new RegExp (
     'mg'
 );
 
-/*      @property:RegExp signatureArgument
+/*
     Selects an individual argument from a `@signature` Declaration.
 */
 module.exports.signatureArgument = new RegExp (
@@ -255,7 +255,7 @@ module.exports.signatureArgument = new RegExp (
     'g'
 );
 
-/*      @property:Object delimiters
+/*
     Maps delimiter characters to their Component type. The ambiguous period delimiter maps to
     "property".
 */
@@ -274,7 +274,7 @@ module.exports.delimiters = {
     '%':        'local'
 };
 
-/*      @property:Object delimitersInverse
+/*
     Maps Component types to their delimiter characters.
 */
 module.exports.delimitersInverse = {
@@ -301,7 +301,7 @@ module.exports.delimitersInverse = {
     local:          '%'
 };
 
-/*      @property:Object ctypeDisambiguator
+/*
     Maps component type's that share delimiters to the canonical component type which owns the
     delimiter. Also maps canonical component types to themselves.
 */
@@ -334,7 +334,7 @@ var HEIRARCHY = [
     "property",     "member",       "argument",     "kwarg",        "callback",     "returns",
     "throws"
 ];
-/*      @property:Object<Number> HEIRARCHY
+/*
     A map of Component types to Number sort priorities. This is used when sorting unordered child
     sets during [finalize](doczar.Component#finalize).
 */

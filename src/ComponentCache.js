@@ -3,7 +3,7 @@
     Roots a document tree and builds all the [Components](/Component) that live inside it.
     [Looks up](#resolve) and [creates](#getComponent) [Components](/Component) by path.
     Centralizes [finalization](#finalize) and [filesystem output](#writeFiles).
-@argument:bunyan/Logger logger
+@argument:bunyan.Logger logger
     Any interesting events produced by any [Component](/Component) generated on this cache
     will be logged on this [Logger](bunyan.Logger).
 @member:Object root
@@ -29,6 +29,13 @@ var isArr = function (a) {
     if (!a) return false;
     return a.__proto__ === Array.prototype;
 };
+function pathStr (type) {
+    return type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('').slice (1);
+}
 
 var ComponentCache = function (logger) {
     this.logger = logger;
@@ -346,8 +353,6 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     (doczar.Component).
 */
 ComponentCache.prototype.submit = function (tpath, info) {
-    // if (tpath[tpath.length-1][0] === '(')
-    //     console.log (tpath.map (function(a){return a.join('');}).join(''));
     var pointer = this.getComponent (tpath);
     pointer.submit (info);
     return pointer;

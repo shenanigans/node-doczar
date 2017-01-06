@@ -42,6 +42,8 @@ function compareLevel (path, able, baker) {
     // match keys
     for (var bKey in baker)
         if (!Object.hasOwnProperty.call (able, bKey)) {
+            if ((bKey === 'finalArgs' || bKey === 'finalKwargs') && !baker[bKey].length)
+                continue;
             path.push (bKey);
             throw new Error ('missing key ' + path.join ('/'));
         }
@@ -67,7 +69,9 @@ function compareLevel (path, able, baker) {
                 compareArray (subpath, aItem, bItem);
                 continue;
             case 'string':
-                if (aItem !== bItem)
+                if (aItem !== bItem) {
+                    if (aItem.match (/^[\s\r\n]*$/))
+                        continue;
                     if (aItem.length < 64 && bItem.length < 64)
                         throw new Error (
                             'value mismatch "'
@@ -79,6 +83,7 @@ function compareLevel (path, able, baker) {
                         );
                     else
                         throw new Error ('value mismatch ' + subpath.join ('/'));
+                }
             default:
                 if (aItem !== bItem)
                     throw new Error ('value mismatch (' + aType + ') ' + subpath.join ('/'));
@@ -315,12 +320,12 @@ function runTest (name, args) {
                                 JSON.parse (compareDoc)
                             );
                         } catch (err) {
-                            if (
-                                !err.message.match (/"unnamed/)
-                             && !err.message.match (/\/modules\/async/)
-                            )
-                                return callback (err);
-                            // return callback (err);
+                            // if (
+                            //     !err.message.match (/"unnamed/)
+                            //  && !err.message.match (/\/modules\/async/)
+                            // )
+                            //     return callback (err);
+                            return callback (err);
                         }
 
                         callback();

@@ -43,9 +43,9 @@
 
 /*      @submodule:class Modifier
     Represents a modifier declaration.
-@member/String mod
+@member:String mod
     The name of the modifier, without the `@`.
-@member/:Path|undefined path
+@member:/Path|undefined path
     If the modifier declaration included a path, it is provided here.
 */
 
@@ -58,9 +58,9 @@
     `doczar` chooses to use local links, the `href` for a given path changes between rendering
     contexts. This necessitates multiple rendering passes and therefor the link context must be
     passed forward.
-@member/String value
+@member:String value
     The markdown text.
-@member/:Path context
+@member:/Path context
     The scope path which should be appended to crosslink target paths begining with a delimiter
     character.
 */
@@ -82,7 +82,6 @@
 var fs                = require ('fs-extra');
 var pathLib           = require ('path');
 var resolve           = require ('resolve');
-// var esprima           = require ('esprima');
 var filth             = require ('filth');
 var tools             = require ('tools');
 var getNodeModulePath = require ('getNodeModulePath');
@@ -95,7 +94,7 @@ var concatPaths = function(){
     for (var i=0,j=arguments.length; i<j; i++)
         if (arguments[i])
             out.push.apply (out, Array.prototype.filter.call (arguments[i], function (item) {
-                return Boolean (item && item.length && item[0].length);
+                return Boolean (item && item.length && item[0] && item[0].length);
             }));
     return out;
 };
@@ -104,16 +103,21 @@ var cloneArr = function (a) {
     b.push.apply (b, a);
     return b;
 }
-function pathStr (path) {
-    return path.map (function(a){return a.join('');}).join('');
+function pathStr (type) {
+    var finalStr = type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('')
+    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
 }
 
 /*
     Convert a path String to a path Array. If no path is generated, `[ [ ] ]` is returned. This is
     because **all** paths have a length but the final element may be filled contextually rather than
     explicitly.
-@argument/String pathstr
-@returns//Path
+@argument:String pathstr
+@returns:/Path
     Returns Arrays of path fragment Arrays. These are of the form `[ [ ".", "name" ], ...]` or when
     Symbols are used, `[ [ ".", "Symbols.iterator", [ [ ".", "Symbols" ], [ ".", "iterator" ] ] ]`.
 */
@@ -283,12 +287,12 @@ function parseType (typeStr, fileScope) {
 /*
     @api
     Submit every Modifier and Declaration in a single source file to a [ComponentCache]
-    (doczar/ComponentCache) instance.
+    (doczar/src/ComponentCache) instance.
 @argument:String fname
     An OS-localized absolute filename to read.
-@argument:doczar/ComponentCache context
+@argument:doczar/src/ComponentCache context
     Parsed information will be [reported](doczar/ComponentCache#submit) to this [ComponentCache]
-    (doczar/ComponentCache) instance.
+    (doczar/src/ComponentCache) instance.
 @argument:bunyan.Logger logger
 @callback next
     Called any number of times to request that additional files be processed.
@@ -998,7 +1002,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     if (!baseNode[MODULE])
         baseNode[MODULE] = defaultScope;
 
-    var fileScope = [];
     var dirname = pathLib.parse (fname).dir;
 
     context.latency.log ('parsing');
@@ -1064,7 +1067,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     }
 
     var HACK_line = 0;
-    function walkLevel (level, scope, thisNode, deadLine, scopeParent, fnChain) {
+    function walkLevel (level, scope, thisNode, deadLine, scopeParent, fnChain, fileScope) {
         // apply an argument signature to a CallExpression
         function processRequireStatement (expression, target) {
             if (target) target[SILENT] = true;
@@ -1173,6 +1176,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 else {
                     arg = args[i] = newNode (callNode);
                     arg[NO_SET] = true;
+                    arg[NAME] = [ '(', '' ];
                 }
                 divineTypes (arg, expression.arguments[i]);
                 if (callNode[SILENT])
@@ -1216,7 +1220,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             dummy[SILENT] = true;
                         dummy[DEREF].push (argNode);
                         dummy[NO_SET] = true;
-                        innerScope[args[i][NAME]] = dummy;
+                        innerScope[args[i][NAME][1]] = dummy;
                     }
                 }
 
@@ -1228,7 +1232,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         callNode[THIS],
                         localDeadLine,
                         callNode,
-                        localChain
+                        localChain,
+                        fileScope.concat()
                     );
                     localDeadLine = callNode[BODY][i].loc.end.line;
                 }
@@ -1275,7 +1280,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         dummyArg[SILENT] = true;
                     dummyArg[DEREF].push (argNode);
                     dummyArg[NO_SET] = true;
-                    innerScope[args[i][NAME]] = dummyArg;
+                    innerScope[args[i][NAME][1]] = dummyArg;
                 }
             }
             var localChain = fnChain.concat();
@@ -1288,7 +1293,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     callNode[THIS],
                     localDeadLine,
                     dummy,
-                    localChain
+                    localChain,
+                    fileScope.concat()
                 );
                 localDeadLine = callNode[BODY][i].loc.end.line;
             }
@@ -1432,7 +1438,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         dummy[SILENT] = true;
                                     dummy[DEREF].push (argNode);
                                     dummy[NO_SET] = true;
-                                    innerScope[argNode[NAME]] = dummy;
+                                    innerScope[argNode[NAME][1]] = dummy;
                                 }
                                 for (var i=0,j=item[BODY].length; i<j; i++) {
                                     walkLevel (
@@ -1441,7 +1447,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         targetNode[PARENT],
                                         localDeadLine,
                                         item,
-                                        localChain
+                                        localChain,
+                                        fileScope.concat()
                                     );
                                     localDeadLine = item[BODY][i].loc.end.line;
                                 }
@@ -1587,7 +1594,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             node,
                             declaration.loc.end.line,
                             scope,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                     }
 
@@ -1607,12 +1615,12 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         args = node[ARGUMENTS];
                         for (var i=0,j=value.params.length; i<j; i++)
                             if (i < args.length) {
-                                args[i][NAME] = value.params[i].name;
+                                args[i][NAME] = [ '(', value.params[i].name ];
                                 if (node[SILENT])
                                     args[i][SILENT] = true;
                             } else {
                                 var arg = args[i] = newNode (node);
-                                arg[NAME] = value.params[i].name;
+                                arg[NAME] = [ '(', value.params[i].name ];
                                 arg[TYPES] = [];
                                 arg[DEREF] = [];
                                 arg[NO_SET] = true;
@@ -1621,7 +1629,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     } else
                         args = node[ARGUMENTS] = value.params.map (function (param) {
                             var arg = newNode (node);
-                            arg[NAME] = param.name;
+                            arg[NAME] = [ '(', param.name ];
                             arg[TYPES] = [];
                             arg[DEREF] = [];
                             arg[NO_SET] = true;
@@ -1632,7 +1640,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     var innerScope = new filth.SafeMap (scope);
                     for (var i=0,j=node[ARGUMENTS].length; i<j; i++) {
                         var arg = node[ARGUMENTS][i];
-                        innerScope[arg[NAME]] = arg;
+                        innerScope[arg[NAME][1]] = arg;
                     }
                     node[SCOPE] = innerScope;
                     var localDeadLine = deadLine;
@@ -1651,7 +1659,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 node[THIS],
                                 localDeadLine,
                                 node,
-                                fnChain
+                                fnChain,
+                                fileScope.concat()
                             );
                             localDeadLine = value.body.body[i].loc.end.line;
                         }
@@ -1664,7 +1673,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     var callPack = node[WAITING_CALLS][i];
                                     var waitingInnerScope = new filth.SafeMap (scope);
                                     for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                        waitingInnerScope[args[k-1][NAME]] = callPack[k];
+                                        waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
                                     var localDeadLine = deadLine;
                                     for (var k=0,l=node[BODY].length; k<l; k++) {
                                         walkLevel (
@@ -1673,7 +1682,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                             node[THIS],
                                             localDeadLine,
                                             callPack[0],
-                                            localChain
+                                            localChain,
+                                            fileScope.concat()
                                         );
                                         localDeadLine = node[BODY][k].loc.end.line;
                                     }
@@ -1717,6 +1727,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         else {
                             arg = args[i] = newNode (typeNode);
                             arg[NO_SET] = true;
+                            arg[NAME] = [ '(', '' ];
                         }
                         divineTypes (arg, value.arguments[i]);
                         if (typeNode[SILENT])
@@ -1760,7 +1771,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             pointer[MEMBERS][PARENT] = pointer;
                         }
                         pointer = pointer[MEMBERS];
-                    // }
                     } else if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
                         pointer = pointer[INSTANCE][0];
                         if (!pointer[MEMBERS]) {
@@ -1795,7 +1805,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     for (var i=0,j=level.params.length; i<j; i++) {
                         var arg = newNode (initialPointer);
                         arg[NO_SET] = true;
-                        arg[NAME] = level.params[i].name;
+                        arg[NAME] = [ '(', level.params[i].name ];
                         args.push (arg);
                     }
                     anon[RETURNS] = newNode (initialPointer);
@@ -1804,7 +1814,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // take our first pass through the body
                     var innerScope = anon[SCOPE] = new filth.SafeMap (scope);
                     for (var i=0,j=args.length; i<j; i++)
-                        innerScope[args[i][NAME]] = args[i];
+                        innerScope[args[i][NAME][1]] = args[i];
                     var localDeadLine = deadLine;
                     hoistNames (innerScope, level.body.body);
                     for (var i=0,j=level.body.body.length; i<j; i++) {
@@ -1814,7 +1824,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             anon[THIS],
                             localDeadLine,
                             anon,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
@@ -1854,6 +1865,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         else {
                             arg = args[i] = newNode (typeNode);
                             arg[NO_SET] = true;
+                            arg[NAME] = [ '(', '' ];
                         }
                         divineTypes (arg, level.arguments[i]);
                         if (typeNode[SILENT])
@@ -1924,7 +1936,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                   ;
                 stowThis = IS_COL in pointer ? pointer[PARENT] : pointer;
 
-                if (!(IS_COL in pointer))
+                var nameDelimit;
+                if (pointer[IS_COL])
+                    nameDelimit = '#';
+                else {
+                    nameDelimit = '.';
                     if (pointer[PROPS])
                         pointer = pointer[PROPS];
                     else {
@@ -1932,12 +1948,14 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         pointer[PROPS][PARENT] = pointer;
                         pointer = pointer[PROPS];
                     }
+                }
 
                 if (Object.hasOwnProperty.call (pointer, lastStep))
                     pointer = pointer[lastStep];
                 else {
                     pointer = pointer[lastStep] = newNode (pointer[PARENT]);
                     pointer[LINE] = level.property.loc.start.line;
+                    pointer[NAME] = [ nameDelimit, lastStep ];
                 }
 
                 // propagate silence
@@ -1945,7 +1963,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     pointer[SILENT] = true;
             }
 
-            // gotta deref again
+            // gotta deref
             if (!shallow) {
                 var cycle = [];
                 while (
@@ -2055,15 +2073,38 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             var pathstr = match[3];
                             var docstr = match[4] || '';
                             var pathfrags;
-                            if (!pathstr)
-                                pathfrags = baseNode[ROOT].concat();
-                            else {
+                            if (!pathstr) {
+                                // if we have a node, add its local name to the path
+                                // pathfrags = fileScope.length ?
+                                //     fileScope.concat()
+                                //   : ctype === 'module' ?
+                                //         []
+                                //       : baseNode[ROOT].concat()
+                                //       ;
+                                pathfrags = [];
+                                if (node && NAME in node)
+                                    pathfrags.push (node[NAME].concat());
+
+                                // console.log ('no pathstr', pathStr (pathfrags));
+                                // if (node && NAME in node) {
+                                //     pathfrags = [];
+                                //     pathfrags.push (node[NAME].concat());
+                                //     console.log ('name', pathfrags);
+                                // } else {
+                                //     pathfrags = baseNode[ROOT].concat();
+                                //     console.log ('no name', baseNode[ROOT]);
+                                // }
+                            } else {
                                 pathfrags = parsePath (pathstr, []);
                                 if (!pathfrags[0][0])
                                     if (pathfrags.length === 1)
                                         pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
                                     else
                                         pathfrags[0][0] = '.';
+                                // pathfrags = (
+                                //     fileScope.length ? fileScope.concat() : ctype === 'module' ? [] : baseNode[ROOT]
+                                // ).concat (pathfrags);
+                                // console.log ('mount', pathStr (pathfrags));
                             }
 
                             if (ctype === 'module')
@@ -2083,15 +2124,20 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 );
                             } else if (node[MOUNT])
                                 node[MOUNT].docstr = match[4] || '';
-                            else
+                            else {
+                                // console.log ('mounting', pathStr (fileScope), ' - ', pathStr (pathfrags));
                                 node[MOUNT] = {
                                     ctype:      ctype,
                                     path:       pathfrags,
                                     valType:    valtype,
                                     docstr:     docstr,
-                                    docContext: fileScope,
+                                    docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                                     fname:      fname
                                 };
+                                node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
+                                // node[OVERRIDE] = [];
+                                // console.log ('mounted', node[MOUNT]);
+                            }
                         }
                     }
                 }
@@ -2142,9 +2188,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             docContext: fileScope,
                             fname:      fname
                         };
+                        node[OVERRIDE] = fileScope.concat();
                     }
                 }
             }
+
+            if (node && fileScope.length)
+                node[OVERRIDE] = fileScope.concat();
         }
 
         // ---------------------------------------------------------------- real processing begins
@@ -2161,7 +2211,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         localDeadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                     localDeadLine = moreBlocks[i].loc.end.line;
                 }
@@ -2209,9 +2260,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     divineTypes (node, declaration.init);
 
                     // what kind of declaration was this?
-                    // if (level.kind == "let")
-                    //     level[SILENT] = true;
-                    // else if (level.kind == "const")
                     if (level.kind == "const")
                         if (level['.mods']) {
                             if (level['.mods'].indexOf ('constant') < 0)
@@ -2290,7 +2338,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         dummy[SILENT] = true;
                                     dummy[DEREF].push (argNode);
                                     dummy[NO_SET] = true;
-                                    innerScope[argNode[NAME]] = dummy;
+                                    innerScope[argNode[NAME][1]] = dummy;
                                 }
                                 for (var i=0,j=item[BODY].length; i<j; i++) {
                                     walkLevel (
@@ -2299,7 +2347,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         node[PARENT],
                                         localDeadLine,
                                         item,
-                                        localChain
+                                        localChain,
+                                        fileScope.concat()
                                     );
                                     localDeadLine = item[BODY][i].loc.end.line;
                                 }
@@ -2342,43 +2391,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                          rebase (dummy[DEREF][0][MEMBERS][key])
                                          ;
                             }
-                            // if (dummy[PROPS])
-                            //     for (var key in dummy[PROPS])
-                            //         if (key[0] !== '.')
-                            //             node[key] = filth.circularClone (
-                            //                 dummy[PROPS][key],
-                            //                 undefined,
-                            //                 cloneShallowFilter
-                            //             );
-                            // if (dummy[MEMBERS])
-                            //     for (var key in dummy[MEMBERS])
-                            //         if (key[0] !== '.')
-                            //             node[key] = filth.circularClone (
-                            //                 dummy[MEMBERS][key],
-                            //                 undefined,
-                            //                 cloneShallowFilter
-                            //             );
-                            // if (dummy[DEREF].length) {
-                            //     if (dummy[DEREF][0][PROPS])
-                            //         for (var key in dummy[DEREF][0][PROPS])
-                            //             node[key] =
-                            //              node[key] =
-                            //              filth.circularClone (
-                            //                 dummy[DEREF][0][PROPS][key],
-                            //                 undefined,
-                            //                 cloneShallowFilter
-                            //             );
-                            //     if (dummy[DEREF][0][MEMBERS])
-                            //         for (var key in dummy[DEREF][0][MEMBERS])
-                            //             node[key] =
-                            //              node[key] =
-                            //              filth.circularClone (
-                            //                 dummy[DEREF][0][MEMBERS][key],
-                            //                 undefined,
-                            //                 cloneShallowFilter
-                            //             );
-                            // }
-                            // node = dummy;
                             context.latency.log ('cloning');
                             node = node[PARENT];
                             break;
@@ -2415,7 +2427,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             deadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         var localDeadLine = deadLine;
                         if (level.expression.left.loc.end.line != level.expression.right.loc.start.line)
@@ -2426,7 +2439,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         break;
                     case 'ConditionalExpression':
@@ -2437,7 +2451,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             deadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         var localDeadLine = deadLine;
                         if (level.expression.test.loc.end.line != level.expression.consequent.loc.start.line)
@@ -2448,7 +2463,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         if (level.expression.consequent.loc.end.line != level.expression.alternate.loc.start.line)
                             localDeadLine = level.expression.consequent.loc.end.line;
@@ -2458,7 +2474,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         break;
                     case 'NewExpression':
@@ -2485,6 +2502,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             else {
                                 arg = args[i] = newNode (typeNode);
                                 arg[NO_SET] = true;
+                                arg[NAME] = [ '(', '' ];
                             }
                             divineTypes (arg, level.expression.arguments[i]);
                             if (typeNode[SILENT])
@@ -2506,7 +2524,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     deadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
                 var localDeadLine = deadLine;
                 if (level.test.loc.end.line != level.consequent.loc.start.line)
@@ -2517,7 +2536,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
                 if (level.consequent.loc.end.line != level.alternate.loc.start.line)
                     localDeadLine = level.consequent.loc.end.line;
@@ -2527,7 +2547,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
                 break;
             case 'FunctionDeclaration':
@@ -2549,10 +2570,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 for (var i=0,j=level.params.length; i<j; i++) {
                     var param = level.params[i];
                     if (i < args.length)
-                        args[i][NAME] = param.name;
+                        args[i][NAME] = [ '(', param.name ];
                     else {
                         var arg = args[i] = newNode (node);
-                        arg[NAME] = param.name;
+                        arg[NAME] = [ '(', param.name ];
                         arg[TYPES] = [];
                         arg[DEREF] = [];
                         arg[NO_SET] = true;
@@ -2568,7 +2589,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 var innerScope = new filth.SafeMap (scope);
                 for (var i=0,j=args.length; i<j; i++) {
                     var arg = args[i];
-                    innerScope[arg[NAME]] = arg;
+                    innerScope[arg[NAME][1]] = arg;
                 }
                 node[SCOPE] = innerScope;
                 var localDeadLine = deadLine;
@@ -2585,7 +2606,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             node,
                             localDeadLine,
                             target,
-                            localChain
+                            localChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
@@ -2598,7 +2620,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 var callPack = node[WAITING_CALLS][i];
                                 var waitingInnerScope = new filth.SafeMap (scope);
                                 for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                    waitingInnerScope[args[k-1][NAME]] = callPack[k];
+                                    waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
                                 var localDeadLine = deadLine;
                                 for (var k=0,l=level.body.body.length; k<l; k++) {
                                     walkLevel (
@@ -2607,7 +2629,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         node || thisNode,
                                         localDeadLine,
                                         callPack[0],
-                                        localChain
+                                        localChain,
+                                        fileScope.concat()
                                     );
                                     localDeadLine = level.body.body[k].loc.end.line;
                                 }
@@ -2634,7 +2657,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 else {
                     var localDeadLine = deadLine;
@@ -2645,7 +2669,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.consequent.body[i].loc.end.line;
                     }
@@ -2660,7 +2685,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             deadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                     else {
                         var localDeadLine = deadLine;
@@ -2671,7 +2697,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 thisNode,
                                 localDeadLine,
                                 scopeParent,
-                                fnChain
+                                fnChain,
+                                fileScope.concat()
                             );
                             localDeadLine = level.alternate.body[i].loc.end.line;
                         }
@@ -2686,7 +2713,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 if (level.test)
                     walkLevel (
@@ -2695,7 +2723,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 if (level.update)
                     walkLevel (
@@ -2704,7 +2733,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
 
                 // walk the body
@@ -2715,7 +2745,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 else {
                     var localDeadLine = deadLine;
@@ -2726,7 +2757,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
@@ -2755,7 +2787,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 else {
                     var localDeadLine = deadLine;
@@ -2766,7 +2799,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
@@ -2786,7 +2820,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         thisNode,
                         deadLine,
                         scopeParent,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 else {
                     var localDeadLine = deadLine;
@@ -2797,7 +2832,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             thisNode,
                             localDeadLine,
                             scopeParent,
-                            fnChain
+                            fnChain,
+                            fileScope.concat()
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
@@ -2815,7 +2851,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     deadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
 
                 break;
@@ -2832,7 +2869,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     deadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
 
                 break;
@@ -2875,7 +2913,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         node,
                         declaration.loc.end.line,
                         scope,
-                        fnChain
+                        fnChain,
+                        fileScope.concat()
                     );
                 }
 
@@ -2922,7 +2961,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     deadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
                 var localDeadLine = deadLine;
                 if (level.left.loc.end.line != level.right.loc.start.line)
@@ -2933,7 +2973,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     thisNode,
                     localDeadLine,
                     scopeParent,
-                    fnChain
+                    fnChain,
+                    fileScope.concat()
                 );
                 break;
             case 'CallExpression':
@@ -3076,6 +3117,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     hoistNames (baseNode, tree.body);
 
     // normal body processing
+    var fileScope = [];
     for (var i=0,j=tree.body.length; i<j; i++)
         walkLevel (
             tree.body[i],
@@ -3083,7 +3125,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             undefined,
             i ? tree.body[i-1].loc.end.line : undefined,
             undefined,
-            [ tree.body[i] ]
+            [ tree.body[i] ],
+            fileScope
         );
 
     // handle tag comments after the last expression
@@ -3207,6 +3250,7 @@ function mapOf (arr) {
 var PREPROCESS_MAP_KEYS = mapOf ([ MEMBERS, PROPS ]);
 var PREPROCESS_ARR_KEYS = mapOf ([ ARGUMENTS, SUPER ]);
 var PREPROCESS_OBJ_KEYS = mapOf ([ RETURNS, THROWS ]);
+var PREPROCESS_MAX_DEPTH = 8;
 /*
     Use the compiled information from syntax parsing to add Component definitions to a
     [ComponentCache](doczar.ComponentCache).
@@ -3223,6 +3267,8 @@ function generateComponents (context, mode, defaultScope) {
             chain = [ target ];
 
         function recurse (level, target) {
+            if (chain.length >= context.argv.maxRefDepth)
+                return false;
             if (IS_COL in level)
                 return false;
             if (chain.indexOf (level) >= 0)
@@ -3250,35 +3296,31 @@ function generateComponents (context, mode, defaultScope) {
 
         // recurse
         for (var key in PREPROCESS_MAP_KEYS)
-            if (key in level)
-                for (var childKey in level[key])
-                    didFinishDeref += recurse (level[key][childKey]);
+            if (key in level) for (var childKey in level[key])
+                didFinishDeref += recurse (level[key][childKey]);
 
         // process arguments and returns
-        if (level[ARGUMENTS])
-            for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
-                didFinishDeref += recurse (level[ARGUMENTS][i]);
+        if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
+            didFinishDeref += recurse (level[ARGUMENTS][i]);
         if (level[RETURNS])
             didFinishDeref += recurse (level[RETURNS]);
 
         // recurse
         if (typeof level !== 'object')
             throw new Error ('unexpected error');
+
         for (var key in level)
             didFinishDeref += recurse (level[key], undefined);
 
+        if (level[MEMBERS]) for (var key in level[MEMBERS]) {
+            var nextTarget = level[MEMBERS][key];
+            didFinishDeref += recurse (nextTarget, nextTarget);
+        }
 
-        if (level[MEMBERS])
-            for (var key in level[MEMBERS]) {
-                var nextTarget = level[MEMBERS][key];
-                didFinishDeref += recurse (nextTarget, nextTarget);
-            }
-
-        if (level[PROPS])
-            for (var key in level[PROPS]) {
-                var nextTarget = level[PROPS][key];
-                didFinishDeref += recurse (nextTarget, nextTarget);
-            }
+        if (level[PROPS]) for (var key in level[PROPS]) {
+            var nextTarget = level[PROPS][key];
+            didFinishDeref += recurse (nextTarget, nextTarget);
+        }
 
         return didFinishDeref;
     }
@@ -3336,7 +3378,7 @@ function generateComponents (context, mode, defaultScope) {
 
         if (!localDefault)
             localDefault = defaultScope;
-        else if (level[OVERRIDE])
+        if (level[OVERRIDE] && level[OVERRIDE].length)
             localDefault = level[OVERRIDE];
         var didSubmit = false;
 
@@ -3357,23 +3399,21 @@ function generateComponents (context, mode, defaultScope) {
                 if (level[MEMBERS])
                     ctype = 'class';
                 else
-                    // ctype = 'property';
                     ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
                 docstr = level[DOCSTR] || '';
                 fileScope = [];
             }
             level[LOCALPATH] = path;
             var fullpath = level[PATH] = concatPaths (localDefault, path);
-            // var fullpath = level[PATH] = concatPaths (level[MOUNT] ? [] : localDefault, path);
-            if (ctype == 'class') for (var i=types.length-1; i>=0; i--) {
+            if (ctype === 'class') for (var i=types.length-1; i>=0; i--) {
                 var type = types[i];
-                if (type.name == 'function' || type.name == 'Function')
+                if (type.name === 'function' || type.name === 'Function')
                     types.splice (i, 1);
             }
             if (fullpath.length && (
-                fullpath[fullpath.length-1][0] == '/' || fullpath[fullpath.length-1][0] == ':'
+                fullpath[fullpath.length-1][0] === '/' || fullpath[fullpath.length-1][0] === ':'
             )) {
-                if (ctype == 'class') {
+                if (ctype === 'class') {
                     var foundClass = false;
                     for (var i=types.length-1; i>=0; i--) {
                         if (types[i].name == 'class') {
@@ -3416,9 +3456,7 @@ function generateComponents (context, mode, defaultScope) {
                     types,
                     path.length ? path : localDefault,
                     [],
-                    // fileScope,
                     path.length ? localDefault : [],
-                    // path.length ? level[MOUNT] ? [] : localDefault : [],
                     docstr,
                     function (fname) { nextFiles.push (fname); }
                 );
@@ -3435,6 +3473,7 @@ function generateComponents (context, mode, defaultScope) {
             ( level[FORCE] && level[FORCE] > 0 )
          || ( force && ( !level[FORCE] || level[FORCE] > 0 ) )
         ) ) {
+            // submit due to the FORCE mechanism
             level[FORCE] = -1;
             force = true;
             parseTag (
@@ -3444,7 +3483,6 @@ function generateComponents (context, mode, defaultScope) {
                 level[FINALTYPES],
                 level[LOCALPATH].length ? level[LOCALPATH] : localDefault,
                 [],
-                // fileScope,
                 level[LOCALPATH].length ? localDefault : [],
                 ( level[MOUNT] ? level[MOUNT][DOCSTR] : level[DOCSTR] ) || '',
                 function (fname) { nextFiles.push (fname); }
@@ -3531,7 +3569,6 @@ function generateComponents (context, mode, defaultScope) {
                         parseType (typePath),
                         scope,
                         [],
-                        // MOUNT in level ? level[MOUNT].docContext : [],
                         localDefault,
                         '',
                         function (fname) { nextFiles.push (fname); }
@@ -3614,7 +3651,7 @@ function generateComponents (context, mode, defaultScope) {
                 var arg = level[ARGUMENTS][i];
                 didSubmit += submitSourceLevel (
                     arg,
-                    concatPaths (scope, [ [ '(', arg[NAME] ] ]),
+                    concatPaths (scope, [ arg[NAME].concat() ]),
                     localDefault,
                     chain,
                     force
@@ -3678,12 +3715,17 @@ function generateComponents (context, mode, defaultScope) {
     // preprocess primitive types
     context.logger.info ({ parse:context.argv.parse }, 'preprocessing primitive types');
     var finishedADeref;
+    var round = 1;
     do {
         finishedADeref = false;
         for (var rootPath in context.sources) {
             var sourceRoot = context.sources[rootPath];
             delete sourceRoot.globals;
             for (var key in sourceRoot) try {
+                if (key === 'cloneArr')
+                    hackeroo = true;
+                else
+                    hackeroo = false;
                 var target = sourceRoot[key];
                 finishedADeref += preprocessDerefs (target, target, [ target ]);
             } catch (err) {
@@ -3702,6 +3744,7 @@ function generateComponents (context, mode, defaultScope) {
                 'failed to process deferred types'
             );
         }
+        round++;
     } while (finishedADeref);
 
     // generate Components for items defined in each source file

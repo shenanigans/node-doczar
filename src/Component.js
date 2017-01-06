@@ -184,17 +184,17 @@ var Component = module.exports = function (context, tpath, parent, position, log
     Document information hot off the [Parser](doczar/src/Parser).
 */
 Component.prototype.submit = function (info) {
-    for (var key in info)
+    for (var key in info) {
         if (this[key] === undefined) {
-            if (key == 'ctype') {
+            if (key === 'ctype') {
                 if (info.ctype == 'kwarg' || info.ctype == 'kwargs')
                     this.isKeywordArg = true;
                 if (info.ctype == 'args' || info.ctype == 'kwargs')
                     this.isMultiArg = true;
-            } else if (key == 'modifiers') {
+            } else if (key === 'modifiers') {
                 for (var i=0,j=info.modifiers.length; i<j; i++) {
                     var mod = info.modifiers[i];
-                    if (mod.mod == 'api') {
+                    if (mod.mod === 'api') {
                         this.isApi = true;
                         var pointer = this;
                         while (pointer.parent) {
@@ -211,49 +211,85 @@ Component.prototype.submit = function (info) {
                 }
             }
             this[key] = info[key];
-        } else if (this[key] !== info[key])
-            if (key == 'doc')
-                if (isArr (info.doc))
-                    this.doc.push.apply (this.doc, info.doc);
-                else
-                    this.doc.push (info.doc);
-            else if (key == 'valtype')
-                this.valtype.push.apply (this.valtype, info.valtype);
-            else if (key == 'modifiers') {
-                this.modifiers.push.apply (this.modifiers, info.modifiers);
-                for (var i=0,j=info.modifiers.length; i<j; i++) {
-                    var mod = info.modifiers[i];
-                    if (mod.mod == 'api') {
-                        this.isApi = true;
-                        var pointer = this;
-                        while (pointer.parent) {
-                            pointer = pointer.parent;
-                            pointer.isApi = true;
+            continue;
+        }
+        if (this[key] === info[key])
+            continue;
+        if (key == 'doc') {
+            if (isArr (info.doc)) {
+                for (var i=0,j=info.doc.length; i<j; i++) {
+                    var docInfo = info.doc[i];
+                    if (docInfo.value.match (/^[\s\n\r]*$/))
+                        continue;
+                    var found = false;
+                    for (var k=0,l=this.doc.length; k<l; k++)
+                        if (this.doc[k].value === docInfo.value) {
+                            found = true;
+                            break;
                         }
-                        continue;
-                    }
-                    if (mod.mod == 'patches') {
-                        if (mod.path) // ensure the patched component exists
-                            this.context.getComponent (mod.path);
-                        continue;
-                    }
+                    if (!found)
+                        this.doc.push (docInfo);
                 }
-            } else if (key === 'ctype' && (
-                ( this.ctype === 'class' && info.ctype === 'property' )
-             || ( this.ctype === 'callback' && info.ctype === 'argument' )
-            ) ) {
-                // nothing to do here
-            } else if (key === 'ctype' && this.ctype === 'argument' && info.ctype === 'callback') {
-                this.ctype = info.ctype;
-            } else if (key === 'sourceLine') {
-                // drop redefinitions of the source file location
             } else {
-                this.logger.error (
-                    { key:key, path:this.pathstr, from:this[key], to:info[key]},
-                    'attempted to redefine a property'
-                );
-                // console.trace();
+                if (info.doc.value.match (/^[\s\n\r]*$/))
+                    continue;
+                var found = false;
+                for (var k=0,l=this.doc.length; k<l; k++)
+                    if (this.doc[k].value === info.doc.value) {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    this.doc.push (info.doc);
             }
+            continue;
+        }
+        if (key == 'valtype') {
+            this.valtype.push.apply (this.valtype, info.valtype);
+            continue;
+        }
+        if (key == 'modifiers') {
+            this.modifiers.push.apply (this.modifiers, info.modifiers);
+            for (var i=0,j=info.modifiers.length; i<j; i++) {
+                var mod = info.modifiers[i];
+                if (mod.mod == 'api') {
+                    this.isApi = true;
+                    var pointer = this;
+                    while (pointer.parent) {
+                        pointer = pointer.parent;
+                        pointer.isApi = true;
+                    }
+                    continue;
+                }
+                if (mod.mod == 'patches') {
+                    if (mod.path) // ensure the patched component exists
+                        this.context.getComponent (mod.path);
+                    continue;
+                }
+            }
+            continue;
+        }
+        if (key === 'ctype' && (
+            ( this.ctype === 'class' && info.ctype === 'property' )
+         || ( this.ctype === 'callback' && info.ctype === 'argument' )
+        ) ) {
+            // nothing to do here
+            continue;
+        }
+        if (key === 'ctype' && this.ctype === 'argument' && info.ctype === 'callback') {
+            this.ctype = info.ctype;
+            continue;
+        }
+        if (key === 'sourceLine') {
+            // drop redefinitions of the source file location
+            continue;
+        }
+
+        this.logger.error (
+            { key:key, path:this.pathstr, from:this[key], to:info[key]},
+            'attempted to redefine a property'
+        );
+    }
 };
 
 
@@ -384,7 +420,7 @@ var ALIAS_PROPS = [
 ];
 
 
-/*      @member:Function finalize
+/*
     Create a representative document ready for rendering and save it to [final](#final).
 @spare details
     Stage 0: Accumulation
@@ -659,17 +695,6 @@ Component.prototype.finalize = function (options, callback) {
                 }
             }
 
-            // classes
-            if (self.isClasslike || self.isClassValtype || self.final.members.length)
-                self.final.hasConstructorInfo = Boolean (
-                    self.final.constructorDoc
-                 || self.final.arguments.length
-                 || self.final.returns.length
-                 || self.final.throws.length
-                );
-            else
-                self.final.hasConstructorInfo = false;
-
             callback();
         });
     });
@@ -699,11 +724,6 @@ Component.prototype.finalize = function (options, callback) {
         valtype:            this.valtype,
         isKwarg:            Boolean (this.isKeywordArg),
         isMultiArg:         Boolean (this.isMultiArg),
-        isFunction:
-            this.ctype == 'callback'
-         || this.ctype == 'iterator'
-         || this.ctype == 'generator'
-         ,
         isSpare:            this.ctype == 'spare',
         isModule:           this.ctype == 'module',
         isClass:            this.ctype == 'class',
@@ -925,19 +945,40 @@ Component.prototype.finalize = function (options, callback) {
     }
 
     // certain special cases/flags
-    if (this.ctype == 'callback')
+    if (this.ctype === 'callback')
         this.final.isCallback = true;
     if (
-        this.ctype == 'class'
+        this.ctype === 'class'
      || this.isClassValtype
+     || this.member.length
+     || this.superClasses.length
     )
         this.final.isClasslike = true;
 
     if (this.isJSONValtype || this.ctype == 'enum')
         this.final.isInline = true;
 
-    if (this.final.arguments.length || this.final.throws.length)
-        this.final.isFunction = true;
+    // classes
+    if (this.ctype !== 'spare') {
+        if (this.final.isClasslike || this.isClassValtype || this.member.length)
+            this.final.hasConstructorInfo = Boolean (
+                Object.hasOwnProperty.call (this.spare, 'constructor')
+             || this.argument.length
+             || this.returns.length
+             || this.throws.length
+            );
+        else
+            this.final.hasConstructorInfo = false;
+
+        this.final.isFunction = Boolean (!this.final.hasConstructorInfo && !this.isClasslike && (
+            this.ctype == 'callback'
+         || this.ctype == 'iterator'
+         || this.ctype == 'generator'
+         || this.argument.length
+         || this.returns.length
+         || this.throws.length
+        ));
+    }
 };
 
 
@@ -945,7 +986,7 @@ Component.prototype.finalize = function (options, callback) {
     Gather children from superclasses and merge them, in order, into a document representing this
     Component's inheritence. **Note:** this Component's children will *also* be merged in, producing
     a pre-compiled inheritence result and *not* just the inherited children.
-@returns:doczar/Component
+@returns:doczar/src/Component
     The assembled inheritence document is returned. It looks like an incomplete Component instance,
     containing only child Components.
 */
@@ -977,8 +1018,8 @@ Component.prototype.inherit = function (loops) {
         }
 
     var output = {
-        property:           Object.create (null),
-        propertySymbols:    Object.create (null),
+        // property:           Object.create (null),
+        // propertySymbols:    Object.create (null),
         member:             Object.create (null),
         memberSymbols:      Object.create (null),
         event:              Object.create (null)
@@ -998,10 +1039,10 @@ Component.prototype.inherit = function (loops) {
         }
         var superdoc = supertype.inherit (loops);
 
-        for (var key in superdoc.property)
-            output.property[key] = superdoc.property[key];
-        for (var key in superdoc.propertySymbols)
-            output.propertySymbols[key] = superdoc.propertySymbols[key];
+        // for (var key in superdoc.property)
+        //     output.property[key] = superdoc.property[key];
+        // for (var key in superdoc.propertySymbols)
+        //     output.propertySymbols[key] = superdoc.propertySymbols[key];
         for (var key in superdoc.member)
             output.member[key] = superdoc.member[key];
         for (var key in superdoc.memberSymbols)
@@ -1053,26 +1094,26 @@ Component.prototype.inherit = function (loops) {
             // if any of the parent's superClasses can't be found, it was already logged about
         }
 
-    for (var key in this.property) {
-        if (Object.hasOwnProperty.call (output.property, key)) {
-            var override = output.property[key];
-            this.property[key].final.override = {
-                path:       override.path,
-                name:       override.pathstr
-            };
-        }
-        output.property[key] = this.property[key];
-    }
-    for (var key in this.propertySymbols) {
-        if (Object.hasOwnProperty.call (output.propertySymbols, key)) {
-            var override = output.propertySymbols[key];
-            this.propertySymbols[key].final.override = {
-                path:       override.path,
-                name:       override.pathstr
-            };
-        }
-        output.propertySymbols[key] = this.propertySymbols[key];
-    }
+    // for (var key in this.property) {
+    //     if (Object.hasOwnProperty.call (output.property, key)) {
+    //         var override = output.property[key];
+    //         this.property[key].final.override = {
+    //             path:       override.path,
+    //             name:       override.pathstr
+    //         };
+    //     }
+    //     output.property[key] = this.property[key];
+    // }
+    // for (var key in this.propertySymbols) {
+    //     if (Object.hasOwnProperty.call (output.propertySymbols, key)) {
+    //         var override = output.propertySymbols[key];
+    //         this.propertySymbols[key].final.override = {
+    //             path:       override.path,
+    //             name:       override.pathstr
+    //         };
+    //     }
+    //     output.propertySymbols[key] = this.propertySymbols[key];
+    // }
     for (var key in this.member) {
         if (Object.hasOwnProperty.call (output.member, key)) {
             var override = output.member[key];
@@ -1138,7 +1179,6 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
 
     if (!this.hasChildren)
         return callback();
-    // console.log (this.final.pathstr, this.final.hasConstructorInfo);
 
     this.context.latency.log();
     var self = this;

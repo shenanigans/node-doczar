@@ -104,7 +104,7 @@ function generateComponents (context, submitSourceLevel) {
             if (globalFailed.indexOf (key) < 0) {
                 globalFailed.push (key);
                 context.logger.error (
-                    { err:err, identifier:key, parse:context.context.argv.parse },
+                    { err:err, identifier:key, parse:context.argv.parse },
                     'failed to generate Declarations for global identifier'
                 );
             }

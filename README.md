@@ -319,7 +319,7 @@ Here is a list of the available Modifiers and Flags:
 
 
 Syntax Parsing
-------------
+--------------
 Syntax parsing is currently available for Javascript in two distinct flavors for either code used in
 a browser through a `<script>` tag (including use of the ES6 `import` statement) or module-based
 code as used with [node.js](https://nodejs.org/) or [browserify](http://browserify.org/). The next
@@ -374,6 +374,23 @@ var trailer = NEW_MOVIES[movieIndex].trailer; /*
     This comment will document `trailer`.
 */
 ```
+
+### Javascript Caveats
+In order to track classes that use the `__proto__` property to build instances, this behavior is
+interpereted in a slightly skewed way. Consider the following code fragment:
+
+```javascript
+function ClassConstructor (arg0, arg1) {
+    this.__proto__ = {
+        method1:    function(){ }
+    };
+}
+ClassConstructor.prototype.method0 = function(){ };
+```
+
+`doczar` will document the `ClassConstructor` class as containing two members, called `method0` and
+`method1`. This is because `doczar` chooses to document *every* property which *may* appear on a
+type, regardless of whether it is always present.
 
 
 ### Parsing Modes

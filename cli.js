@@ -129,17 +129,19 @@ var OPTIONS_VERBOSE = [ 'trace', 'debug', 'info', 'warning', 'error', 'fatal' ];
 var unknownOptions = [];
 var ARGV_OPTIONS = {
     default:        {
-        out:        'docs',
-        verbose:    'info',
-        locals:     'none',
-        code:       'github',
-        optArgs:    'none',
-        maxDepth:   '4'
+        out:            'docs',
+        verbose:        'info',
+        locals:         'none',
+        code:           'github',
+        optArgs:        'none',
+        maxDepth:       '4',
+        maxRefDepth:    '8'
     },
     boolean:        [ 'dev', 'api', 'json', 'raw', 'noImply', 'noDeps', 'node' ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
-        'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth'
+        'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth',
+        'maxRefDepth'
     ],
     alias:          {
         o:              'out',
@@ -245,6 +247,13 @@ try {
     argv.maxDepth = Number (argv.maxDepth);
 } catch (err) {
     return process.fatal ({ input:argv.maxDepth }, 'invalid maxDepth argument');
+}
+
+// maxRefDepth a valid number?
+try {
+    argv.maxRefDepth = Number (argv.maxRefDepth);
+} catch (err) {
+    return process.fatal ({ input:argv.maxRefDepth }, 'invalid maxRefDepth argument');
 }
 
 // if --fileRoot is provided, it should be a real path to a directory
