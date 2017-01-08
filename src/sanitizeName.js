@@ -1,7 +1,7 @@
 
 var RE_SANITIZE = /[<>:"\/\\|?*#]/g;
 function sanitizeName (pathstr, known) {
-    pathstr = pathstr.replace (RE_SANITIZE, '_').replace (/\.\./g, '_');
+    pathstr = String (pathstr).replace (RE_SANITIZE, '_').replace (/\.\./g, '_');
     var canonicalPath = pathstr.toLowerCase();
     if (canonicalPath[canonicalPath.length-1] == '.')
         canonicalPath += '_';

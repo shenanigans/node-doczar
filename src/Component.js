@@ -145,10 +145,10 @@ var Component = module.exports = function (context, tpath, parent, position, log
     this.interfaces = [];
 
     var lastI = tpath.length - 1;
-    this.name = tpath[lastI][1] || '';
-    if (!this.name)
-        tpath[lastI][1] = getSimpleID();
-    this.pathname = this.name || tpath[lastI][1];
+    if (!tpath[lastI][1] || typeof tpath[lastI][1] !== 'string')
+        this.pathname = this.name = '';
+    else
+        this.pathname = this.name = tpath[lastI][1];
     this.pathstr = '';
     for (var i=0, j=this.path.length; i<j; i++)
         this.pathstr += (this.path[i][0]||'.') + this.path[i][1];
@@ -284,7 +284,16 @@ Component.prototype.submit = function (info) {
             // drop redefinitions of the source file location
             continue;
         }
+        if (key === 'name') {
+            if (!this.name) {
+                this.name = this.pathname = this.path[this.path.length-1][1] = info[key];
+                if (this.parent)
+                    this.parent[this.position+'ByName'][this.name] = this;
+            }
+            continue;
+        }
 
+        // unknown property
         this.logger.error (
             { key:key, path:this.pathstr, from:this[key], to:info[key]},
             'attempted to redefine a property'
@@ -555,14 +564,23 @@ Component.prototype.finalize = function (options, callback) {
             self.final.breadcrumbs = [];
             var backpath = 'index.html';
             var pointer = self;
-            for (var i=0,j=self.path.length; i<j; i++) {
-                self.final.breadcrumbs.push ({
-                    path:       self.path.slice (0, i+1),
-                    name:       self.path[i][1],
-                    delimiter:  self.path[i][0]
+            for (var i=self.path.length-1; i>=0; i--) {
+                self.final.breadcrumbs.unshift ({
+                    path:       pointer.path.slice (0, i+1),
+                    name:       pointer.name,
+                    delimiter:  pointer.path[i][0]
                 });
+                pointer = pointer.parent;
                 backpath = '../../' + backpath;
             }
+            // for (var i=0,j=self.path.length; i<j; i++) {
+            //     self.final.breadcrumbs.push ({
+            //         path:       self.path.slice (0, i+1),
+            //         name:       self.path[i][1],
+            //         delimiter:  self.path[i][0]
+            //     });
+            //     backpath = '../../' + backpath;
+            // }
 
             if (self.ctype == 'spare')
                 return callback();

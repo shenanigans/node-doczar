@@ -2074,26 +2074,9 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             var docstr = match[4] || '';
                             var pathfrags;
                             if (!pathstr) {
-                                // if we have a node, add its local name to the path
-                                // pathfrags = fileScope.length ?
-                                //     fileScope.concat()
-                                //   : ctype === 'module' ?
-                                //         []
-                                //       : baseNode[ROOT].concat()
-                                //       ;
                                 pathfrags = [];
                                 if (node && NAME in node)
                                     pathfrags.push (node[NAME].concat());
-
-                                // console.log ('no pathstr', pathStr (pathfrags));
-                                // if (node && NAME in node) {
-                                //     pathfrags = [];
-                                //     pathfrags.push (node[NAME].concat());
-                                //     console.log ('name', pathfrags);
-                                // } else {
-                                //     pathfrags = baseNode[ROOT].concat();
-                                //     console.log ('no name', baseNode[ROOT]);
-                                // }
                             } else {
                                 pathfrags = parsePath (pathstr, []);
                                 if (!pathfrags[0][0])
@@ -2101,14 +2084,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
                                     else
                                         pathfrags[0][0] = '.';
-                                // pathfrags = (
-                                //     fileScope.length ? fileScope.concat() : ctype === 'module' ? [] : baseNode[ROOT]
-                                // ).concat (pathfrags);
-                                // console.log ('mount', pathStr (pathfrags));
                             }
 
-                            if (ctype === 'module')
+                            if (ctype === 'module') {
                                 fileScope = pathfrags.concat();
+                                pathfrags = [];
+                            }
+
                             if (!node) {
                                 // no related expression
                                 parseTag (
@@ -2122,21 +2104,16 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     docstr,
                                     next
                                 );
-                            } else if (node[MOUNT])
-                                node[MOUNT].docstr = match[4] || '';
-                            else {
-                                // console.log ('mounting', pathStr (fileScope), ' - ', pathStr (pathfrags));
+                            } else {
                                 node[MOUNT] = {
                                     ctype:      ctype,
                                     path:       pathfrags,
-                                    valType:    valtype,
+                                    valtype:    valtype,
                                     docstr:     docstr,
                                     docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                                     fname:      fname
                                 };
                                 node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
-                                // node[OVERRIDE] = [];
-                                // console.log ('mounted', node[MOUNT]);
                             }
                         }
                     }
@@ -2170,31 +2147,39 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             valtype = [];
                         var pathstr = match[3];
                         var docstr = match[4] || '';
-                        var pathfrags = parsePath (pathstr, fileScope);
-                        if (!pathfrags[0][0])
-                            if (pathfrags.length == 1)
-                                pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
-                            else
-                                pathfrags[0][0] = '.';
+                        if (!pathstr) {
+                            pathfrags = [];
+                            if (node && NAME in node)
+                                pathfrags.push (node[NAME].concat());
+                        } else {
+                            pathfrags = parsePath (pathstr, []);
+                            if (!pathfrags[0][0])
+                                if (pathfrags.length === 1)
+                                    pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                                else
+                                    pathfrags[0][0] = '.';
+                        }
 
-                        if (ctype === 'module')
+                        if (ctype === 'module') {
                             fileScope = pathfrags.concat();
+                            pathfrags = [];
+                        }
 
                         node[MOUNT] = {
                             ctype:      ctype,
                             path:       pathfrags,
-                            valType:    valtype,
+                            valtype:    valtype,
                             docstr:     docstr,
-                            docContext: fileScope,
+                            docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                             fname:      fname
                         };
-                        node[OVERRIDE] = fileScope.concat();
+                        node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
                     }
                 }
             }
 
-            if (node && fileScope.length)
-                node[OVERRIDE] = fileScope.concat();
+            // if (node && fileScope.length)
+            //     node[OVERRIDE] = fileScope.concat();
         }
 
         // ---------------------------------------------------------------- real processing begins
@@ -2368,26 +2353,22 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             if (dummy[PROPS])
                                 for (var key in dummy[PROPS])
                                     node[key] =
-                                     // targetNode[key] =
                                      rebase (dummy[PROPS][key])
                                      ;
                             if (dummy[MEMBERS])
                                 for (var key in dummy[MEMBERS])
                                     node[key] =
-                                     // targetNode[key] =
                                      rebase (dummy[MEMBERS][key])
                                      ;
                             if (dummy[DEREF].length) {
                                 if (dummy[DEREF][0][PROPS])
                                     for (var key in dummy[DEREF][0][PROPS])
                                         node[key] =
-                                         // targetNode[key] =
                                          rebase (dummy[DEREF][0][PROPS][key])
                                          ;
                                 if (dummy[DEREF][0][MEMBERS])
                                     for (var key in dummy[DEREF][0][MEMBERS])
                                         node[key] =
-                                         // targetNode[key] =
                                          rebase (dummy[DEREF][0][MEMBERS][key])
                                          ;
                             }
@@ -2582,7 +2563,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 }
 
                 // recurse into function body
-                // var target = node || newNode(); // huh?
                 var target = node;
                 if (target[TYPES].indexOf ('Function') < 0)
                     target[TYPES].push ('Function');
@@ -3035,7 +3015,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
                 // first check if it's `import * as ModName from "foo.js"`
                 if (level.specifiers[0].type == "ImportNamespaceSpecifier") {
-                    // var localNode = baseNode[level.specifiers[0].local.name] = newNode();
                     var localNode;
                     if (Object.hasOwnProperty.call (baseNode, level.specifiers[0].local.name))
                         localNode = baseNode[level.specifiers[0].local.name];
@@ -3282,7 +3261,6 @@ function generateComponents (context, mode, defaultScope) {
             var ref = level[DEREF][i];
             if (chain.indexOf (ref) >= 0)
                 return didFinishDeref;
-            // chain.push (ref);
             if (IS_COL in ref)
                 continue;
             recurse (ref, target);
@@ -3392,6 +3370,8 @@ function generateComponents (context, mode, defaultScope) {
                 types.push.apply (types, level[MOUNT].valtype);
                 docstr = level[MOUNT].docstr;
                 fileScope = level[MOUNT].docContext;
+                if (!level[OVERRIDE])
+                    localDefault = [];
             } else {
                 path = scope;
                 types.push.apply (types, level[TYPES]);
@@ -3467,6 +3447,11 @@ function generateComponents (context, mode, defaultScope) {
                             sourceFile: pathLib.relative (level[REFERER], level[DOC]),
                             sourceLine: level[LINE]
                         }
+                    );
+                if (level[NAME] !== undefined && level[NAME][1])
+                    context.submit (
+                        fullpath,
+                        { name:level[NAME][1] }
                     );
             }
         } else if ( !level[SILENT] && (
@@ -3651,7 +3636,7 @@ function generateComponents (context, mode, defaultScope) {
                 var arg = level[ARGUMENTS][i];
                 didSubmit += submitSourceLevel (
                     arg,
-                    concatPaths (scope, [ arg[NAME].concat() ]),
+                    concatPaths (scope, [ [ '(', i ] ]),
                     localDefault,
                     chain,
                     force

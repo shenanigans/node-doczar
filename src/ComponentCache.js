@@ -25,6 +25,11 @@ var concatArrs = function(){
         out.push.apply (out, arguments[i]);
     return out;
 };
+var addToArr = function (arr, item) {
+    var newArr = arr.concat();
+    newArr.push (item);
+    return newArr;
+};
 var isArr = function (a) {
     if (!a) return false;
     return a.__proto__ === Array.prototype;
@@ -46,6 +51,81 @@ var ComponentCache = function (logger) {
 };
 
 
+ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
+    if (!scope) {
+        if (Object.hasOwnProperty.call (this.root, step[1]))
+            return this.root[step[1]];
+        if (!doCreate)
+            return;
+        return this.root[step[1]] = new Component (
+            this,
+            [ step ],
+            undefined,
+            '',
+            this.logger
+        );
+    }
+    var fragCType = Patterns.delimiters[step[0]||'.'];
+    var locationName = fragCType;
+    var stepIsString = typeof step[1] === 'string';
+    var copyToArr;
+    if (step[2])
+        locationName += 'Symbols';
+    else if (scope[locationName] instanceof Array && stepIsString) {
+        copyToArr = locationName;
+        locationName += 'ByName';
+    }
+    if (stepIsString) {
+        if (Object.hasOwnProperty.call (scope[locationName], step[1]))
+            return scope[locationName][step[1]];
+        if (doCreate) {
+            var newComponent = scope[locationName][step[1]] = new Component (
+                this,
+                addToArr (scope.path, step),
+                scope,
+                locationName,
+                this.logger
+            );
+            if (copyToArr)
+                scope[copyToArr].push (newComponent);
+            return newComponent;
+        }
+        if (
+            !scope.inherited
+         || Object.hasOwnProperty.call (scope.inherited, locationName)
+         || Object.hasOwnProperty.call (scope.inherited[locationName], step[1])
+        )
+            return;
+        return scope[locationName][step[1]];
+    }
+
+    // integer index
+    // var index = step[1] === undefined ? scope[locationName].length : step[1];
+    var index = step[1] !== undefined ? step[1] : (step[1] = scope[locationName].length);
+    if (scope[locationName].length > index)
+        return scope[locationName][index];
+    if (doCreate) {
+        for (var i=scope[locationName].length,j=index+1; i<j; i++) {
+            scope[locationName][i] = new Component (
+                this,
+                addToArr (scope.path, step),
+                scope,
+                locationName,
+                this.logger
+            );
+        }
+        return scope[locationName][index];
+    }
+    if (
+        !scope.inherited
+     || Object.hasOwnProperty.call (scope.inherited, locationName)
+     || scope.inherited[locationName].length <= index
+    )
+        return;
+    return scope.inherited[locationName][index];
+}
+
+
 /*
     Find or create a [Component](doczar.Component) for a given path. This is the only official way
     to create a Component.
@@ -59,87 +139,8 @@ ComponentCache.prototype.getComponent = function (tpath) {
         throw new Error ('invalid path');
 
     var pointer;
-    if (Object.hasOwnProperty.call (this.root, tpath[0][1]))
-        pointer = this.root[tpath[0][1]];
-    else
-        pointer = this.root[tpath[0][1]] = new Component (
-            this,
-            [ tpath[0] ],
-            undefined,
-            '',
-            this.logger
-        );
-
-    for (var i=1,j=tpath.length; i<j; i++) {
-        var step = tpath[i];
-        var stepType = typeof step[1];
-        var fragCType = Patterns.delimiters[step[0]];
-        var location = pointer[fragCType];
-        var fragName = step[1] || '';
-        try {
-            if (isArr (location))
-                if (
-                    stepType === 'string'
-                 && Object.hasOwnProperty.call (pointer[fragCType+'ByName'], step[1])
-                )
-                    pointer = pointer[fragCType+'ByName'][step[1]];
-                else if (stepType === 'number') {
-                    if (step[1] < location.length)
-                        pointer = location[step[1]];
-                    else {
-                        var newComponent = new Component (
-                            this,
-                            tpath.slice (0, i+1),
-                            pointer !== this.root ? pointer : undefined,
-                            fragCType,
-                            this.logger
-                        );
-                        location.push (newComponent);
-                        var unname = newComponent.path[newComponent.path.length-1][1];
-                        pointer[fragCType+'ByName'][unname] = newComponent;
-                        pointer = newComponent;
-                    }
-                } else {
-                    var newComponent = new Component (
-                        this,
-                        tpath.slice (0, i+1),
-                        pointer !== this.root ? pointer : undefined,
-                        fragCType,
-                        this.logger
-                    );
-                    location.push (newComponent);
-                    if (fragName)
-                        pointer[fragCType+'ByName'][fragName] = newComponent;
-                    else {
-                        var unname = newComponent.path[newComponent.path.length-1][1];
-                        pointer[fragCType+'ByName'][unname] = newComponent;
-                    }
-                    pointer = newComponent;
-                }
-            else {
-                var locationName = step[2] ? fragCType+'Symbols' : fragCType;
-                location = pointer[locationName];
-                if (Object.hasOwnProperty.call (location, fragName))
-                    pointer = location[fragName];
-                else {
-                    pointer = location[fragName] = new Component (
-                        this,
-                        tpath.slice (0, i+1),
-                        pointer !== this.root ? pointer : undefined,
-                        locationName,
-                        this.logger
-                    );
-                }
-            }
-        } catch (err) {
-            throw err;
-            var uglypath = '';
-            for (var i=0,j=tpath.length; i<j; i++)
-                uglypath += (tpath[i][0]||'.') + tpath[i][1];
-            throw new Error ('invalid path '+uglypath);
-        }
-    }
-
+    for (var i=0,j=tpath.length; i<j; i++)
+        pointer = this.walkStep (pointer, tpath[i], true);
     return pointer;
 };
 
@@ -161,39 +162,9 @@ ComponentCache.prototype.resolve = function (tpath) {
         throw new Error ('invalid path');
 
     var pointer;
-    var rootName = tpath[0][1];
-    if (!Object.hasOwnProperty.call (this.root, rootName))
-        throw new Error ('not found');
-    pointer = this.root[rootName];
-
-    for (var i=1,j=tpath.length; i<j; i++) {
-        var step = tpath[i];
-        var stepType = step[1];
-        if (step[1][0] == '`')
-            step = [ step[0], step[1].slice (1, -1), step[2] ];
-        var stepCType = Patterns.delimiters[step[0]||'.'];
-        var location;
-        if (pointer.inherited && Object.hasOwnProperty.call (pointer.inherited, stepCType))
-            location = pointer.inherited[stepCType];
-        else
-            location = pointer[stepCType];
-        var fragName = step[1] || '';
-        if (isArr (location))
-            if (Object.hasOwnProperty.call (pointer[stepCType+'ByName'], step[1]))
-                pointer = pointer[stepCType+'ByName'][step[1]];
-            // else if (stepType === 'number' && step[1] < location.length)
-            //     pointer = location[step[1]];
-            else
-                throw new Error ('not found');
-        else {
-            if (step[2])
-                location = pointer[stepCType+'Symbols'];
-            if (Object.hasOwnProperty.call (location, fragName))
-                pointer = location[fragName];
-            else
-                throw new Error ('not found');
-        }
-    }
+    for (var i=0,j=tpath.length; i<j; i++)
+        if (!(pointer = this.walkStep (pointer, tpath[i], true)))
+            throw new Error ('not found');
     return pointer;
 };
 
@@ -298,10 +269,6 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
         if (frag[1])
             str += pointer.sanitaryName + '/';
     }
-
-    // if not starting from root but sameFromRoot == 0, we must manually add the first name
-    // if (start.length && type.length > 1 && !sameFromRoot)
-    //     str += 'property/' + pointer.sanitaryName + '/';
 
     // prepare to take the last step
     var finalI = type.length - 1;

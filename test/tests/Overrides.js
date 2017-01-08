@@ -19,8 +19,10 @@ module.exports.classy (4);
     Argument implied name test.
 @argument
     Should be named `foo`.
+@argument:RegExp
+    Should be named `bar` and typed `RegExp`.
 */
-module.exports.impliedName = function (foo) { };
+module.exports.impliedName = function (foo, bar) { };
 
 /*
     Argument override test.

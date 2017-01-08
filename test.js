@@ -49,7 +49,7 @@ function compareLevel (path, able, baker) {
         }
 
     for (var aKey in able) {
-        if (aKey === 'elemID' || aKey === 'pathname' || aKey === 'pathstr' || aKey === 'path')
+        if (aKey === 'elemID')
             continue;
         var aItem = able[aKey];
         var subpath = path.concat();
@@ -60,7 +60,7 @@ function compareLevel (path, able, baker) {
         var aType = filth.typeof (aItem);
         var bType = filth.typeof (bItem);
         if (aType !== bType)
-            throw new Error ('type mismatch ' + subpath.join ('/'));
+            throw new Error ('type mismatch (' + aType + ' != ' + bType + ') ' + subpath.join ('/'));
         switch (aType) {
             case 'object':
                 compareLevel (subpath, aItem, bItem);
@@ -69,9 +69,8 @@ function compareLevel (path, able, baker) {
                 compareArray (subpath, aItem, bItem);
                 continue;
             case 'string':
+                // if (aItem !== bItem) {
                 if (aItem !== bItem) {
-                    if (aItem.match (/^[\s\r\n]*$/))
-                        continue;
                     if (aItem.length < 64 && bItem.length < 64)
                         throw new Error (
                             'value mismatch "'
