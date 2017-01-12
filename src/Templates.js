@@ -60,7 +60,7 @@ markedRenderer.link = function (href, title, text) {
         return '<a href="javascript:return false;">'+( text||targetStr )+'</a>'
     }
 
-    if (targetStr == '.')
+    if (targetStr === '.')
         type = currentLinkContext;
     else {
         type = Parser.parsePath (targetStr);
@@ -79,8 +79,9 @@ markedRenderer.link = function (href, title, text) {
             )
          || !Object.hasOwnProperty.call (linkFailureSources[uglySrc], targetStr)
         ) {
+            var uglyTarget = type.map (function(a){ return a[0]+a[1]; }).join ('');
             linkFailureSources[uglySrc][targetStr] = true;
-            logger.warn ({ from:uglySrc, type:targetStr }, 'cross reference failed');
+            logger.warn ({ from:uglySrc, type:uglyTarget }, 'cross reference failed');
         }
     }
 

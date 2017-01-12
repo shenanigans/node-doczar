@@ -177,10 +177,9 @@ var Component = module.exports = function (context, tpath, parent, position, log
     this.local = Object.create (null);
 };
 
-
 /*
     Merge additional information into this Component.
-@argument/doczar/Parser/Submission info
+@argument:doczar/src/Parser/Submission info
     Document information hot off the [Parser](doczar/src/Parser).
 */
 Component.prototype.submit = function (info) {
@@ -269,11 +268,20 @@ Component.prototype.submit = function (info) {
             }
             continue;
         }
-        if (key === 'ctype' && (
-            ( this.ctype === 'class' && info.ctype === 'property' )
-         || ( this.ctype === 'callback' && info.ctype === 'argument' )
-        ) ) {
-            // nothing to do here
+        if (key === 'ctype') {
+            // ignore lower-level overrides of these types
+            if (
+                ( this.ctype === 'class' && info.ctype === 'property' )
+             || ( this.ctype === 'callback' && info.ctype === 'argument' )
+            )
+                continue;
+            if (Patterns.delimitersInverse[this.ctype] === Patterns.delimitersInverse[info[key]])
+                this.ctype = info[key];
+            else
+                this.logger.error (
+                    { key:'ctype', path:this.pathstr, from:this[key], to:info[key]},
+                    'illegal Component type redefinition'
+                );
             continue;
         }
         if (key === 'ctype' && this.ctype === 'argument' && info.ctype === 'callback') {
@@ -296,7 +304,7 @@ Component.prototype.submit = function (info) {
         // unknown property
         this.logger.error (
             { key:key, path:this.pathstr, from:this[key], to:info[key]},
-            'attempted to redefine a property'
+            'illegal property redefinition'
         );
     }
 };
@@ -475,6 +483,7 @@ var ALIAS_PROPS = [
     Called without arguments when finalization is complete and this Component is ready to render.
 */
 Component.prototype.finalize = function (options, callback) {
+    this.isFinalizing = true;
     var self = this;
 
     if (!this.ctype) {
@@ -573,14 +582,6 @@ Component.prototype.finalize = function (options, callback) {
                 pointer = pointer.parent;
                 backpath = '../../' + backpath;
             }
-            // for (var i=0,j=self.path.length; i<j; i++) {
-            //     self.final.breadcrumbs.push ({
-            //         path:       self.path.slice (0, i+1),
-            //         name:       self.path[i][1],
-            //         delimiter:  self.path[i][0]
-            //     });
-            //     backpath = '../../' + backpath;
-            // }
 
             if (self.ctype == 'spare')
                 return callback();
@@ -717,12 +718,28 @@ Component.prototype.finalize = function (options, callback) {
         });
     });
 
+    // kill modules containing only empty modules
+    if (this.ctype === 'module' && this.hasChildren) {
+        var foundNonEmpty = false;
+        for (var i=0,j=children.length; i<j; i++) {
+            var child = children[i];
+            if (child.ctype !== 'module' || child.hasChildren) {
+                foundNonEmpty = true;
+                break;
+            }
+        }
+        if (!foundNonEmpty) {
+            this.hasChildren = false;
+            this.isTotallyEmpty = true;
+        }
+    }
+
     // =================================================================== children have been primed
     var minutes = options.date.getMinutes();
     if (minutes < 10) minutes = '0' + minutes;
     var timestring = (options.date.getHours()%12||12)+':'+minutes+(options.date.getHours()<12?'am':'pm');
     var realName;
-    if (this.ctype == 'signature')
+    if (this.ctype === 'signature')
         this.name = this.parent.name;
     this.final = {
         elemID:             getElemID(),
@@ -742,9 +759,9 @@ Component.prototype.finalize = function (options, callback) {
         valtype:            this.valtype,
         isKwarg:            Boolean (this.isKeywordArg),
         isMultiArg:         Boolean (this.isMultiArg),
-        isSpare:            this.ctype == 'spare',
-        isModule:           this.ctype == 'module',
-        isClass:            this.ctype == 'class',
+        isSpare:            this.ctype === 'spare',
+        isModule:           this.ctype === 'module',
+        isClass:            this.ctype === 'class',
         sigargs:            this.sigargs,
         simpleCtype:        Patterns.delimiters[Patterns.delimitersInverse[this.ctype]],
         hideCtype:          HIDDEN_CTYPES[this.ctype] || false,
@@ -1036,8 +1053,6 @@ Component.prototype.inherit = function (loops) {
         }
 
     var output = {
-        // property:           Object.create (null),
-        // propertySymbols:    Object.create (null),
         member:             Object.create (null),
         memberSymbols:      Object.create (null),
         event:              Object.create (null)
@@ -1057,10 +1072,6 @@ Component.prototype.inherit = function (loops) {
         }
         var superdoc = supertype.inherit (loops);
 
-        // for (var key in superdoc.property)
-        //     output.property[key] = superdoc.property[key];
-        // for (var key in superdoc.propertySymbols)
-        //     output.propertySymbols[key] = superdoc.propertySymbols[key];
         for (var key in superdoc.member)
             output.member[key] = superdoc.member[key];
         for (var key in superdoc.memberSymbols)
@@ -1112,26 +1123,6 @@ Component.prototype.inherit = function (loops) {
             // if any of the parent's superClasses can't be found, it was already logged about
         }
 
-    // for (var key in this.property) {
-    //     if (Object.hasOwnProperty.call (output.property, key)) {
-    //         var override = output.property[key];
-    //         this.property[key].final.override = {
-    //             path:       override.path,
-    //             name:       override.pathstr
-    //         };
-    //     }
-    //     output.property[key] = this.property[key];
-    // }
-    // for (var key in this.propertySymbols) {
-    //     if (Object.hasOwnProperty.call (output.propertySymbols, key)) {
-    //         var override = output.propertySymbols[key];
-    //         this.propertySymbols[key].final.override = {
-    //             path:       override.path,
-    //             name:       override.pathstr
-    //         };
-    //     }
-    //     output.propertySymbols[key] = this.propertySymbols[key];
-    // }
     for (var key in this.member) {
         if (Object.hasOwnProperty.call (output.member, key)) {
             var override = output.member[key];

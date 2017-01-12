@@ -74,6 +74,12 @@ function getRoot (context, filepath, root) {
     return newRoot;
 }
 
+var nodeGetDep = require ('./node').getDependency;
+function getDependency (context, refererName, sourceName, rootPath, target) {
+    var workingTarget = target.match (/\.js$/) ? target.slice (0, -3) : target;
+    return nodeGetDep (context, refererName, sourceName, rootPath, workingTarget);
+}
+
 function cleanupGlobal(){
     delete globalNode.window;
     return globalNode;
@@ -168,6 +174,7 @@ module.exports = {
     tokenize:           tokenize,
     getGlobalNode:      getGlobalNode,
     getRoot:            getRoot,
+    getDependency:      getDependency,
     cleanupGlobal:      cleanupGlobal,
     cleanupRoot:        cleanupRoot,
     generateComponents: generateComponents

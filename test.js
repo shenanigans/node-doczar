@@ -69,7 +69,6 @@ function compareLevel (path, able, baker) {
                 compareArray (subpath, aItem, bItem);
                 continue;
             case 'string':
-                // if (aItem !== bItem) {
                 if (aItem !== bItem) {
                     if (aItem.length < 64 && bItem.length < 64)
                         throw new Error (
@@ -351,6 +350,7 @@ runTest ('Node Parsing', '--parse node --root test');
 runTest ('Node Parsing Without Root', '--parse node');
 runTest ('Prototype', '--parse node --root test');
 runTest ('__proto__', '--parse node --root test');
+runTest ('Overrides', '--parse node --root test');
 runTest ('ES6 Parsing', '--parse js');
 runTest ('Locals --All', '--parse node --root test --locals all');
 runTest ('Locals --Comments', '--parse node --root test --locals comments');

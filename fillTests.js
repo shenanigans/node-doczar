@@ -47,13 +47,15 @@ var ARGUMENTS = {
     "LocalsComments.js":            "--parse node --root test --locals comments",
     "LocalsNone.js":                "--parse node --root test",
     "__proto__.js":                 "--parse node --root test",
-    "Prototype.js":                 "--parse node --root test"
+    "Prototype.js":                 "--parse node --root test",
+    "Overrides.js":                 "--parse node --root test"
 };
 var SKIP = [
     "NodeParseModule.js",
     "NodeParseModules",
     "ES6Modules",
-    "Fauxsync.js"
+    "Fauxsync.js",
+    "skl"
 ];
 async.parallel ([
     function (callback) {

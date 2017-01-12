@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/*      @module doczar
+/*      @module
     Select, load and parse source files for `doczar` format documentation comments. Render html
     output to a configured disk location.
 @spare `README.md`
@@ -19,7 +19,6 @@ var bunyan            = require ('bunyan');
 var filth             = require ('filth');
 var Parser            = require ('./src/Parser');
 var ComponentCache    = require ('./src/ComponentCache');
-var getNodeModulePath = require ('./src/node_modules/getNodeModulePath');
 var Patterns          = require ('./src/Parser/Patterns');
 require ('colors');
 
@@ -32,7 +31,14 @@ function concatPaths(){
             }));
     return out;
 }
-
+function pathStr (type) {
+    var finalStr = type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('')
+    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
+}
 function isArray (a) { return a.__proto__ === Array.prototype; }
 
 var LIB_SYNONYMS = {
@@ -137,7 +143,10 @@ var ARGV_OPTIONS = {
         maxDepth:       '4',
         maxRefDepth:    '8'
     },
-    boolean:        [ 'dev', 'api', 'json', 'raw', 'noImply', 'noDeps', 'node' ],
+    boolean:        [
+        'dev',          'api',          'json',         'raw',          'noImply',      'noDeps',
+        'node',         'destructive'
+    ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
         'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth',
@@ -383,7 +392,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    path.parse (fname).dir
+                        referer:    fname
                     };
                 }));
             } else
@@ -399,7 +408,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    path.parse (fname).dir
+                        referer:    fname
                     };
                 }));
             } else
@@ -436,7 +445,7 @@ if (argv.parse) {
         }
         sourceFiles.push ({
             file:       modPath,
-            referer:    path.parse (modPath).dir
+            referer:    modPath
         });
         logger.debug (
             { jsmod:mod, filename:modPath },
@@ -485,7 +494,7 @@ async.eachSeries (modules, function (mod, callback) {
         sourceFiles.push.apply (sourceFiles, dfnames.map (function (fname) {
             return {
                 file:       fname,
-                referer:    path.parse (fname).dir
+                referer:    fname
             };
         }));
         callback();
@@ -496,6 +505,15 @@ async.eachSeries (modules, function (mod, callback) {
     context.latency.log ('setup');
     processSource (libFiles);
 });
+
+function pathStr (type) {
+    var finalStr = type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('')
+    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
+}
 
 function processSource (filenames) {
     var nextFiles = [];
@@ -542,16 +560,6 @@ function processSource (filenames) {
                 return path.resolve (process.cwd(), fileInfo.referer || referer || useReferer);
             }
 
-            // if (fileInfo.referer && fileInfo.referer != fileInfo.file)
-            //     localDefaultScope = getNodeModulePath (
-            //         context,
-            //         argv.root,
-            //         localDefaultScope,
-            //         referer,
-            //         fname
-            //     );
-
-            logger.setTask ('parsing ' + fname);
             try {
                 if (argv.parse)
                     Parser.parseSyntaxFile (
@@ -632,7 +640,6 @@ function processSource (filenames) {
         else
             renderOptions.date = new Date();
         context.latency.log();
-        // logger.info ('finalizing documentation');
         logger.setTask ('finalizing documentation');
         context.finalize (renderOptions, function(){
             context.latency.log ('finalization');

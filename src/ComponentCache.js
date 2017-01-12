@@ -1,13 +1,11 @@
 
 /*      @module:class
-    Roots a document tree and builds all the [Components](/Component) that live inside it.
-    [Looks up](#resolve) and [creates](#getComponent) [Components](/Component) by path.
-    Centralizes [finalization](#finalize) and [filesystem output](#writeFiles).
+    Roots a document tree and builds all the [Components](doczar/src/Component) that live inside it.
+    [Looks up](#resolve) and [creates](#getComponent) Components by path. Centralizes [finalization]
+    (#finalize) and [filesystem output](#writeFiles).
 @argument:bunyan.Logger logger
-    Any interesting events produced by any [Component](/Component) generated on this cache
+    Any interesting events produced by any [Component](doczar/src/Component) generated on this cache
     will be logged on this [Logger](bunyan.Logger).
-@member:Object root
-    Stores the roots of the global `property` and `module` maps. `{ property:{ }, module:{ } }`.
 */
 
 var path            = require ('path');
@@ -92,15 +90,14 @@ ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
         }
         if (
             !scope.inherited
-         || Object.hasOwnProperty.call (scope.inherited, locationName)
-         || Object.hasOwnProperty.call (scope.inherited[locationName], step[1])
+         || !Object.hasOwnProperty.call (scope.inherited, locationName)
+         || !Object.hasOwnProperty.call (scope.inherited[locationName], step[1])
         )
             return;
-        return scope[locationName][step[1]];
+        return scope.inherited[locationName][step[1]];
     }
 
     // integer index
-    // var index = step[1] === undefined ? scope[locationName].length : step[1];
     var index = step[1] !== undefined ? step[1] : (step[1] = scope[locationName].length);
     if (scope[locationName].length > index)
         return scope[locationName][index];
@@ -118,7 +115,7 @@ ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
     }
     if (
         !scope.inherited
-     || Object.hasOwnProperty.call (scope.inherited, locationName)
+     || !Object.hasOwnProperty.call (scope.inherited, locationName)
      || scope.inherited[locationName].length <= index
     )
         return;
@@ -127,11 +124,11 @@ ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
 
 
 /*
-    Find or create a [Component](doczar.Component) for a given path. This is the only official way
-    to create a Component.
-@argument:doczar.Parser/Path tpath
+    Find or create a [Component](doczar/src/Component) for a given path. This is the only supported
+    way to create a Component.
+@argument:doczar/src/Parser/Path tpath
     The path to retrieve or create.
-@returns:doczar.Component
+@returns:doczar/src/Component
     The retrieved or newly created component.
 */
 ComponentCache.prototype.getComponent = function (tpath) {
@@ -146,11 +143,11 @@ ComponentCache.prototype.getComponent = function (tpath) {
 
 
 /*
-    Return an existing [Component](doczar.Component) for a path or throw an [Error]() if it is not
-    found.
-@argument:doczar.Parser/Path tpath
+    Return an existing [Component](doczar/src/Component) for a [path](doczar/src/Parser/Path] or
+    throw an [Error]() if it is not found.
+@argument:doczar/src/Parser/Path tpath
     The path to retrieve.
-@returns:doczar.Component
+@returns:doczar/src/Component
     The retrieved Component.
 @throws:Error `not found`
     An existing Component was not found on the specified path.
@@ -163,22 +160,23 @@ ComponentCache.prototype.resolve = function (tpath) {
 
     var pointer;
     for (var i=0,j=tpath.length; i<j; i++)
-        if (!(pointer = this.walkStep (pointer, tpath[i], true)))
+        if (!(pointer = this.walkStep (pointer, tpath[i], false)))
             throw new Error ('not found');
     return pointer;
 };
 
 
 /*
-    Attempt to produce a relative url to link from one Component's root output page to another. If
-    this cannot be done for any reason, `"javascript:return false;"` is returned to produce a dead
-    link.
-@argument:doczar.Parser/Path start
-    The Component whose root page is requesting this href.
-@argument:doczar.Parser/Path type
-    The Component to which the root page must link.
+    Attempt to produce a relative url to link from one [Component](doczar/src/Component) root page
+    to another. If this cannot be done for any reason, `"javascript:return false;"` is returned to
+    produce a dead link.
+@argument:doczar/src/Parser/Path start
+    The [Component](doczar/src/Component) whose root page is requesting this href.
+@argument:doczar/src/Parser/Path type
+    The [Component](doczar/src/Component) to which the root page must link.
 @returns:String
-    Either a relative url to the requested Component's root page, or `"javascript:return false;"`.
+    Either a relative url to the requested [Component](doczar/src/Component) root page, or
+    `"javascript:return false;"`.
 */
 ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     if (!type || !type.length)
@@ -311,13 +309,14 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
 
 
 /*
-    Retrieve an existing or new [Component](doczar/Component) from this cache by the specified path
-    and call [submit](doczar.Component#submit) on it with the provided `info` Object.
-@argument:doczar.Parser/Path tpath
+    Retrieve an existing or new [Component](doczar/src/Component) from this cache by the specified
+    [path](doczar/src/Parser/Path) and call [submit](doczar/src/Component#submit) on it with the
+    provided `info` Object.
+@argument:doczar/src/Parser/Path tpath
     A path to the Component that should contain the submitted information.
-@argument:doczar.Parser/Submission info
+@argument:doczar/src/Component/Submission info
     An Object containing fresly-parsed data that will be overwritten into the requested [Component]
-    (doczar.Component).
+    (doczar/src/Component).
 */
 ComponentCache.prototype.submit = function (tpath, info) {
     var pointer = this.getComponent (tpath);
@@ -327,8 +326,8 @@ ComponentCache.prototype.submit = function (tpath, info) {
 
 
 /*
-    [Prepare](doczar.Component#finalize) every [Component](doczar.Component) in the cache for
-    rendering and execute a callback.
+    [Prepare](doczar/src/Component#finalize) every [Component](doczar/src/Component) in the cache
+    for rendering and execute a callback.
 @argument:Object options
 @callback
     Called when ready to [output files](#writeFiles). No arguments.
@@ -358,7 +357,7 @@ ComponentCache.prototype.finalize = function (options, callback) {
 /*
     Create the requested base directory if it does not already exist. Configure and render the base
     `index.html` file for the root. Copy in global content from `./indexFiles`. Recursively work
-    through the root and call [writeFiles](doczar.Component#writeFiles) on all immediate child
+    through the root and call [writeFiles](doczar/src/Component#writeFiles) on all immediate child
     Components. Hit the callback when all Components have recursively written their output files, or
     if an Error interrupts the process.
 @argument:String basedir

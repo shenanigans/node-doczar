@@ -1,7 +1,7 @@
 
 /*      @module
     Digs document comments out of source files, splits them into Declarations and Modifiers, then
-    reports everything it finds to a [ComponentCache](doczar.ComponentCache) instance.
+    reports everything it finds to a [ComponentCache](doczar/src/ComponentCache) instance.
 */
 
 /*      @submodule:Array<Array> Path
@@ -81,10 +81,8 @@
 
 var fs                = require ('fs-extra');
 var pathLib           = require ('path');
-var resolve           = require ('resolve');
 var filth             = require ('filth');
 var tools             = require ('tools');
-var getNodeModulePath = require ('getNodeModulePath');
 var Patterns          = require ('./Patterns');
 var langs             = require ('./langs');
 
@@ -110,6 +108,10 @@ function pathStr (type) {
         return step[0] + '[' + step[1] + ']';
     }).join ('')
     return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
+}
+function replaceElements (target, source) {
+    target.splice (0, target.length);
+    target.push.apply (target, source);
 }
 
 /*
@@ -989,6 +991,17 @@ function cloneShallowFilter (key) {
     return key === BODY || key === THIS;
 }
 
+var CORE_MODS = [
+    "assert",           "buffer_ieee754",   "buffer",           "child_process",    "cluster",
+    "console",          "constants",        "crypto",           "_debugger",        "dgram",
+    "dns",              "domain",           "events",           "freelist",         "fs",
+    "http",             "https",            "_linklist",        "module",           "net",
+    "os",               "path",             "punycode",         "querystring",      "readline",
+    "repl",             "stream",           "string_decoder",   "sys",              "timers",
+    "tls",              "tty",              "url",              "util",             "vm",
+    "zlib",             "_http_server",     "process",          "v8"
+];
+
 /*
     Parse an entire document of mixed code and documentation tags.
 */
@@ -1000,7 +1013,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     var langPack = langs[mode];
     var baseNode = langPack.getRoot (context, fname, defaultScope);
     if (!baseNode[MODULE])
-        baseNode[MODULE] = defaultScope;
+        baseNode[MODULE] = pathStr (defaultScope);
 
     var dirname = pathLib.parse (fname).dir;
 
@@ -1103,46 +1116,36 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     return;
                 }
             }
-            try {
-                var modPathStr = resolve.sync (
-                    depName,
-                    { basedir:pathLib.parse (fname).dir }
-                );
-            } catch (err) {
-                logger.warn ({
-                    from:   pathLib.parse (fname).dir,
-                    to:     depName,
-                    line:   expression.loc.start.line
-                }, 'failed to resolve dependency');
-                return;
-            }
-            if (!modPathStr.match (/\.js$/)) {
+
+            if (CORE_MODS.indexOf (depName) >= 0) {
                 logger.debug ({
                     required:   expression.arguments[0].value,
                     line:       expression.loc.start.line
                 }, 'ignored core dependency');
                 var dummy = newNode();
                 dummy[SILENT] = true;
-                dummy[ROOT] = [ [ '/', modPathStr ] ];
+                dummy[ROOT] = [ [ '/', depName ] ];
                 return dummy;
             }
-            var pathInfo = getNodeModulePath (
+            var pathInfo = langPack.getDependency (
                 context,
-                baseNode[MODULE],
-                baseNode[ROOT],
+                pathLib.resolve (process.cwd(), referer),
                 fname,
-                modPathStr
+                defaultScope,
+                depName
             );
+
             var sourceRoot;
-            if (context.argv.noDeps && pathInfo.root !== baseNode[MODULE]) {
+            var rootStr = pathStr (pathInfo.root);
+            if (context.argv.noDeps && rootStr !== baseNode[MODULE]) {
                 var dummy = newNode();
                 dummy[SILENT] = true;
                 dummy[ROOT] = pathInfo.path;
                 return dummy; // dummy
             }
-            sourceRoot = langPack.getRoot (context, modPathStr, pathInfo.path);
-            sourceRoot[MODULE] = pathInfo.root;
-            next (modPathStr, pathInfo.referer || referer);
+            sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.path);
+            sourceRoot[MODULE] = rootStr;
+            next (pathInfo.file, pathInfo.referer || referer);
             return sourceRoot.module[PROPS].exports;
         }
         // generateReturn enables reprocessing return value from individual expression arguments
@@ -1548,11 +1551,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                      && value.callee.name == 'require'
                     ) {
                         var returned = processRequireStatement (value, node);
-                        if (returned) {
+                        if (returned)
                             node[DEREF].push (returned);
-                            if (returned[SILENT])
-                                node[SILENT] = true;
-                        }
                         return [];
                     }
                     var returnNode = processCallExpression (value, node, true);
@@ -2031,6 +2031,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 pathfrags[0][0] = '.';
                     }
 
+                    if (ctype === 'module') {
+                        replaceElements (fileScope, pathfrags);
+                        pathfrags = [];
+                    }
+
                     parseTag (
                         context,
                         fname,
@@ -2074,9 +2079,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             var docstr = match[4] || '';
                             var pathfrags;
                             if (!pathstr) {
-                                pathfrags = [];
-                                if (node && NAME in node)
+                                if (node && NAME in node) {
+                                    pathfrags = [];
                                     pathfrags.push (node[NAME].concat());
+                                } else
+                                    pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
                             } else {
                                 pathfrags = parsePath (pathstr, []);
                                 if (!pathfrags[0][0])
@@ -2087,7 +2094,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             }
 
                             if (ctype === 'module') {
-                                fileScope = pathfrags.concat();
+                                replaceElements (fileScope, pathfrags);
                                 pathfrags = [];
                             }
 
@@ -2098,7 +2105,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     fname,
                                     ctype,
                                     valtype,
-                                    concatPaths (fileScope, pathfrags),
+                                    pathfrags,
                                     fileScope,
                                     defaultScope,
                                     docstr,
@@ -2161,7 +2168,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         }
 
                         if (ctype === 'module') {
-                            fileScope = pathfrags.concat();
+                            replaceElements (fileScope, pathfrags);
                             pathfrags = [];
                         }
 
@@ -2177,9 +2184,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     }
                 }
             }
-
-            // if (node && fileScope.length)
-            //     node[OVERRIDE] = fileScope.concat();
         }
 
         // ---------------------------------------------------------------- real processing begins
@@ -2985,32 +2989,20 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         level.source.value
                       : './' + level.source.value
                       ;
-                try {
-                    var modPathStr = resolve.sync (
-                        importName,
-                        { basedir:pathLib.parse (fname).dir }
-                    );
-                } catch (err) {
-                    logger.warn ({
-                        from:   pathLib.parse (fname).dir,
-                        to:     pathLib.resolve (process.cwd(), importName),
-                        line:   level.loc.start.line,
-                        parse:  context.argv.parse
-                    }, 'failed to resolve dependency');
-                    break;
-                }
-                var pathInfo = getNodeModulePath (
+                var pathInfo = langPack.getDependency (
                     context,
-                    baseNode[MODULE],
-                    baseNode[ROOT],
+                    pathLib.resolve (process.cwd(), referer),
                     fname,
-                    modPathStr
+                    defaultScope,
+                    importName
                 );
-                var moduleNode = langPack.getRoot (context, modPathStr, pathInfo.root);
-                moduleNode[ROOT] = pathInfo.path;
+                // if there's no path info, an error occured and was logged
+                if (!pathInfo)
+                    break;
+                var moduleNode = langPack.getRoot (context, pathInfo.file, pathInfo.path);
                 if (!moduleNode[MODULE]) {
-                    moduleNode[MODULE] = pathInfo.root;
-                    next (modPathStr);
+                    moduleNode[MODULE] = pathStr (pathInfo.root);
+                    next (pathInfo.file, pathInfo.referer || referer);
                 }
 
                 // first check if it's `import * as ModName from "foo.js"`
@@ -3136,13 +3128,25 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 valtype = [];
             var pathstr = match[3];
             var docstr = match[4] || '';
-            var pathfrags = parsePath (pathstr, []);
-
-            if (!pathfrags[0][0])
-                if (pathfrags.length == 1)
-                    pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+            var pathfrags;
+            if (!pathstr) {
+                if (node && NAME in node)
+                    pathfrags = [ node[NAME].concat() ];
                 else
-                    pathfrags[0][0] = '.';
+                    pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
+            } else {
+                pathfrags = parsePath (pathstr, []);
+                if (!pathfrags[0][0])
+                    if (pathfrags.length === 1)
+                        pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                    else
+                        pathfrags[0][0] = '.';
+            }
+
+            if (ctype === 'module') {
+                fileScope = pathfrags.concat();
+                pathfrags = [];
+            }
 
             parseTag (
                 context,
@@ -3181,13 +3185,23 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             valtype = [];
         var pathstr = match[3];
         var docstr = match[4] || '';
-        var pathfrags = parsePath (pathstr, fileScope);
+        var pathfrags;
+        if (!pathstr)
+            pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
+        else {
+            pathfrags = parsePath (pathstr, []);
+            if (!pathfrags[0][0])
+                if (pathfrags.length === 1)
+                    pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                else
+                    pathfrags[0][0] = '.';
+        }
 
-        if (!pathfrags[0][0])
-            if (pathfrags.length == 1)
-                pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
-            else
-                pathfrags[0][0] = '.';
+        if (ctype === 'module') {
+            fileScope = pathfrags.concat();
+            pathfrags = [];
+        }
+
         parseTag (
             context,
             fname,
@@ -3305,6 +3319,8 @@ function generateComponents (context, mode, defaultScope) {
 
     // recursively submit all the information built into the namespace
     function submitSourceLevel (level, scope, localDefault, chain, force) {
+        if (level[SILENT])
+            return false;
         if (!chain)
             chain = [ level ];
         else if (chain.indexOf (level) >= 0)
@@ -3444,7 +3460,7 @@ function generateComponents (context, mode, defaultScope) {
                     context.submit (
                         fullpath,
                         {
-                            sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                            sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
                             sourceLine: level[LINE]
                         }
                     );
@@ -3476,7 +3492,7 @@ function generateComponents (context, mode, defaultScope) {
                 context.submit (
                     concatPaths (localDefault, level[LOCALPATH]),
                     {
-                        sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                        sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
                         sourceLine: level[LINE]
                     }
                 );
@@ -3562,7 +3578,7 @@ function generateComponents (context, mode, defaultScope) {
                         context.submit (
                             concatPaths (localDefault, scope),
                             {
-                                sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                                sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
                                 sourceLine: level[LINE]
                             }
                         );
@@ -3614,6 +3630,8 @@ function generateComponents (context, mode, defaultScope) {
             delete level[PROPS][IS_COL];
             for (var key in level[PROPS]) {
                 var pointer = level[PROPS][key];
+                if (pointer[SILENT])
+                    continue;
                 var propChain = [];
                 while (
                     pointer[DEREF]
