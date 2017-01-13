@@ -1146,7 +1146,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.path);
             sourceRoot[MODULE] = rootStr;
             next (pathInfo.file, pathInfo.referer || referer);
-            return sourceRoot.module[PROPS].exports;
+            var foreignExports = sourceRoot.module[PROPS].exports;
+            if (target)
+                target[ALIAS] = foreignExports;
+            return foreignExports;
         }
         // generateReturn enables reprocessing return value from individual expression arguments
         function processCallExpression (expression, target, generateReturn) {
@@ -3278,12 +3281,23 @@ function generateComponents (context, mode, defaultScope) {
             if (IS_COL in ref)
                 continue;
             recurse (ref, target);
-            var possibilities = ref[TYPES];
-            for (var k=0,l=possibilities.length; k<l; k++)
-                if (target[TYPES].indexOf (possibilities[k]) < 0) {
-                    target[TYPES].push (possibilities[k]);
+            var baseTypes = ref[TYPES];
+            for (var k=0,l=baseTypes.length; k<l; k++)
+                if (target[TYPES].indexOf (baseTypes[k]) < 0) {
+                    target[TYPES].push (baseTypes[k]);
                     didFinishDeref = true;
                 }
+            if (ref[INSTANCE]) {
+                var classes = ref[INSTANCE];
+                if (!target[INSTANCE]) {
+                    target[INSTANCE] = classes.concat();
+                    didFinishDeref = true;
+                } else for (var k=0,l=classes.length; k<l; k++)
+                    if (target[INSTANCE].indexOf (classes[k]) < 0) {
+                        target[INSTANCE].push (classes[k]);
+                        didFinishDeref = true;
+                    }
+            }
         }
 
         // recurse
@@ -3319,8 +3333,6 @@ function generateComponents (context, mode, defaultScope) {
 
     // recursively submit all the information built into the namespace
     function submitSourceLevel (level, scope, localDefault, chain, force) {
-        if (level[SILENT])
-            return false;
         if (!chain)
             chain = [ level ];
         else if (chain.indexOf (level) >= 0)
@@ -3508,25 +3520,6 @@ function generateComponents (context, mode, defaultScope) {
             localDefault = [];
         }
 
-        if (level[ALIAS]) {
-            var pointer = level[ALIAS];
-            var aliasChain = [];
-            while (
-                pointer[DEREF]
-             && pointer[DEREF].length === 1
-             && aliasChain.indexOf (pointer[DEREF][0]) < 0
-            )
-                aliasChain.push (pointer = pointer[DEREF][0]);
-            if (pointer[PATH]) {
-                didSubmit = true;
-                delete level[ALIAS];
-                context.submit (level[PATH], { modifiers:[ {
-                    mod:    'alias',
-                    path:   pointer[PATH]
-                } ] });
-            }
-        }
-
         // are we waiting to add complex paths to the types list?
         if (level[INSTANCE]) {
             var writeAndForce = Boolean (
@@ -3603,6 +3596,37 @@ function generateComponents (context, mode, defaultScope) {
             level[SUPER].splice (i, 1);
         }
 
+        if (level[ALIAS]) {
+            if (level[PATH] && (
+                    level[MOUNT]
+                 || !isLocalPath (level[PATH])
+                 || context.argv.locals === 'all'
+                 || ( context.argv.locals === 'comments' && hasComments (level) )
+             )) {
+                var pointer = level[ALIAS];
+                var aliasChain = [];
+                while (
+                    !pointer[PATH]
+                 && pointer[DEREF]
+                 && pointer[DEREF].length === 1
+                 && aliasChain.indexOf (pointer[DEREF][0]) < 0
+                )
+                    aliasChain.push (pointer = pointer[DEREF][0]);
+                if (pointer[PATH]) {
+                    didSubmit = true;
+                    delete level[ALIAS];
+                    context.submit (level[PATH], { modifiers:[ {
+                        mod:    'alias',
+                        path:   pointer[PATH]
+                    } ] });
+                }
+            }
+            return didSubmit;
+        }
+
+        if (level[SILENT])
+            return didSubmit;
+
         // recurse to various children
         if (level[MEMBERS]) {
             delete level[MEMBERS][IS_COL];
@@ -3630,11 +3654,12 @@ function generateComponents (context, mode, defaultScope) {
             delete level[PROPS][IS_COL];
             for (var key in level[PROPS]) {
                 var pointer = level[PROPS][key];
-                if (pointer[SILENT])
-                    continue;
+                // if (pointer[SILENT])
+                //     continue;
                 var propChain = [];
                 while (
-                    pointer[DEREF]
+                    !pointer[SILENT]
+                 && pointer[DEREF]
                  && pointer[DEREF].length === 1
                  && propChain.indexOf (pointer[DEREF][0]) < 0
                 )

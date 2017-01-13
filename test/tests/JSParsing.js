@@ -3,7 +3,12 @@ var foo = 'bar';
 /*  @class Drinky
     The bar class.
 */
-function bar (able, baker) {
+function bar (
+    /* info about the Able argument should */
+    able, /* not be a broken sentence. */
+    /* info about the Baker argument. */
+    baker
+) {
     // barge info.
     var barge = 9; // Ignore.
     /* cheese
