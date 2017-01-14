@@ -7,7 +7,9 @@ function bar (
     /* info about the Able argument should */
     able, /* not be a broken sentence. */
     /* info about the Baker argument. */
-    baker
+    baker, /* info about the Charlie argument is */ charlie /*
+        not complete without this bit.
+    */
 ) {
     // barge info.
     var barge = 9; // Ignore.

@@ -1364,7 +1364,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             processComments (propNode, {
                                 loc:                lastPropDef.loc,
                                 trailingComments:   [ propDef.leadingComments[0] ]
-                            }, 0);
+                            }, 0, node);
                         }
                         var propNode;
                         if (Object.hasOwnProperty.call (props, propDef.key.name))
@@ -1377,7 +1377,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         processComments (
                             propNode,
                             propDef,
-                            lastPropDef ? lastPropDef.loc.end.line : deadLine
+                            lastPropDef ? lastPropDef.loc.end.line : deadLine,
+                            node
                         );
                         lastPropDef = propDef;
                     }
@@ -1614,9 +1615,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         node[TYPES].push ('Function');
                     // manage arguments
                     var args;
+                    var localDeadLine = deadLine;
                     if (node[ARGUMENTS]) {
                         args = node[ARGUMENTS];
-                        for (var i=0,j=value.params.length; i<j; i++)
+                        for (var i=0,j=value.params.length; i<j; i++) {
                             if (i < args.length) {
                                 args[i][NAME] = [ '(', value.params[i].name ];
                                 if (node[SILENT])
@@ -1629,6 +1631,9 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 arg[NO_SET] = true;
                                 arg[SILENT] = Boolean (node[SILENT]);
                             }
+                            processComments (args[i], value.params[i], localDeadLine, node);
+                            localDeadLine = value.params[i].loc.end.line;
+                        }
                     } else
                         args = node[ARGUMENTS] = value.params.map (function (param) {
                             var arg = newNode (node);
@@ -1637,6 +1642,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             arg[DEREF] = [];
                             arg[NO_SET] = true;
                             arg[SILENT] = Boolean (node[SILENT]);
+                            processComments (arg, param, localDeadLine, node);
+                            localDeadLine = param.loc.end.line;
                             return arg;
                         });
                     // recurse to walkLevel from divineTypes
@@ -1810,6 +1817,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         arg[NO_SET] = true;
                         arg[NAME] = [ '(', level.params[i].name ];
                         args.push (arg);
+                        processComments (arg, level.params[i], localDeadLine, node);
+                        localDeadLine = level.params[i].loc.end.line;
                     }
                     anon[RETURNS] = newNode (initialPointer);
                     anon[BODY] = level.body.body;
@@ -1984,7 +1993,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             return pointer;
         }
 
-        function processComments (node, level, deadLine) {
+        function processComments (node, level, deadLine, pathParent) {
             // line in document
             if (node) {
                 node[DOC] = fname;
@@ -2072,6 +2081,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         } else {
                             // expression marked with a tag comment
                             var ctype = match[1];
+
                             // valtypes
                             var valtype;
                             if (match[2])
@@ -2081,20 +2091,32 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             var pathstr = match[3];
                             var docstr = match[4] || '';
                             var pathfrags;
+                            var workingParent;
                             if (!pathstr) {
                                 if (node && NAME in node) {
                                     pathfrags = [];
                                     pathfrags.push (node[NAME].concat());
+                                    workingParent = pathParent;
                                 } else
                                     pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
                             } else {
                                 pathfrags = parsePath (pathstr, []);
-                                if (!pathfrags[0][0])
+                                if (pathfrags[0][0])
+                                    workingParent = pathParent;
+                                else {
                                     if (pathfrags.length === 1)
-                                        pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
+                                        if (node && node[NAME]) {
+                                            pathfrags[0][0] = node[NAME][0];
+                                            workingParent = pathParent;
+                                        } else
+                                            pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
                                     else
                                         pathfrags[0][0] = '.';
+                                }
                             }
+
+                            if (!ctype)
+                                ctype = Patterns.delimiters[pathfrags[0][0]];
 
                             if (ctype === 'module') {
                                 replaceElements (fileScope, pathfrags);
@@ -2123,6 +2145,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                                     fname:      fname
                                 };
+                                if (workingParent)
+                                    node[MOUNT].parent = workingParent;
                                 node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
                             }
                         }
@@ -2555,6 +2579,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
                 // work argument types for the function
                 var lastI = args.length-1;
+                var localDeadLine = deadLine;
                 for (var i=0,j=level.params.length; i<j; i++) {
                     var param = level.params[i];
                     if (i < args.length)
@@ -2567,6 +2592,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         arg[NO_SET] = true;
                     }
                     divineTypes (param, args[i]);
+                    processComments (args[i], param, localDeadLine, node);
+                    localDeadLine = param.loc.end.line;
                 }
 
                 // recurse into function body
@@ -2977,7 +3004,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         }
 
         // comments time!
-        processComments (node, level, deadLine);
+        processComments (node, level, deadLine, scopeParent);
         return node;
     }
 
@@ -3394,6 +3421,11 @@ function generateComponents (context, mode, defaultScope) {
             if (level[MOUNT]) {
                 ctype = level[MOUNT].ctype;
                 path = level[MOUNT].path;
+                if (level[MOUNT].parent) {
+                    if (!level[MOUNT].parent[LOCALPATH])
+                        return false;
+                    path = level[MOUNT].parent[LOCALPATH].concat (level[MOUNT].path);
+                }
                 scope = path;
                 types.push.apply (types, level[MOUNT].valtype);
                 docstr = level[MOUNT].docstr;

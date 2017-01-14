@@ -12,7 +12,12 @@ require ('./NodeParseModules/Overrides');
 @argument:String able
     Does not refer to a real argument. Should be type `String`.
 */
-module.exports.classy = function (able) { };
+module.exports.classy = function (able) {
+    /*  @:String bar
+        Override name from `foo` to `bar` and type from `Number` to `String`.
+    */
+    this.foo = 9001;
+};
 module.exports.classy (4);
 
 /*
@@ -31,3 +36,16 @@ module.exports.impliedName = function (foo, bar) { };
 */
 module.exports.argType = function (foo) { };
 module.exports.argType (4);
+
+module.exports.fancyArgs = function (
+    /*  @:RegExp */
+    able,
+    /* @:String monkey
+        Override this argument name from `baker` to `monkey` and set type to `String`.
+    */
+    baker,
+    /*  @argument (rover
+        Override this argument name from `charlie` to `rover`.
+    */
+    charlie
+) { };
