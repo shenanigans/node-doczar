@@ -373,7 +373,7 @@ var parseFile = function (fname, fstr, defaultScope, context, next) {
             pathfrags,
             fileScope,
             defaultScope,
-            docstr,
+            [ docstr ],
             next
         );
     }
@@ -385,6 +385,24 @@ var parseFile = function (fname, fstr, defaultScope, context, next) {
     Parse the contents of a documentation tag with its header already broken out.
 */
 function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, defaultScope, docstr, next) {
+    if (docstr instanceof Array) {
+        for (var i=0,j=Math.max (1, docstr.length); i<j; i++) {
+            var workingDocstr = docstr[i] || '';
+            workingDocstr = workingDocstr.match (/^[\r\n]*([^]*)[\r\n]*$/)[1];
+            parseTag (
+                context,
+                fname,
+                ctype,
+                valtype,
+                pathfrags,
+                fileScope,
+                defaultScope,
+                workingDocstr,
+                next
+            );
+        }
+        return;
+    }
     var tagScope;
     if (fileScope.length)
         tagScope = concatPaths (fileScope, pathfrags);
@@ -836,12 +854,11 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
     var children = [];
     var currentChild;
     var tagname;
-    if (!scopeParent[DOCSTR])
-        scopeParent[DOCSTR] = '';
+    var outputDocstr = scopeParent[DOCSTR] || '';
     for (var i=0,j=lines.length; i<j; i++) {
         var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1] || '';
         if (cleanLine[0] !== '@') {
-            ( scopeParent || currentChild )[DOCSTR] += cleanLine + ' \n';
+            outputDocstr += cleanLine + ' \n';
             continue;
         }
 
@@ -849,7 +866,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
         // wrap up the previous one
         if (currentChild) {
             if (tagname === 'example')
-                scopeParent[DOCSTR] += '```\n\n';
+                outputDocstr += '```\n\n';
 
             delete tagname;
             delete currentChild;
@@ -861,7 +878,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
         // work the tag
         if (tagname === 'example') {
-            scopeParent[DOCSTR] += '\n### Example\n```javascript\n';
+            outputDocstr += '\n### Example\n```javascript\n';
             continue;
         }
 
@@ -968,7 +985,12 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
     // wrap up the last subtag
     if (tagname === 'example')
-        scopeParent[DOCSTR] += '```\n\n';
+        outputDocstr += '```\n\n';
+
+    if (scopeParent[DOCSTR])
+        scopeParent[DOCSTR].push (outputDocstr);
+    else
+        scopeParent[DOCSTR] = [ outputDocstr ];
 }
 
 function digDerefs (level) {
@@ -1616,6 +1638,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // manage arguments
                     var args;
                     var localDeadLine = deadLine;
+                    var lastArg;
                     if (node[ARGUMENTS]) {
                         args = node[ARGUMENTS];
                         for (var i=0,j=value.params.length; i<j; i++) {
@@ -1632,9 +1655,21 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 arg[SILENT] = Boolean (node[SILENT]);
                             }
                             processComments (args[i], value.params[i], localDeadLine, node);
+                            if (
+                                lastArg
+                             && value.params[i].loc.start.line !== localDeadLine
+                             && value.params[i].leadingComments
+                             && value.params[i].leadingComments[0].loc.start.line === localDeadLine
+                            )
+                                processComments (lastArg, {
+                                    loc:                value.params[i-1].loc,
+                                    trailingComments:   [ value.params[i].leadingComments[0] ]
+                                });
                             localDeadLine = value.params[i].loc.end.line;
+                            lastArg = args[i];
                         }
-                    } else
+                    } else {
+                        var lastParam;
                         args = node[ARGUMENTS] = value.params.map (function (param) {
                             var arg = newNode (node);
                             arg[NAME] = [ '(', param.name ];
@@ -1643,9 +1678,22 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             arg[NO_SET] = true;
                             arg[SILENT] = Boolean (node[SILENT]);
                             processComments (arg, param, localDeadLine, node);
+                            if (
+                                lastArg
+                             && param.loc.start.line !== localDeadLine
+                             && param.leadingComments
+                             && param.leadingComments[0].loc.start.line === localDeadLine
+                            )
+                                processComments (lastArg, {
+                                    loc:                lastParam.loc,
+                                    trailingComments:   [ param.leadingComments[0] ]
+                                });
                             localDeadLine = param.loc.end.line;
+                            lastArg = arg;
+                            lastParam = param;
                             return arg;
                         });
+                    }
                     // recurse to walkLevel from divineTypes
                     var innerScope = new filth.SafeMap (scope);
                     for (var i=0,j=node[ARGUMENTS].length; i<j; i++) {
@@ -1812,12 +1860,24 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     anon[TYPES].push ('Function');
                     anon[LINE] = level.loc.start.line;
                     var args = anon[ARGUMENTS] = [];
+                    var lastArg;
                     for (var i=0,j=level.params.length; i<j; i++) {
                         var arg = newNode (initialPointer);
                         arg[NO_SET] = true;
                         arg[NAME] = [ '(', level.params[i].name ];
                         args.push (arg);
                         processComments (arg, level.params[i], localDeadLine, node);
+                        if (
+                            lastArg
+                         && level.params[i].loc.start.line !== localDeadLine
+                         && level.params[i].leadingComments
+                         && level.params[i].leadingComments[0].loc.start.line === localDeadLine
+                        )
+                            processComments (lastArg, {
+                                loc:                level.params[i-1].loc,
+                                trailingComments:   [ level.params[i].leadingComments[0] ]
+                            });
+                        lastArg = arg;
                         localDeadLine = level.params[i].loc.end.line;
                     }
                     anon[RETURNS] = newNode (initialPointer);
@@ -2064,7 +2124,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 // process final leading comment
                 var comment = level.leadingComments[level.leadingComments.length-1];
                 Patterns.tag.lastIndex = 0;
-                if (deadLine === undefined || comment.loc.start.line > deadLine) {
+                if (
+                    deadLine === undefined
+                 || comment.loc.start.line > deadLine
+                 || (level.loc.start.line === deadLine && comment.loc.start.line === deadLine)
+                ) {
                     foundComment = true;
                     // javadoc comment?
                     if (comment.value.match (/^\*[^*]/)) {
@@ -2074,7 +2138,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         // normal or doczar comment
                         if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/'))) {
                             if (node) {
-                                node[DOCSTR] = comment.value;
+                                node[DOCSTR] = [ comment.value ];
                                 if (fileScope.length)
                                     node[OVERRIDE] = fileScope.concat();
                             }
@@ -2141,7 +2205,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     ctype:      ctype,
                                     path:       pathfrags,
                                     valtype:    valtype,
-                                    docstr:     docstr,
+                                    docstr:     [ docstr ],
                                     docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                                     fname:      fname
                                 };
@@ -2154,20 +2218,25 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 }
             }
             if (
-                !foundComment
-             && node
+                node
              && level.trailingComments
              && level.trailingComments[0].loc.start.line == level.loc.end.line
             ) {
                 // use a trailing comment that starts on the same line as this statement ends on
                 var trailer = level.trailingComments[0];
                 if (trailer.type == 'Line')
-                    node[DOCSTR] = trailer.value;
+                    if (node[DOCSTR])
+                        node[DOCSTR].push (trailer.value);
+                    else
+                        node[DOCSTR] = [ trailer.value ];
                 else {
                     // try to parse it
                     Patterns.tag.lastIndex = 0;
                     if (!(match = Patterns.tag.exec ('/*'+trailer.value+'*/'))) {
-                        node[DOCSTR] = trailer.value;
+                        if (node[DOCSTR])
+                            node[DOCSTR].push (trailer.value);
+                        else
+                            node[DOCSTR] = [ trailer.value ];
                         if (fileScope.length)
                             node[OVERRIDE] = fileScope.concat();
                     } else {
@@ -2203,7 +2272,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             ctype:      ctype,
                             path:       pathfrags,
                             valtype:    valtype,
-                            docstr:     docstr,
+                            docstr:     [ docstr ],
                             docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
                             fname:      fname
                         };
@@ -2580,6 +2649,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 // work argument types for the function
                 var lastI = args.length-1;
                 var localDeadLine = deadLine;
+                var lastArg;
                 for (var i=0,j=level.params.length; i<j; i++) {
                     var param = level.params[i];
                     if (i < args.length)
@@ -2593,6 +2663,17 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     }
                     divineTypes (param, args[i]);
                     processComments (args[i], param, localDeadLine, node);
+                    if (
+                        lastArg
+                     && level.params[i].loc.start.line !== localDeadLine
+                     && level.params[i].leadingComments
+                     && level.params[i].leadingComments[0].loc.start.line === localDeadLine
+                    )
+                        processComments (lastArg, {
+                            loc:                level.params[i-1].loc,
+                            trailingComments:   [ level.params[i].leadingComments[0] ]
+                        });
+                    lastArg = args[i];
                     localDeadLine = param.loc.end.line;
                 }
 
@@ -3440,7 +3521,7 @@ function generateComponents (context, mode, defaultScope) {
                     ctype = 'class';
                 else
                     ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
-                docstr = level[DOCSTR] || '';
+                docstr = level[DOCSTR] || [ '' ];
                 fileScope = [];
             }
             level[LOCALPATH] = path;
@@ -3529,7 +3610,7 @@ function generateComponents (context, mode, defaultScope) {
                 level[LOCALPATH].length ? level[LOCALPATH] : localDefault,
                 [],
                 level[LOCALPATH].length ? localDefault : [],
-                ( level[MOUNT] ? level[MOUNT][DOCSTR] : level[DOCSTR] ) || '',
+                ( level[MOUNT] ? level[MOUNT].docstr : level[DOCSTR] ) || [],
                 function (fname) { nextFiles.push (fname); }
             );
             if (level[LINE] !== undefined)
@@ -3596,7 +3677,7 @@ function generateComponents (context, mode, defaultScope) {
                         scope,
                         [],
                         localDefault,
-                        '',
+                        [],
                         function (fname) { nextFiles.push (fname); }
                     );
                     if (level[LINE] !== undefined)

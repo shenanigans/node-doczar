@@ -4,11 +4,11 @@ var foo = 'bar';
     The bar class.
 */
 function bar (
-    /* info about the Able argument should */
-    able, /* not be a broken sentence. */
+    /* info about the Able argument should be */
+    able, /* a complete but broken sentence. */
     /* info about the Baker argument. */
-    baker, /* info about the Charlie argument is */ charlie /*
-        not complete without this bit.
+    baker, /* info about the Charlie argument is not*/ charlie /*
+        complete without this bit.
     */
 ) {
     // barge info.

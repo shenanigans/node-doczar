@@ -805,12 +805,15 @@ Component.prototype.finalize = function (options, callback) {
             // remove leading indentation
             var baseStr = this.doc[i].value;
             if (!baseStr) continue;
-            var frags = baseStr.split ('\n');
-            var indentSeq;
+            var frags = baseStr.split (/\r?\n/g);
+            var indentSeq = undefined;
             // check each line and create the longest-possible indent sequence string
             for (var k=0,l=frags.length; k<l; k++) {
+                if (frags[k].match (/^\s*$/))
+                    continue;
                 var fraginfo = INDENT_REGEX.exec (frags[k]);
-                if (!fraginfo) continue;
+                if (!fraginfo)
+                    continue;
                 var whitespace = fraginfo[1];
                 if (indentSeq === undefined) {
                     indentSeq = whitespace;
