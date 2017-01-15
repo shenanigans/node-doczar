@@ -226,7 +226,7 @@ function parsePath (pathstr, fileScope) {
     Each type in the pipe-delimited sequence (by default, length 1) represented as a [Valtype]
     (/Valtype).
 */
-function parseType (typeStr, fileScope) {
+function parseType (typeStr, fileScope, implied) {
     var valType = [];
     if (!typeStr)
         return valType;
@@ -279,7 +279,8 @@ function parseType (typeStr, fileScope) {
              && valtypeSelectorInfo[i+3].match (/^[ \\t]*$/)
             ),
             generics:   generics,
-            name:       uglyvaltypepath.slice(1)
+            name:       uglyvaltypepath.slice(1),
+            explicit:   !implied
         });
     }
     return valType;
@@ -2124,11 +2125,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 // process final leading comment
                 var comment = level.leadingComments[level.leadingComments.length-1];
                 Patterns.tag.lastIndex = 0;
-                if (
+                if (comment.type !== 'Line' && (
                     deadLine === undefined
                  || comment.loc.start.line > deadLine
                  || (level.loc.start.line === deadLine && comment.loc.start.line === deadLine)
-                ) {
+                )) {
                     foundComment = true;
                     // javadoc comment?
                     if (comment.value.match (/^\*[^*]/)) {
@@ -2187,7 +2188,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 pathfrags = [];
                             }
 
-                            if (!node) {
+                            if (!node || ctype === 'spare') {
                                 // no related expression
                                 parseTag (
                                     context,
@@ -3516,7 +3517,7 @@ function generateComponents (context, mode, defaultScope) {
             } else {
                 path = scope;
                 types.push.apply (types, level[TYPES]);
-                types = parseType (types.join ('|'));
+                types = parseType (types.join ('|'), localDefault, true);
                 if (level[MEMBERS])
                     ctype = 'class';
                 else
@@ -3673,7 +3674,7 @@ function generateComponents (context, mode, defaultScope) {
                         context,
                         level[DOC],
                         level[CTYPE],
-                        parseType (typePath),
+                        parseType (typePath, [], true),
                         scope,
                         [],
                         localDefault,

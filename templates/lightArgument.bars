@@ -43,9 +43,13 @@
                     {{/if}}
                 {{/valtype}}</span>
             {{else}}
-                <a class="title" href="{{softlink path}}">
-                    {{pathname}}
-                </a>
+                {{#if pathname}}
+                    <a class="title" href="{{softlink path}}">
+                        {{pathname}}
+                    </a>
+                {{else}}
+                    <a class="title fake" href="{{softlink path}}">argument</a>
+                {{/if}}
             {{/if}}
         {{/if}}
     {{/if}}

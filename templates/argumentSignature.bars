@@ -38,9 +38,19 @@
                 <span class="punctuation">&gt;</span>
             {{/if}}
         {{/valtype}}</span>
-        <a class="name" href="{{link path}}">
-            {{name}}
-        </a>
+        {{#if name}}
+            <a class="title" href="{{softlink path}}">
+                {{name}}
+            </a>
+        {{else}}
+            {{#if pathname}}
+                <a class="title" href="{{softlink path}}">
+                    {{pathname}}
+                </a>
+            {{else}}
+                <a class="title fake" href="{{softlink path}}">argument</a>
+            {{/if}}
+        {{/if}}
     {{/if}}
     {{#if isCallback}}<span>
         (

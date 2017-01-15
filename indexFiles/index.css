@@ -263,6 +263,12 @@ p {
     /*margin-left: 2em;*/
     font-size: 90%;
 }
+
+.title.fake, .child .title.fake {
+    font-size: 90%;
+    font-weight: 100;
+}
+
 .child .argument > .title {
     font-weight: 300;
     font-size: 110%

@@ -243,7 +243,7 @@ Component.prototype.submit = function (info) {
             }
             continue;
         }
-        if (key == 'valtype') {
+        if (key === 'valtype') {
             this.valtype.push.apply (this.valtype, info.valtype);
             continue;
         }
@@ -960,7 +960,11 @@ Component.prototype.finalize = function (options, callback) {
     }
 
     // process value types and check whether this Component lists "f|Function" or "class" as a type
+    // also, check for an explicit type to force type overwriting
+    var didFindExplicit = false;
     for (var i=0,j=this.valtype.length; i<j; i++) {
+        if (this.valtype[i].explicit)
+            didFindExplicit = true;
         var thistype = this.valtype[i].path;
         if (thistype.length != 1)
             continue;
@@ -981,6 +985,10 @@ Component.prototype.finalize = function (options, callback) {
             continue;
         }
     }
+    // if there's an explicit type, clear all implicit types
+    if (didFindExplicit) for (var i=this.valtype.length-1; i>=0; i--)
+        if (!this.valtype[i].explicit)
+            this.valtype.splice (i, 1);
 
     // certain special cases/flags
     if (this.ctype === 'callback')
@@ -1239,7 +1247,7 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
             if (options.json)
                 fs.writeFile (
                     path.join (basedir, 'index.json'),
-                    JSON.stringify (self.final),
+                    JSON.stringify (self.final) + '\n',
                     finalCall
                 );
             else {

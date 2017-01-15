@@ -4,7 +4,7 @@ import {Able, Bar, Baker as Charlie} from "ES6Modules/Bar.js"
 
 Bar (true);
 
-// Should stick to Foo.bar
+/* Should stick to Foo.bar */
 Foo.bar = 9001;
 
 /* Should stick to Able.stir */

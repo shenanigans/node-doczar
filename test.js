@@ -49,7 +49,7 @@ function compareLevel (path, able, baker) {
         }
 
     for (var aKey in able) {
-        if (aKey === 'elemID')
+        if (aKey === 'elemID' || aKey === 'explicit')
             continue;
         var aItem = able[aKey];
         var subpath = path.concat();
