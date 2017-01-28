@@ -48,14 +48,17 @@ var ARGUMENTS = {
     "LocalsNone.js":                "--parse node --root test",
     "__proto__.js":                 "--parse node --root test",
     "Prototype.js":                 "--parse node --root test",
-    "Overrides.js":                 "--parse node --root test"
+    "Overrides.js":                 "--parse node --root test",
+    "Skeleton.js":                  "--parse node --root skeleton",
+    "SyntaxParsingChallenges.js":   "--parse node --root test"
 };
 var SKIP = [
     "NodeParseModule.js",
     "NodeParseModules",
     "ES6Modules",
     "Fauxsync.js",
-    "skl"
+    "skl",
+    "challenges"
 ];
 async.parallel ([
     function (callback) {

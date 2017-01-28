@@ -1,9 +1,9 @@
 
 var path = require ('path');
-var fs = require ('fs-extra');
-var esprima = require ('esprima');
+// var fs = require ('fs-extra');
+// var esprima = require ('esprima');
 var tools = require ('tools');
-var filth = require ('filth');
+// var filth = require ('filth');
 
 function tokenize (fstr) {
     return esprima.parse (fstr, {

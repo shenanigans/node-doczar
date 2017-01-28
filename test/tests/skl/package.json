@@ -1,0 +1,10 @@
+{
+    "name":"skl",
+    "dependencies":{
+        "foible":"latest",
+        "royale":"latest"
+    },
+    "devDependencies":{
+        "boible":"latest"
+    }
+}

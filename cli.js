@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /*      @module
-    Select, load and parse source files for `doczar` format documentation comments. Render html
-    output to a configured disk location.
+    Select, load and parse source files for `doczar` format documentation comments. Write json or
+    rendered html output to a configured disk location.
 @spare `README.md`
     This is the rendered output of the `doczar` source documentation.
     *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
@@ -392,7 +392,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    fname
+                        referer:    path.parse (fname).dir
                     };
                 }));
             } else
@@ -408,7 +408,7 @@ if (argv.in)
                 sourceFiles.push.apply (sourceFiles, files.map (function (fname) {
                     return {
                         file:       fname,
-                        referer:    fname
+                        referer:    path.parse (fname).dir
                     };
                 }));
             } else
@@ -445,7 +445,7 @@ if (argv.parse) {
         }
         sourceFiles.push ({
             file:       modPath,
-            referer:    modPath
+            referer:    path.parse (modPath).dir
         });
         logger.debug (
             { jsmod:mod, filename:modPath },
@@ -494,7 +494,7 @@ async.eachSeries (modules, function (mod, callback) {
         sourceFiles.push.apply (sourceFiles, dfnames.map (function (fname) {
             return {
                 file:       fname,
-                referer:    fname
+                referer:    path.parse (fname).dir
             };
         }));
         callback();
@@ -541,8 +541,10 @@ function processSource (filenames) {
         fs.readFile (fname, function (err, buf) {
             context.latency.log ('file system');
 
-            if (err)
+            if (err) {
+                context.logger.error ({ path:fname }, 'failed to read file');
                 return callback (err);
+            }
 
             logger.debug ({ filename:fname }, 'read file');
             var fileStr = buf.toString();
@@ -561,7 +563,8 @@ function processSource (filenames) {
             }
 
             try {
-                if (argv.parse)
+                if (argv.parse) {
+                    logger.setTask ('parsing syntax file: ' + path.relative (process.cwd(), fname));
                     Parser.parseSyntaxFile (
                         context,
                         fname,
@@ -571,7 +574,8 @@ function processSource (filenames) {
                         localDefaultScope,
                         addToNextFiles
                     );
-                else
+                } else {
+                    logger.setTask ('parsing tag file: ' + path.relative (process.cwd(), fname));
                     Parser.parseFile (
                         fname,
                         fileStr,
@@ -580,6 +584,7 @@ function processSource (filenames) {
                         logger,
                         addToNextFiles
                     );
+                }
             } catch (err) {
                 var scopePath = localDefaultScope
                  .map (function (item) { return item.join (''); }).join ('')

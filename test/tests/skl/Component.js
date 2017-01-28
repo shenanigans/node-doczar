@@ -1,9 +1,9 @@
 
 var url          = require ('url');
-var fs           = require ('fs-extra');
+// var fs           = require ('fs-extra');
 var path         = require ('path');
-var async        = require ('async');
-var filth        = require ('filth');
+// var async        = require ('async');
+// var filth        = require ('filth');
 
 function pathStr (type) {
     return type.map (function (step) {
@@ -17,8 +17,9 @@ function pathStr (type) {
 
 @argument:skeleton/skl/ComponentCache context
 @argument:skeleton/skl/Parser/Path path
+@member:/Finalization final
 */
-var Component = module.exports = function (context, tpath, parent, position, logger) {
+var Component = module.exports = function (context, tpath, parent, position) {
 
 };
 

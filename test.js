@@ -42,14 +42,12 @@ function compareLevel (path, able, baker) {
     // match keys
     for (var bKey in baker)
         if (!Object.hasOwnProperty.call (able, bKey)) {
-            if ((bKey === 'finalArgs' || bKey === 'finalKwargs') && !baker[bKey].length)
-                continue;
             path.push (bKey);
             throw new Error ('missing key ' + path.join ('/'));
         }
 
     for (var aKey in able) {
-        if (aKey === 'elemID' || aKey === 'explicit')
+        if (aKey === 'elemID')
             continue;
         var aItem = able[aKey];
         var subpath = path.concat();
@@ -82,6 +80,17 @@ function compareLevel (path, able, baker) {
                     else
                         throw new Error ('value mismatch ' + subpath.join ('/'));
                 }
+            case 'number':
+                if (aItem !== bItem)
+                    throw new Error (
+                        'value mismatch '
+                       + aItem
+                       + ' != '
+                       + bItem
+                       + ' '
+                       + subpath.join ('/')
+                    );
+                break;
             default:
                 if (aItem !== bItem)
                     throw new Error ('value mismatch (' + aType + ') ' + subpath.join ('/'));
@@ -163,12 +172,18 @@ function runTest (name, args) {
                             command,
                             { maxBuffer: 5 * 1024 * 1024 },
                             function (err, stdout, stderr) {
+                                var lines = stdout ?
+                                    stdout.toString().split('\n').filter (Boolean)
+                                  : []
+                                  ;
                                 try {
-                                    logs = stdout ?
-                                        stdout.toString().split('\n').filter (Boolean).map (JSON.parse)
-                                      : []
-                                      ;
+                                    logs = lines.map (JSON.parse)
                                 } catch (err) {
+                                    for (var i=0,j=lines.length; i<j; i++) try {
+                                        JSON.parse (lines[i]);
+                                    } catch (err) {
+                                        console.log ('failed at:', lines[i]);
+                                    }
                                     return callback (err);
                                 }
                                 if (stderr && stderr.length)
@@ -318,11 +333,6 @@ function runTest (name, args) {
                                 JSON.parse (compareDoc)
                             );
                         } catch (err) {
-                            // if (
-                            //     !err.message.match (/"unnamed/)
-                            //  && !err.message.match (/\/modules\/async/)
-                            // )
-                            //     return callback (err);
                             return callback (err);
                         }
 
@@ -351,6 +361,8 @@ runTest ('Node Parsing Without Root', '--parse node');
 runTest ('Prototype', '--parse node --root test');
 runTest ('__proto__', '--parse node --root test');
 runTest ('Overrides', '--parse node --root test');
+runTest ('Skeleton', '--parse node --root skeleton');
+runTest ('Syntax Parsing Challenges', '--parse node --root test');
 runTest ('ES6 Parsing', '--parse js');
 runTest ('Locals --All', '--parse node --root test --locals all');
 runTest ('Locals --Comments', '--parse node --root test --locals comments');

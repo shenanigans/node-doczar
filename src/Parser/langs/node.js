@@ -69,8 +69,7 @@ function getRoot (context, filepath, root) {
 var DELIMIT = process.platform == 'win32' ? '\\' : '/';
 var HAZ = Object.hasOwnProperty;
 function getDependency (context, refererName, sourceName, rootPath, target) {
-    var refererDir = path.parse (refererName).dir;
-    var refererFrags = refererDir.split (DELIMIT);
+    var refererFrags = refererName.split (DELIMIT);
     var refererDepth = refererFrags.length;
     var workingRootPath = rootPath.concat();
     var workingRefererName = refererName;
@@ -80,13 +79,17 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
     if (target[0] !== '.' && target[0] !== '/') {
         var targetFrags = target.split ('/');
 
+        // moving Trunkward only
+
         // this path uses node_modules from a parent dir
         // but is it a true dependency?
         // only if it appears as a dependency in somebody's package.json!
         // (or digs backward deep enough to exhaust the root path)
         var sourceFrags = path.parse (sourceName).dir.split (DELIMIT);
-        for (var i=sourceFrags.length; i>=Math.max (0, sourceFrags.length-refererDepth); i--) {
-            if (i < refererDepth)
+        // we can go above the source level slightly
+        var sourceCutoff = Math.max (0, sourceFrags.length-refererDepth-workingRootPath.length);
+        for (var i=sourceFrags.length; i>=sourceCutoff; i--) {
+            if (i <= refererDepth)
                 workingRootPath.pop();
             var searchPath = path.join.apply (path, sourceFrags.slice (0, i));
 
@@ -104,7 +107,7 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
             } catch (err) {
                 if (err.code !== 'ENOENT' && err.code !== 'ENOTDIR') {
                     context.logger.error (
-                        { source:sourceName, target:target },
+                        { source:sourceName, target:target, root:workingRootPath },
                         'unable to resolve a dependency'
                     );
                     return;
@@ -128,13 +131,13 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
                     modulePath = targetFrags.map (function (frag) { return [ '/', frag ]; });
                     targetName = path.join (nodeModulesPath, path.join.apply (path, targetFrags));
                     workingRootPath = modulePath;
-                    workingRefererName = '';
+                    workingRefererName = targetName;
                     break;
                 }
             } catch (err) {
                 if (err.code !== 'ENOENT' && err.name !== 'SyntaxError') {
                     context.logger.error (
-                        { source:sourceName, target:target },
+                        { source:sourceName, target:target, root:workingRootPath },
                         'unable to resolve a dependency'
                     );
                     return;
@@ -156,7 +159,7 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
         // if we haven't built a modulePath by now, the module could not be found
         if (!modulePath) {
             context.logger.error (
-                { source:sourceName, target:target },
+                { source:sourceName, target:target, root:workingRootPath },
                 'unable to resolve a dependency'
             );
             return;
@@ -177,37 +180,67 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
         );
     }
 
+    // no more Trunkward movement. Leafward only.
+
     // confirm filename - is this a directory containing a package.json?
     try {
         var targetPackage = JSON.parse (fs.readFileSync (path.join (targetName, 'package.json')));
         if (targetPackage.main)
             targetName = path.resolve (targetName, targetPackage.main);
+        // does this path refer to a real file?
+        var tryName = targetName.match (/\.js$/) ? targetName : targetName + '.js';
+        try {
+            fs.statSync (tryName);
+            targetName = tryName;
+        } catch (err) {
+            // is this a directory containing an index.js?
+            tryName = path.join (targetName, 'index.js');
+            try {
+                fs.statSync (targetName);
+                targetName = tryName;
+            } catch (err) {
+                // nuh-uh. Can't find it. What's even up with this package?
+                context.logger.error (
+                    { source:sourceName, target:target, root:workingRootPath },
+                    'unable to resolve a dependency'
+                );
+                return;
+            }
+        }
     } catch (err) {
         if (err.code !== 'ENOENT' && err.name !== 'SyntaxError') {
             context.logger.error (
-                { source:sourceName, target:target },
+                { source:sourceName, target:target, root:workingRootPath },
                 'unable to resolve a dependency'
             );
             return;
         }
         // is there a .js file?
-        targetName += '.js';
+        var tryName = targetName.match (/\.js$/) ? targetName : targetName + '.js';
         try {
-            fs.statSync (targetName);
+            fs.statSync (tryName);
+            targetName = tryName;
         } catch (err) {
-            // module cannot be found
-            context.logger.error (
-                { source:sourceName, target:target },
-                'unable to resolve a dependency'
-            );
-            return;
+            // is this a directory containing an index.js?
+            tryName = path.join (targetName, 'index.js');
+            try {
+                fs.statSync (tryName);
+                targetName = tryName;
+            } catch (err) {
+                // module cannot be found
+                context.logger.error (
+                    { source:sourceName, target:target, filename:targetName, root:workingRootPath },
+                    'unable to resolve a dependency'
+                );
+                return;
+            }
         }
     }
 
     return {
         path:       modulePath,
         root:       workingRootPath,
-        referer:    workingRefererName || targetName,
+        referer:    workingRefererName || path.parse (targetName).dir,
         file:       targetName
     };
 }
@@ -226,8 +259,11 @@ function cleanupRoot (sources) {
 
 function generateComponents (context, submitSourceLevel) {
     var didSubmit;
+    var round = 1;
     do {
         didSubmit = false;
+
+        context.logger.setTask ('submitting (round ' + round + ') global names');
 
         // work globals
         for (var key in globalNode) try {
@@ -245,14 +281,13 @@ function generateComponents (context, submitSourceLevel) {
 
         // work each source file
         for (var rootPath in context.sources) try {
+            context.logger.setTask ('submitting (round ' + round + ') ' + rootPath);
             var sourceRoot = context.sources[rootPath];
 
             // work exports
+            if (sourceRoot.module[MEMBERS])
+                console.log ('ACK', rootPath);
             var exports = sourceRoot.module[PROPS].exports;
-            var chain = [ exports ];
-            while (exports[DEREF].length === 1 && chain.indexOf (exports[DEREF][0]) < 0)
-                exports = exports[DEREF][0];
-
             didSubmit += submitSourceLevel (
                 exports,
                 [],

@@ -3,18 +3,15 @@
     Roots a document tree and builds all the [Components](skeleton/skl/Component) that live inside it.
     [Looks up](#resolve) and [creates](#getComponent) Components by path. Centralizes [finalization]
     (#finalize) and [filesystem output](#writeFiles).
-@argument:bunyan.Logger logger
-    Any interesting events produced by any [Component](skeleton/skl/Component) generated on this cache
-    will be logged on this [Logger](bunyan.Logger).
 */
 
 var path            = require ('path');
-var async           = require ('async');
-var fs              = require ('fs-extra');
-var filth           = require ('filth');
+// var async           = require ('async');
+// var fs              = require ('fs-extra');
+// var filth           = require ('filth');
 var Component       = require ('./Component');
 
-var ComponentCache = function (logger) {
+var ComponentCache = function(){
 
 };
 

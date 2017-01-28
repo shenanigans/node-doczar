@@ -1,8 +1,8 @@
 
 /*      @module:class
     Roots a document tree and builds all the [Components](doczar/src/Component) that live inside it.
-    [Looks up](#resolve) and [creates](#getComponent) Components by path. Centralizes [finalization]
-    (#finalize) and [filesystem output](#writeFiles).
+    [Looks up](#resolve) and [creates](#getComponent) Components. Centralizes [finalization]
+    (#finalize) and [filesystem output](#writeFiles) for all child Components.
 @argument:bunyan.Logger logger
     Any interesting events produced by any [Component](doczar/src/Component) generated on this cache
     will be logged on this [Logger](bunyan.Logger).
@@ -17,21 +17,6 @@ var Patterns        = require ('./Parser/Patterns');
 var Templates       = require ('./Templates');
 var sanitizeName    = require ('./sanitizeName');
 
-var concatArrs = function(){
-    var out = [];
-    for (var i=0,j=arguments.length; i<j; i++)
-        out.push.apply (out, arguments[i]);
-    return out;
-};
-var addToArr = function (arr, item) {
-    var newArr = arr.concat();
-    newArr.push (item);
-    return newArr;
-};
-var isArr = function (a) {
-    if (!a) return false;
-    return a.__proto__ === Array.prototype;
-};
 function pathStr (type) {
     return type.map (function (step) {
         if (step.length === 2)
@@ -77,9 +62,11 @@ ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
         if (Object.hasOwnProperty.call (scope[locationName], step[1]))
             return scope[locationName][step[1]];
         if (doCreate) {
+            var nextPath = scope.path.concat();
+            nextPath.push (step);
             var newComponent = scope[locationName][step[1]] = new Component (
                 this,
-                addToArr (scope.path, step),
+                nextPath,
                 scope,
                 locationName,
                 this.logger
@@ -102,10 +89,12 @@ ComponentCache.prototype.walkStep = function (scope, step, doCreate) {
     if (scope[locationName].length > index)
         return scope[locationName][index];
     if (doCreate) {
+        var nextPath = scope.path.concat();
+        nextPath.push (step);
         for (var i=scope[locationName].length,j=index+1; i<j; i++) {
             scope[locationName][i] = new Component (
                 this,
-                addToArr (scope.path, step),
+                nextPath,
                 scope,
                 locationName,
                 this.logger
@@ -216,7 +205,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
             location = pointer.inherited[stepCType];
         else
             location = pointer[stepCType];
-        if (isArr (location))
+        if (location instanceof Array)
             location = pointer[stepCType+'ByName'];
         else if (type[i][2]) // Symbol
             location = pointer[stepCType+'Symbols'];
@@ -249,7 +238,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
         else
             location = pointer[stepCType];
         var childClass = Patterns.delimiters[frag[0]||'.'];
-        if (isArr (location))
+        if (location instanceof Array)
             location = pointer[stepCType+'ByName'];
         else if (frag[2]) { // Symbol
             location = pointer[stepCType+'Symbols'];
@@ -278,7 +267,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
             location = pointer.inherited[stepCType];
         else
             location = pointer[stepCType];
-        if (isArr (location))
+        if (location instanceof Array)
             location = pointer[stepCType+'ByName'];
         else if (type[finalI][2]) { // Symbol
             location = pointer[stepCType+'Symbols'];
@@ -290,7 +279,8 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     }
 
     // if the Component has no children it has no root page
-    if (!pointer.hasChildren && pointer.ctype != 'spare')
+    // if (!pointer.hasChildren && pointer.ctype !== 'spare')
+    if (pointer.isTotallyEmpty)
         // link to its parent and hashlink the last step
         str += 'index.html#' + pointer.final.elemID;
     else {
@@ -435,7 +425,7 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
     ], function (err) {
         if (err) return callback (err);
         self.latency.log ('file system');
-        if (options.json)
+        if (options.json) try {
             return fs.writeFile (
                 path.join (basedir, 'index.json'),
                 JSON.stringify ({
@@ -446,6 +436,82 @@ ComponentCache.prototype.writeFiles = function (basedir, options, callback) {
                 }),
                 writeChildren
             );
+        } catch (err) {
+            // something went wrong while attempting to serialize and initiate the file writing op.
+            // first let's run through the export doc to see if there are any circular references
+            var refs = new Map();
+            function findCircular (lvl, path, refs) {
+                for (var key in lvl) {
+                    var item = lvl[key];
+                    var type = filth.typeof (item);
+                    if (type === 'object') {
+                        var subpath = path.concat();
+                        subpath.push (key);
+                        if (refs.has(item))
+                            throw new Error (subpath.join ('/'));
+                        var subrefs = new Map (refs);
+                        subrefs.set (item, true);
+                        findCircular (item, subpath, subrefs);
+                        continue;
+                    }
+                    if (type === 'array') {
+                        var subpath = path.concat();
+                        subpath.push (key);
+                        if (refs.has(item))
+                            throw new Error (subpath.join ('/'));
+                        var subrefs = new Map (refs);
+                        subrefs.set (item, true);
+                        findArrayCircular (item, subpath, subrefs);
+                        continue;
+                    }
+                }
+            }
+            function findArrayCircular (lvl, path, refs) {
+                for (var i=0,j=lvl.length; i<j; i++) {
+                    var item = lvl[i];
+                    var type = filth.typeof (item);
+                    if (type === 'object') {
+                        var subpath = path.concat();
+                        subpath.push (i);
+                        if (refs.has(item))
+                            throw new Error (subpath.join ('/'));
+                        var subrefs = new Map (refs);
+                        subrefs.set (item, true);
+                        findCircular (item, subpath, subrefs);
+                        continue;
+                    }
+                    if (type === 'array') {
+                        var subpath = path.concat();
+                        subpath.push (i);
+                        if (refs.has(item))
+                            throw new Error (subpath.join ('/'));
+                        var subrefs = new Map (refs);
+                        subrefs.set (item, true);
+                        findArrayCircular (item, subpath, subrefs);
+                        continue;
+                    }
+                }
+            }
+            try {
+                findCircular ({
+                    modules:        modules,
+                    globals:        globals,
+                    date:           options.date.toLocaleDateString(),
+                    time:           timestring
+                }, [], refs);
+            } catch (loopErr) {
+                // circular reference detected
+                // this is an unexpected engine error
+                self.logger.fatal (
+                    { path:loopErr.message },
+                    'engine error - produced a non-exportable circular document'
+                );
+                return process.exit (1);
+            }
+            // some sort of configuration error has occured
+            // pass it upstream
+            return callback (err);
+        }
 
         self.latency.log();
         async.parallel ([

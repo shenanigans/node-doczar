@@ -119,9 +119,9 @@ function replaceElements (target, source) {
     because **all** paths have a length but the final element may be filled contextually rather than
     explicitly.
 @argument:String pathstr
+    A single path String, potentially containing symbols.
 @returns:/Path
-    Returns Arrays of path fragment Arrays. These are of the form `[ [ ".", "name" ], ...]` or when
-    Symbols are used, `[ [ ".", "Symbols.iterator", [ [ ".", "Symbols" ], [ ".", "iterator" ] ] ]`.
+    Returns an Array of path fragment Arrays.
 */
 function parsePath (pathstr, fileScope) {
     if (!pathstr)
@@ -353,12 +353,12 @@ var parseFile = function (fname, fstr, defaultScope, context, next) {
         // valtypes
         var valtype;
         if (match[2])
-            valtype = parseType (match[2], fileScope);
+            valtype = parseType (match[2], fileScope.length ? fileScope : defaultScope);
         else
             valtype = [];
         var pathstr = match[3];
         var docstr = match[4] || '';
-        var pathfrags = parsePath (pathstr, fileScope);
+        var pathfrags = parsePath (pathstr, fileScope.length ? fileScope : defaultScope);
 
         if (!pathfrags[0][0])
             if (pathfrags.length == 1)
@@ -593,7 +593,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
             var sigargSplit = inpathstr.slice(1).slice(0, -1).split (Patterns.signatureArgument);
             inpathstr = '';
             for (var i=1,j=sigargSplit.length; i<j; i+=3) {
-                var sigvaltype = parseType (sigargSplit[i], fileScope);
+                var sigvaltype = parseType (sigargSplit[i], fileScope.length ? fileScope : defaultScope);
                 var sigvalname = parsePath (sigargSplit[i+1], fileScope);
                 if (sigvalname && !sigvalname[0][0])
                     sigvalname[0][0] = '(';
@@ -630,7 +630,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
             inpathfrags[inpathfrags.length-1][1] = 'constructor';
         }
 
-        valtype = parseType (valtype, fileScope);
+        valtype = parseType (valtype, fileScope.length ? fileScope : defaultScope);
 
         // consume modifiers
         var modmatch;
@@ -855,7 +855,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
     var children = [];
     var currentChild;
     var tagname;
-    var outputDocstr = scopeParent[DOCSTR] || '';
+    var outputDocstr = '';
     for (var i=0,j=lines.length; i<j; i++) {
         var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1] || '';
         if (cleanLine[0] !== '@') {
@@ -884,12 +884,13 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
         }
 
         // // use this to consume errant doc text
-        var dummy = { DOCSTR:'' };
+        var dummy = {};
+        dummy[DOCSTR] = '';
         currentChild = dummy;
 
         // // simple flag modifiers
         if (Object.hasOwnProperty.call (JDOC_MOD_FLAG, tagname)) {
-            mount['.modifiers'].push ({ mod:JDOC_MOD_FLAG[tagname] });
+            // mount['.modifiers'].push ({ mod:JDOC_MOD_FLAG[tagname] });
             continue;
         }
 
@@ -902,7 +903,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 continue;
             }
             var path = parseJavadocFlavorPath (pathMatch[1]);
-            mount['.modifiers'].push ({ mod:JDOC_MOD_PATH[tagname], path:path });
+            // mount['.modifiers'].push ({ mod:JDOC_MOD_PATH[tagname], path:path });
             continue;
         }
 
@@ -914,8 +915,8 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
         // add hacky flag properties to the target's `.extras` property
         if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
-            if (mount['.extras'].indexOf(JDOC_EXTRAS[tagname]) < 0)
-                mount['.extras'].push (JDOC_EXTRAS[tagname]);
+            // if (mount['.extras'].indexOf(JDOC_EXTRAS[tagname]) < 0)
+            //     mount['.extras'].push (JDOC_EXTRAS[tagname]);
             continue;
         }
 
@@ -927,7 +928,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
                 continue;
             }
-            mount['.modifiers'].push ({ mod:JDOC_MOUNT_FLAG[tagname] });
+            // mount['.modifiers'].push ({ mod:JDOC_MOUNT_FLAG[tagname] });
             var types = match[1];
             if (types)
                 mount[TYPES].push.apply (
@@ -951,8 +952,8 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
                 continue;
             }
-            if (mount['.extras'].indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
-                mount['.extras'].push (JDOC_MOUNT_EXTRA[tagname]);
+            // if (mount['.extras'].indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
+            //     mount['.extras'].push (JDOC_MOUNT_EXTRA[tagname]);
             var types = match[1];
             if (types)
                 mount[TYPES].push.apply (
@@ -1028,6 +1029,7 @@ var CORE_MODS = [
 /*
     Parse an entire document of mixed code and documentation tags.
 */
+// var SIGNATURE_COOLDOWN = 4;
 function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, next) {
     if (!Object.hasOwnProperty.call (langs, mode)) {
         context.logger.fatal ({ parse:mode }, 'unknown parse mode');
@@ -1035,8 +1037,9 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     }
     var langPack = langs[mode];
     var baseNode = langPack.getRoot (context, fname, defaultScope);
+    defaultScope = baseNode[ROOT];
     if (!baseNode[MODULE])
-        baseNode[MODULE] = pathStr (defaultScope);
+        baseNode[MODULE] = defaultScope;
 
     var dirname = pathLib.parse (fname).dir;
 
@@ -1104,7 +1107,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
     var HACK_line = 0;
     function walkLevel (level, scope, thisNode, deadLine, scopeParent, fnChain, fileScope) {
-        // apply an argument signature to a CallExpression
         function processRequireStatement (expression, target) {
             if (target) target[SILENT] = true;
             // gather the module name
@@ -1154,32 +1156,38 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 context,
                 pathLib.resolve (process.cwd(), referer),
                 fname,
-                defaultScope,
+                baseNode[MODULE],
                 depName
             );
+            if (!pathInfo)
+                return newNode();
 
             var sourceRoot;
-            var rootStr = pathStr (pathInfo.root);
-            if (context.argv.noDeps && rootStr !== baseNode[MODULE]) {
+            if (context.argv.noDeps && !pathsEqual (pathInfo.root, baseNode[MODULE])) {
                 var dummy = newNode();
                 dummy[SILENT] = true;
                 dummy[ROOT] = pathInfo.path;
+                dummy[MODULE] = pathInfo.root;
                 return dummy; // dummy
             }
             sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.path);
-            sourceRoot[MODULE] = rootStr;
+            sourceRoot[MODULE] = pathInfo.root;
             next (pathInfo.file, pathInfo.referer || referer);
             var foreignExports = sourceRoot.module[PROPS].exports;
             if (target)
                 target[ALIAS] = foreignExports;
             return foreignExports;
         }
-        // generateReturn enables reprocessing return value from individual expression arguments
+
+        /*
+            Apply an argument signature to a CallExpression. `generateReturn` enables reprocessing
+            the return value for individual expression arguments.
+        */
         function processCallExpression (expression, target, generateReturn) {
+            // get the Function's node and dig to the bottom of any unambiguous DEREF chain
             var callNode = getNode (scope, expression.callee);
             if (!callNode)
                 return;
-
             var setFunctionPointer = callNode;
             var setFunctionChain = [];
             do {
@@ -1193,6 +1201,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
              && setFunctionChain.indexOf (setFunctionPointer) < 0
             )
 
+            // apply argument types to the Function's Node
             var args;
             if (callNode[ARGUMENTS])
                 args = callNode[ARGUMENTS];
@@ -1206,12 +1215,41 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     arg = args[i] = newNode (callNode);
                     arg[NO_SET] = true;
                     arg[NAME] = [ '(', '' ];
+                    arg[TRANSIENT] = true;
                 }
                 divineTypes (arg, expression.arguments[i]);
                 if (callNode[SILENT])
                     arg[SILENT] = true;
             }
 
+            // execute or defer a call test to produce a unique RETURNS for this call expression
+            // if and only if there's no matching signature on the function already
+            var argSig = expression.arguments.map (function (argExp) {
+                return getNode (scope, argExp);
+            });
+            var targetRow;
+            if (!callNode[SIGNATURES]) {
+                targetRow = { args:argSig };
+                callNode[SIGNATURES] = [ targetRow ];
+            } else {
+                // if there is a matching signature, return the stored RETURNS node
+                // if (callNode[SIGNATURES].length > SIGNATURE_COOLDOWN)
+                    for (var i=0,j=callNode[SIGNATURES].length; i<j; i++)
+                        if (filth.compare (callNode[SIGNATURES][i].args, argSig)) {
+                            if (callNode[SIGNATURES][i].returns)
+                                return callNode[SIGNATURES][i].returns;
+                            if (!generateReturn)
+                                return callNode;
+                            targetRow = callNode[SIGNATURES][i];
+                            break;
+                        }
+                if (!targetRow) {
+                    targetRow = { args:argSig };
+                    callNode[SIGNATURES].push (targetRow);
+                }
+            }
+
+            // begin processing a new signature
             var callPack;
             if (!(BODY in callNode)) {
                 // defer call test for later
@@ -1229,6 +1267,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         var dummy = newNode (argNode);
                         dummy[DEREF].push (argNode);
                         dummy[NO_SET] = true;
+                        dummy[TRANSIENT] = true;
                         callPack.push (dummy);
                     }
                 }
@@ -1249,6 +1288,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             dummy[SILENT] = true;
                         dummy[DEREF].push (argNode);
                         dummy[NO_SET] = true;
+                        dummy[TRANSIENT] = true;
                         innerScope[args[i][NAME][1]] = dummy;
                     }
                 }
@@ -1275,9 +1315,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             if (!generateReturn)
                 return callNode;
 
-            // return callNode[RETURNS];
             var dummy = newNode();
             dummy[RETURNS] = newNode();
+            dummy[RETURNS][TRANSIENT] = true;
+            targetRow.returns = dummy[RETURNS];
 
             if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (callNode) >= 0)
                 return dummy[RETURNS];
@@ -1290,48 +1331,49 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         var dummyArg = newNode (argNode);
                         dummyArg[DEREF].push (argNode);
                         dummyArg[NO_SET] = true;
+                        dummyArg[TRANSIENT] = true;
                         if (callNode[SILENT])
                             dummyArg[SILENT] = true;
                         secondPack.push (dummyArg);
                     }
                 }
                 callNode[WAITING_CALLS].push (secondPack);
-                return dummy[RETURNS];
-            }
-
-            // generate a return value individualized to this CallExpression
-            var innerScope = new filth.SafeMap (scope);
-            for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
-                var argNode = getNode (scope, expression.arguments[i]);
-                if (argNode) {
-                    var dummyArg = newNode (argNode);
-                    if (callNode[SILENT])
-                        dummyArg[SILENT] = true;
-                    dummyArg[DEREF].push (argNode);
-                    dummyArg[NO_SET] = true;
-                    innerScope[args[i][NAME][1]] = dummyArg;
+            } else {
+                // generate a return value individualized to this CallExpression
+                var innerScope = new filth.SafeMap (scope);
+                for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
+                    var argNode = getNode (scope, expression.arguments[i]);
+                    if (argNode) {
+                        var dummyArg = newNode (argNode);
+                        if (callNode[SILENT])
+                            dummyArg[SILENT] = true;
+                        dummyArg[DEREF].push (argNode);
+                        dummyArg[NO_SET] = true;
+                        dummyArg[TRANSIENT] = true;
+                        innerScope[args[i][NAME][1]] = dummyArg;
+                    }
                 }
-            }
-            var localChain = fnChain.concat();
-            localChain.push (callNode);
-            var localDeadLine = deadLine;
-            for (var i=0,j=callNode[BODY].length; i<j; i++) {
-                walkLevel (
-                    callNode[BODY][i],
-                    innerScope,
-                    callNode[THIS],
-                    localDeadLine,
-                    dummy,
-                    localChain,
-                    fileScope.concat()
-                );
-                localDeadLine = callNode[BODY][i].loc.end.line;
-            }
+                var localChain = fnChain.concat();
+                localChain.push (callNode);
+                var localDeadLine = deadLine;
+                for (var i=0,j=callNode[BODY].length; i<j; i++) {
+                    walkLevel (
+                        callNode[BODY][i],
+                        innerScope,
+                        callNode[THIS],
+                        localDeadLine,
+                        dummy,
+                        localChain,
+                        fileScope.concat()
+                    );
+                    localDeadLine = callNode[BODY][i].loc.end.line;
+                }
 
-            // reduce innerScope to new keys only
-            for (var key in scope)
-                if (scope[key] === innerScope[key] || innerScope[key] === undefined)
-                    delete innerScope[key];
+                // reduce innerScope to new keys only
+                for (var key in scope)
+                    if (scope[key] === innerScope[key] || innerScope[key] === undefined)
+                        delete innerScope[key];
+            }
 
             return dummy[RETURNS];
         }
@@ -1340,16 +1382,18 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         function divineTypes (node, value, localThisNode) {
             switch (value.type) {
                 case 'Identifier':
-                    if (Object.hasOwnProperty.call (scope, value.name)) {
+                    if (!Object.hasOwnProperty.call (scope, value.name))
+                        scope[value.name] = newNode (scope);
+                    if (node[DEREF].indexOf (scope[value.name]) < 0)
                         node[DEREF].push (scope[value.name]);
-                        if (scope[value.name][SILENT])
-                            node[SILENT] = true;
-                    }
+                    if (scope[value.name][SILENT])
+                        node[SILENT] = true;
                     return [];
                 case 'MemberExpression':
                     var memberNode = getNode (scope, value);
                     if (memberNode) {
-                        node[DEREF].push (memberNode);
+                        if (node[DEREF].indexOf (memberNode) < 0)
+                            node[DEREF].push (memberNode);
                         if (memberNode[SILENT])
                             node[SILENT] = true;
                     }
@@ -1419,7 +1463,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     }
                     break;
                 case 'AssignmentExpression':
-                    if (value.operator == '=') {
+                    if (value.operator === '=') {
                         // single-equals side-effect syntax
                         var targetNode = getNode (scope, value.left, true);
                         if (!targetNode)
@@ -1468,20 +1512,25 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                         dummy[SILENT] = true;
                                     dummy[DEREF].push (argNode);
                                     dummy[NO_SET] = true;
+                                    dummy[TRANSIENT] = true;
                                     innerScope[argNode[NAME][1]] = dummy;
                                 }
-                                for (var i=0,j=item[BODY].length; i<j; i++) {
-                                    walkLevel (
-                                        item[BODY][i],
-                                        innerScope,
-                                        targetNode[PARENT],
-                                        localDeadLine,
-                                        item,
-                                        localChain,
-                                        fileScope.concat()
-                                    );
-                                    localDeadLine = item[BODY][i].loc.end.line;
-                                }
+                                if (
+                                    localChain.length < context.argv.maxDepth
+                                 && localChain.indexOf (item) < 0
+                                )
+                                    for (var i=0,j=item[BODY].length; i<j; i++) {
+                                        walkLevel (
+                                            item[BODY][i],
+                                            innerScope,
+                                            targetNode[PARENT],
+                                            localDeadLine,
+                                            item,
+                                            localChain,
+                                            fileScope.concat()
+                                        );
+                                        localDeadLine = item[BODY][i].loc.end.line;
+                                    }
                                 // reduce innerScope to new keys only
                                 for (var key in scope)
                                     if (scope[key] === innerScope[key] || innerScope[key] === undefined)
@@ -1561,6 +1610,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             if (node[TYPES].indexOf (tstr) < 0)
                                 node[TYPES].push (tstr);
                         }
+                        if (node[DEREF].indexOf (targetNode) < 0)
+                            node[DEREF].push (targetNode);
                         return gotTypes;
                     } else if (value.operator == '+=') {
                         // either Number or String or Boolean
@@ -1578,15 +1629,15 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                      && value.callee.name == 'require'
                     ) {
                         var returned = processRequireStatement (value, node);
-                        if (returned)
+                        if (returned && node[DEREF].indexOf (returned) < 0)
                             node[DEREF].push (returned);
                         return [];
                     }
                     var returnNode = processCallExpression (value, node, true);
                     if (!returnNode)
                         return [];
-                    // mark for later dereference of the function's return value
-                    node[DEREF].push (returnNode);
+                    if (node[DEREF].indexOf (returnNode) < 0)
+                        node[DEREF].push (returnNode);
                     // propagate silence
                     if (returnNode[SILENT])
                         node[SILENT] = true;
@@ -1636,6 +1687,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 case 'ArrowFunctionExpression':
                     if (node[TYPES].indexOf ('Function') < 0)
                         node[TYPES].push ('Function');
+                    if (value.id) {
+                        if (!Object.hasOwnProperty.call (scope, value.id.name))
+                            scope[value.id.name] = newNode();
+                        scope[value.id.name][DEREF].push (node);
+                    }
                     // manage arguments
                     var args;
                     var localDeadLine = deadLine;
@@ -1653,6 +1709,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 arg[TYPES] = [];
                                 arg[DEREF] = [];
                                 arg[NO_SET] = true;
+                                arg[TRANSIENT] = true;
                                 arg[SILENT] = Boolean (node[SILENT]);
                             }
                             processComments (args[i], value.params[i], localDeadLine, node);
@@ -1677,6 +1734,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             arg[TYPES] = [];
                             arg[DEREF] = [];
                             arg[NO_SET] = true;
+                            arg[TRANSIENT] = true;
                             arg[SILENT] = Boolean (node[SILENT]);
                             processComments (arg, param, localDeadLine, node);
                             if (
@@ -1695,7 +1753,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             return arg;
                         });
                     }
-                    // recurse to walkLevel from divineTypes
                     var innerScope = new filth.SafeMap (scope);
                     for (var i=0,j=node[ARGUMENTS].length; i<j; i++) {
                         var arg = node[ARGUMENTS][i];
@@ -1704,13 +1761,15 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     node[SCOPE] = innerScope;
                     var localDeadLine = deadLine;
                     node[BODY] = value.body.body;
-                    if (!(THIS in node))
-                        node[THIS] = value.type == 'FunctionExpression' ?
-                            localThisNode || node
+                    if (!node[THIS])
+                        node[THIS] = value.type === 'FunctionExpression' ?
+                            node
                           : localThisNode || thisNode || node
                           ;
                     hoistNames (innerScope, value.body.body);
                     if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (node) < 0) {
+                        var localChain = fnChain.concat();
+                        localChain.push (node);
                         for (var i=0,j=value.body.body.length; i<j; i++) {
                             walkLevel (
                                 value.body.body[i],
@@ -1718,37 +1777,34 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 node[THIS],
                                 localDeadLine,
                                 node,
-                                fnChain,
+                                localChain,
                                 fileScope.concat()
                             );
                             localDeadLine = value.body.body[i].loc.end.line;
                         }
                         // run any waiting call tests
                         if (node[WAITING_CALLS]) {
-                            if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (node) < 0) {
-                                localChain = fnChain.concat();
-                                localChain.push (node);
-                                for (var i=0,j=node[WAITING_CALLS].length; i<j; i++) {
-                                    var callPack = node[WAITING_CALLS][i];
-                                    var waitingInnerScope = new filth.SafeMap (scope);
-                                    for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                        waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
-                                    var localDeadLine = deadLine;
-                                    for (var k=0,l=node[BODY].length; k<l; k++) {
-                                        walkLevel (
-                                            node[BODY][k],
-                                            waitingInnerScope,
-                                            node[THIS],
-                                            localDeadLine,
-                                            callPack[0],
-                                            localChain,
-                                            fileScope.concat()
-                                        );
-                                        localDeadLine = node[BODY][k].loc.end.line;
-                                    }
+                            var waitingCalls = node[WAITING_CALLS];
+                            delete node[WAITING_CALLS];
+                            for (var i=0,j=waitingCalls.length; i<j; i++) {
+                                var callPack = waitingCalls[i];
+                                var waitingInnerScope = new filth.SafeMap (scope);
+                                for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
+                                    waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
+                                var localDeadLine = deadLine;
+                                for (var k=0,l=node[BODY].length; k<l; k++) {
+                                    walkLevel (
+                                        node[BODY][k],
+                                        waitingInnerScope,
+                                        node[THIS],
+                                        localDeadLine,
+                                        callPack[0],
+                                        localChain,
+                                        fileScope.concat()
+                                    );
+                                    localDeadLine = node[BODY][k].loc.end.line;
                                 }
                             }
-                            delete node[WAITING_CALLS];
                         }
                     }
                     // reduce innerScope to new keys only
@@ -1801,6 +1857,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
                 case 'ConditionalExpression':
 
+                default:
+
             }
 
             return [];
@@ -1815,6 +1873,15 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             var silent = false;
 
             switch (level.type) {
+                case 'ObjectExpression':
+                case 'Literal':
+                    var dummy = newNode();
+                    divineTypes (dummy, level);
+                    return dummy;
+                case 'ArrayExpression':
+                    var dummy = newNode();
+                    dummy[TYPES].push ('Array');
+                    return dummy;
                 case 'MemberExpression':
                     pointer = getNode (pointer, level.object, shallow);
                     if (!pointer)
@@ -1866,6 +1933,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         var arg = newNode (initialPointer);
                         arg[NO_SET] = true;
                         arg[NAME] = [ '(', level.params[i].name ];
+                        arg[TRANSIENT] = true;
                         args.push (arg);
                         processComments (arg, level.params[i], localDeadLine, node);
                         if (
@@ -1882,6 +1950,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         localDeadLine = level.params[i].loc.end.line;
                     }
                     anon[RETURNS] = newNode (initialPointer);
+                    anon[RETURNS][TRANSIENT] = true;
                     anon[BODY] = level.body.body;
                     anon[THIS] = level.type == 'FunctionExpression' ? anon : (thisNode || anon);
                     // take our first pass through the body
@@ -1972,6 +2041,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                  && pointer[PARENT][INSTANCE].length === 1
                 )
                     pointer = pointer[PARENT];
+
                 if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
                     pointer = pointer[INSTANCE][0];
                     if (!pointer[MEMBERS]) {
@@ -1983,9 +2053,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     if (level.property.name === '__proto__')
                         return pointer;
                 }
+
                 if (level.property.name === 'prototype' && !pointer[IS_COL]) {
-                    if (pointer[IS_COL])
-                        return pointer;
                     if (!pointer[MEMBERS]) {
                         pointer[MEMBERS] = tools.newCollection();
                         pointer[MEMBERS][PARENT] = pointer;
@@ -2007,7 +2076,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     level.property.name
                   : level.property.value
                   ;
-                stowThis = IS_COL in pointer ? pointer[PARENT] : pointer;
+
+                stowThis = IS_COL in pointer ? pointer[PARENT][THIS] : pointer[THIS];
 
                 var nameDelimit;
                 if (pointer[IS_COL])
@@ -2158,7 +2228,12 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             var pathfrags;
                             var workingParent;
                             if (!pathstr) {
-                                if (node && NAME in node) {
+                                if (
+                                    node
+                                 && ctype !== 'spare'
+                                 && ctype !== 'module'
+                                 && NAME in node
+                                ) {
                                     pathfrags = [];
                                     pathfrags.push (node[NAME].concat());
                                     workingParent = pathParent;
@@ -2188,7 +2263,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 pathfrags = [];
                             }
 
-                            if (!node || ctype === 'spare') {
+                            if (!node || ctype === 'spare' || ctype === 'module') {
                                 // no related expression
                                 parseTag (
                                     context,
@@ -2225,12 +2300,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             ) {
                 // use a trailing comment that starts on the same line as this statement ends on
                 var trailer = level.trailingComments[0];
-                if (trailer.type == 'Line')
-                    if (node[DOCSTR])
-                        node[DOCSTR].push (trailer.value);
-                    else
+                // only use a line comment if no other DOCSTR has been found yet.
+                if (trailer.type == 'Line') {
+                    if (!node[DOCSTR])
                         node[DOCSTR] = [ trailer.value ];
-                else {
+                } else {
                     // try to parse it
                     Patterns.tag.lastIndex = 0;
                     if (!(match = Patterns.tag.exec ('/*'+trailer.value+'*/'))) {
@@ -2253,8 +2327,16 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         var docstr = match[4] || '';
                         if (!pathstr) {
                             pathfrags = [];
-                            if (node && NAME in node)
+                            if (
+                                ctype !== 'spare'
+                             && ctype !== 'module'
+                             && NAME in node
+                            ) {
+                                pathfrags = [];
                                 pathfrags.push (node[NAME].concat());
+                                workingParent = pathParent;
+                            } else
+                                pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
                         } else {
                             pathfrags = parsePath (pathstr, []);
                             if (!pathfrags[0][0])
@@ -2268,19 +2350,36 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             replaceElements (fileScope, pathfrags);
                             pathfrags = [];
                         }
-
-                        node[MOUNT] = {
-                            ctype:      ctype,
-                            path:       pathfrags,
-                            valtype:    valtype,
-                            docstr:     [ docstr ],
-                            docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
-                            fname:      fname
-                        };
-                        node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
+                        if (ctype === 'spare' || ctype === 'module') {
+                            // no related expression
+                            parseTag (
+                                context,
+                                fname,
+                                ctype,
+                                valtype,
+                                pathfrags,
+                                fileScope,
+                                defaultScope,
+                                docstr,
+                                next
+                            );
+                        } else {
+                            node[MOUNT] = {
+                                ctype:      ctype,
+                                path:       pathfrags,
+                                valtype:    valtype,
+                                docstr:     [ docstr ],
+                                docContext: fileScope.length ? fileScope.concat() : defaultScope.concat(),
+                                fname:      fname
+                            };
+                            node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
+                        }
                     }
                 }
             }
+
+            if (node && fileScope.length && !node[OVERRIDE])
+                node[OVERRIDE] = fileScope;
         }
 
         // ---------------------------------------------------------------- real processing begins
@@ -2309,8 +2408,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     break;
                 if (scopeParent[RETURNS])
                     node = scopeParent[RETURNS];
-                else
+                else {
                     node = scopeParent[RETURNS] = newNode (scopeParent);
+                    node[TRANSIENT] = true;
+                }
                 if (level.argument)
                     divineTypes (node, level.argument);
                 break;
@@ -2325,13 +2426,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
                     // self pointer?
                     if (declaration.init.type === 'ThisExpression') {
-                        node = scope[declaration.id.name] = thisNode || newNode (scope);
                         var selfPointer = thisNode || newNode (scope);
                         if (!selfPointer[MEMBERS]) {
                             selfPointer[MEMBERS] = tools.newCollection();
                             selfPointer[MEMBERS][PARENT] = selfPointer;
                         }
-                        node = scope[declaration.id.name] = selfPointer[MEMBERS];
+                        node = scope[declaration.id.name] = newNode();
+                        node[DEREF].push (selfPointer[MEMBERS]);
                         continue;
                     }
 
@@ -2344,14 +2445,6 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
                     // divine the type being set
                     divineTypes (node, declaration.init);
-
-                    // what kind of declaration was this?
-                    if (level.kind == "const")
-                        if (level['.mods']) {
-                            if (level['.mods'].indexOf ('constant') < 0)
-                                level['.mods'].push ('constant');
-                        } else
-                            level['.mods'] = [ 'constant' ];
                 }
                 break;
             case 'ExpressionStatement':
@@ -2374,58 +2467,127 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             break;
                         }
 
-                        // node = getNode (scope, level.expression.left, true);
                         node = getNode (scope, level.expression.left);
                         if (!node)
                             break;
                         if (node[NO_SET])
                             break;
-                        if (node[IS_COL]) {
-                            // something like Foo.prototype = {
-                            // this node is the [MEMBERS] collection of Foo
-                            var dummy = newNode (node[PARENT]);
-                            divineTypes (dummy, level.expression.right, node[PARENT]);
+                        if (!node[IS_COL]) {
+                            // divine the type being set
+                            divineTypes (node, level.expression.right);
+                            break;
+                        }
+                        // something like Foo.prototype = {
+                        // this node is the [MEMBERS] collection of Foo
+                        var dummy = newNode (node[PARENT]);
+                        divineTypes (dummy, level.expression.right, node[PARENT]);
 
-                            // rebases functions as methods
-                            function rebase (item, gotChain) {
-                                var chain = gotChain || fnChain;
-
-                                // recurse to rebase methods housed on DEREF
-                                if (item[DEREF] && chain.length < context.argv.maxDepth) {
-                                    for (var i=0,j=item[DEREF].length; i<j; i++) {
-                                        var subItem = item[DEREF][i];
-                                        if (chain.indexOf (subItem) >= 0)
-                                            continue;
-                                        var localChain = chain.concat();
-                                        localChain.push (subItem);
-                                        rebase (subItem, localChain);
-                                    }
+                        function mergeNodes (target, source) {
+                            if (source[MEMBERS])
+                                if (!target[MEMBERS]) {
+                                    target[MEMBERS] = tools.newCollection (source[MEMBERS])
+                                    target[MEMBERS][PARENT] = target;
+                                } else for (var name in source[MEMBERS]) {
+                                    if (Object.hasOwnProperty.call (target[MEMBERS], name))
+                                        mergeNodes (
+                                            target[MEMBERS][name],
+                                            source[MEMBERS][name]
+                                        );
+                                    else
+                                        target[MEMBERS][name] = source[MEMBERS][name];
                                 }
+                            if (source[PROPS])
+                                if (!target[PROPS]) {
+                                    target[PROPS] = tools.newCollection (source[PROPS])
+                                    target[PROPS][PARENT] = target;
+                                } else for (var name in source[PROPS]) {
+                                    if (Object.hasOwnProperty.call (target[PROPS], name))
+                                        mergeNodes (
+                                            target[PROPS][name],
+                                            source[PROPS][name]
+                                        );
+                                    else
+                                        target[PROPS][name] = source[PROPS][name];
+                                }
+                            if (source[THROWS])
+                                if (!target[THROWS]) {
+                                    target[THROWS] = tools.newCollection (source[THROWS])
+                                    target[THROWS][PARENT] = target;
+                                } else for (var name in source[THROWS]) {
+                                    if (Object.hasOwnProperty.call (target[THROWS], name))
+                                        mergeNodes (
+                                            target[THROWS][name],
+                                            source[THROWS][name]
+                                        );
+                                    else
+                                        target[THROWS][name] = source[THROWS][name];
+                                }
+                            if (source[ARGUMENTS]) {
+                                if (!target[ARGUMENTS])
+                                    target[ARGUMENTS] = source[ARGUMENTS].concat();
+                                else {
+                                    var targetArgs = target[ARGUMENTS].length;
+                                    for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
+                                        if (i < targetArgs)
+                                            mergeNodes (
+                                                target[ARGUMENTS][i],
+                                                source[ARGUMENTS][i]
+                                            );
+                                        else
+                                            target[ARGUMENTS][i] = source[ARGUMENTS][i];
+                                }
+                            }
+                            if (source[RETURNS])
+                                if (target[RETURNS])
+                                    mergeNodes (target[RETURNS], source[RETURNS]);
+                                else
+                                    target[RETURNS] = source[RETURNS];
+                        }
 
-                                if (!item[BODY])
-                                    return gotChain ?
-                                        item
-                                      : filth.circularClone (item, undefined, cloneShallowFilter)
-                                      ;
+                        // rebases functions as methods
+                        function rebase (item, gotChain) {
+                            var chain = gotChain || fnChain;
 
-                                // re-parse the body of this method using the new `this`
-                                var args = ARGUMENTS in item ?
-                                    item[ARGUMENTS]
-                                  : item[ARGUMENTS] = []
+                            // recurse to rebase methods housed on DEREF
+                            if (item[DEREF] && chain.length < context.argv.maxDepth) {
+                                for (var i=0,j=item[DEREF].length; i<j; i++) {
+                                    var subItem = item[DEREF][i];
+                                    if (chain.indexOf (subItem) >= 0)
+                                        continue;
+                                    var localChain = chain.concat();
+                                    localChain.push (subItem);
+                                    rebase (subItem, localChain);
+                                }
+                            }
+
+                            if (!item[BODY])
+                                return gotChain ?
+                                    item
+                                  : filth.circularClone (item, undefined, cloneShallowFilter)
                                   ;
+
+                            // re-parse the body of this method using the new `this`
+                            var args = ARGUMENTS in item ?
+                                item[ARGUMENTS]
+                              : item[ARGUMENTS] = []
+                              ;
+                            // run call test
+                            var innerScope = new filth.SafeMap (scope, item[SCOPE]);
+                            for (var i=0,j=args.length; i<j; i++) {
+                                var argNode = args[i];
+                                var dummy = newNode (argNode);
+                                if (item[SILENT])
+                                    dummy[SILENT] = true;
+                                dummy[DEREF].push (argNode);
+                                dummy[NO_SET] = true;
+                                innerScope[argNode[NAME][1]] = dummy;
+                            }
+                            if (
+                                fnChain.length < context.argv.maxDepth
+                             && fnChain.indexOf (item) < 0
+                            ) {
                                 var localChain = chain.concat();
                                 localChain.push (item);
-                                // run call test
-                                var innerScope = new filth.SafeMap (scope, item[SCOPE]);
-                                for (var i=0,j=args.length; i<j; i++) {
-                                    var argNode = args[i];
-                                    var dummy = newNode (argNode);
-                                    if (item[SILENT])
-                                        dummy[SILENT] = true;
-                                    dummy[DEREF].push (argNode);
-                                    dummy[NO_SET] = true;
-                                    innerScope[argNode[NAME][1]] = dummy;
-                                }
                                 for (var i=0,j=item[BODY].length; i<j; i++) {
                                     walkLevel (
                                         item[BODY][i],
@@ -2438,47 +2600,44 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     );
                                     localDeadLine = item[BODY][i].loc.end.line;
                                 }
-                                // reduce innerScope to new keys only
-                                for (var key in scope)
-                                    if (scope[key] === innerScope[key] || innerScope[key] === undefined)
-                                        delete innerScope[key];
-                                return gotChain ?
-                                    item
-                                  : filth.circularClone (item, undefined, cloneShallowFilter)
-                                  ;
                             }
+                            // reduce innerScope to new keys only
+                            for (var key in scope)
+                                if (scope[key] === innerScope[key] || innerScope[key] === undefined)
+                                    delete innerScope[key];
 
-                            // copy the dummy's props into the members collection
-                            context.latency.log ('parsing');
-
-                            if (dummy[PROPS])
-                                for (var key in dummy[PROPS])
-                                    node[key] =
-                                     rebase (dummy[PROPS][key])
-                                     ;
-                            if (dummy[MEMBERS])
-                                for (var key in dummy[MEMBERS])
-                                    node[key] =
-                                     rebase (dummy[MEMBERS][key])
-                                     ;
-                            if (dummy[DEREF].length) {
-                                if (dummy[DEREF][0][PROPS])
-                                    for (var key in dummy[DEREF][0][PROPS])
-                                        node[key] =
-                                         rebase (dummy[DEREF][0][PROPS][key])
-                                         ;
-                                if (dummy[DEREF][0][MEMBERS])
-                                    for (var key in dummy[DEREF][0][MEMBERS])
-                                        node[key] =
-                                         rebase (dummy[DEREF][0][MEMBERS][key])
-                                         ;
+                            if (item[MEMBERS]) {
+                                for (var name in item[MEMBERS])
+                                    if (Object.hasOwnProperty.call (node, name))
+                                        mergeNodes (node[name], item[MEMBERS][name]);
+                                    else
+                                        node[name] = item[MEMBERS][name];
+                                delete item[MEMBERS];
                             }
-                            context.latency.log ('cloning');
-                            node = node[PARENT];
-                            break;
+                            return item;
                         }
-                        // divine the type being set
-                        divineTypes (node, level.expression.right);
+
+                        // copy the dummy's props into the members collection
+                        context.latency.log ('parsing');
+
+                        function cloneChildren (source) {
+                            if (source[PROPS])
+                                for (var key in source[PROPS])
+                                    node[key] =
+                                     rebase (source[PROPS][key])
+                                     ;
+                            if (source[MEMBERS])
+                                for (var key in source[MEMBERS])
+                                    node[key] =
+                                     rebase (source[MEMBERS][key])
+                                     ;
+                            if (source[DEREF])
+                                for (var i=0,j=source[DEREF].length; i<j; i++)
+                                    cloneChildren (source[DEREF][i]);
+                        }
+                        cloneChildren (dummy);
+                        context.latency.log ('cloning');
+                        node = node[PARENT];
                         break;
                     case 'CallExpression':
                         if (
@@ -2709,30 +2868,27 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     }
                     // run any waiting call tests
                     if (node[WAITING_CALLS]) {
-                        if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (node) < 0) {
-                            var localChain = fnChain.concat();
-                            localChain.push (node);
-                            for (var i=0,j=node[WAITING_CALLS].length; i<j; i++) {
-                                var callPack = node[WAITING_CALLS][i];
-                                var waitingInnerScope = new filth.SafeMap (scope);
-                                for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                    waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
-                                var localDeadLine = deadLine;
-                                for (var k=0,l=level.body.body.length; k<l; k++) {
-                                    walkLevel (
-                                        level.body.body[k],
-                                        waitingInnerScope,
-                                        node || thisNode,
-                                        localDeadLine,
-                                        callPack[0],
-                                        localChain,
-                                        fileScope.concat()
-                                    );
-                                    localDeadLine = level.body.body[k].loc.end.line;
-                                }
+                        var waitingCalls = node[WAITING_CALLS];
+                        delete node[WAITING_CALLS];
+                        for (var i=0,j=waitingCalls.length; i<j; i++) {
+                            var callPack = waitingCalls[i];
+                            var waitingInnerScope = new filth.SafeMap (scope);
+                            for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
+                                waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
+                            var localDeadLine = deadLine;
+                            for (var k=0,l=level.body.body.length; k<l; k++) {
+                                walkLevel (
+                                    level.body.body[k],
+                                    waitingInnerScope,
+                                    node || thisNode,
+                                    localDeadLine,
+                                    callPack[0],
+                                    localChain,
+                                    fileScope.concat()
+                                );
+                                localDeadLine = level.body.body[k].loc.end.line;
                             }
                         }
-                        delete node[WAITING_CALLS];
                     }
                 }
                 // reduce scope to new keys only
@@ -3105,7 +3261,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     context,
                     pathLib.resolve (process.cwd(), referer),
                     fname,
-                    defaultScope,
+                    baseNode[MODULE],
                     importName
                 );
                 // if there's no path info, an error occured and was logged
@@ -3113,7 +3269,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     break;
                 var moduleNode = langPack.getRoot (context, pathInfo.file, pathInfo.path);
                 if (!moduleNode[MODULE]) {
-                    moduleNode[MODULE] = pathStr (pathInfo.root);
+                    moduleNode[MODULE] = pathInfo.root;
                     next (pathInfo.file, pathInfo.referer || referer);
                 }
 
@@ -3201,16 +3357,17 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
 
     // normal body processing
     var fileScope = [];
-    for (var i=0,j=tree.body.length; i<j; i++)
+    for (var i=0,j=tree.body.length; i<j; i++) {
         walkLevel (
             tree.body[i],
             baseNode,
             undefined,
-            i ? tree.body[i-1].loc.end.line : undefined,
+            i ? tree.body[i-1].loc.end.line : 0,
             undefined,
             [ tree.body[i] ],
             fileScope
         );
+    }
 
     // handle tag comments after the last expression
     if (tree.body.length) {
@@ -3241,12 +3398,9 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             var pathstr = match[3];
             var docstr = match[4] || '';
             var pathfrags;
-            if (!pathstr) {
-                if (node && NAME in node)
-                    pathfrags = [ node[NAME].concat() ];
-                else
-                    pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
-            } else {
+            if (!pathstr)
+                pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
+            else {
                 pathfrags = parsePath (pathstr, []);
                 if (!pathfrags[0][0])
                     if (pathfrags.length === 1)
@@ -3383,13 +3537,41 @@ function generateComponents (context, mode, defaultScope) {
             return preprocessDerefs (level, target || level, newChain);
         }
 
-        if (level[DEREF]) for (var i=0,j=level[DEREF].length; i<j; i++) {
+        if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
+            target[NAME] = level[NAME];
+
+        if (!level[DEREF])
+            return false;
+
+        // dive for LINE definitions
+        if (!target[LINE] && !target[TRANSIENT]) {
+            var pointer = level;
+            var lineChain = [ level ];
+            while (
+                !pointer[LINE]
+             && pointer[DEREF]
+             && pointer[DEREF].length === 1
+             && !pointer[DEREF][0][TRANSIENT]
+            ) {
+                pointer = pointer[DEREF][0];
+                if (pointer[LINE])
+                    break;
+                if (lineChain.indexOf (pointer) >= 0)
+                    break;
+                lineChain.push (pointer);
+            }
+            if (pointer[LINE])
+                target[LINE] = pointer[LINE];
+        }
+
+        for (var i=0,j=level[DEREF].length; i<j; i++) {
             var ref = level[DEREF][i];
             if (chain.indexOf (ref) >= 0)
-                return didFinishDeref;
+                continue;
             if (IS_COL in ref)
                 continue;
             recurse (ref, target);
+
             var baseTypes = ref[TYPES];
             for (var k=0,l=baseTypes.length; k<l; k++)
                 if (target[TYPES].indexOf (baseTypes[k]) < 0) {
@@ -3407,12 +3589,84 @@ function generateComponents (context, mode, defaultScope) {
                         didFinishDeref = true;
                     }
             }
-        }
+            // promote documentation
+            if (ref[DOCSTR])
+                if (!target[DOCSTR]) {
+                    target[DOCSTR] = ref[DOCSTR].concat();
+                    didFinishDeref = true;
+                } else for (var i=0,j=ref[DOCSTR].length; i<j; i++)
+                    if (target[DOCSTR].indexOf (ref[DOCSTR][i]) < 0) {
+                        target[DOCSTR].push (ref[DOCSTR][i]);
+                        didFinishDeref = true;
+                    }
+            // promote children
+            if (ref[PROPS]) {
+                if (!target[PROPS]) {
+                    target[PROPS] = tools.newCollection (target[PROPS]);
+                    target[PROPS][PARENT] = target;
+                } else for (var name in ref[PROPS])
+                    if (!Object.hasOwnProperty.call (target[PROPS], NAME))
+                        target[PROPS][name] = ref[PROPS][name];
+            }
+            if (ref[MEMBERS]) {
+                if (!target[MEMBERS]) {
+                    target[MEMBERS] = tools.newCollection (target[MEMBERS]);
+                    target[MEMBERS][PARENT] = target;
+                } else for (var name in ref[MEMBERS])
+                    if (!Object.hasOwnProperty.call (target[MEMBERS], NAME))
+                        target[MEMBERS][name] = ref[MEMBERS][name];
+            }
+            if (ref[ARGUMENTS]) {
+                if (!target[ARGUMENTS])
+                    target[ARGUMENTS] = ref[ARGUMENTS].concat();
+                else for (var i=0,j=ref[ARGUMENTS].length; i<j; i++) {
+                    var refArg = ref[ARGUMENTS][i];
+                    if (target[ARGUMENTS].indexOf (refArg) >= 0)
+                        continue;
+                    var found = false;
+                    if (!refArg[NAME] || !refArg[NAME][1]) {
+                        // merge argument information by index, if possible
+                        if (i < target[ARGUMENTS].length) {
+                            found = true;
+                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i])
+                        }
+                    } else for (var k=0,l=target[ARGUMENTS].length; k<l; k++)
+                        // look for an argument of the same name
+                        if (
+                            target[ARGUMENTS][k][NAME]
+                         && target[ARGUMENTS][k][NAME][1]
+                         && target[ARGUMENTS][k][NAME][1] === refArg[NAME][1]
+                        ) {
+                            // merge in place
+                            found = true;
+                            didFinishDeref += recurse (refArg, target[ARGUMENTS][k]);
+                            break;
+                        }
 
-        // recurse
-        for (var key in PREPROCESS_MAP_KEYS)
-            if (key in level) for (var childKey in level[key])
-                didFinishDeref += recurse (level[key][childKey]);
+                    if (!found) {
+                        // add to arguments
+                        if (i < target[ARGUMENTS].length)
+                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i]);
+                        else {
+                            target[ARGUMENTS].push (refArg);
+                            didFinishDeref = true;
+                        }
+                    }
+                }
+            }
+            if (ref[RETURNS]) {
+                if (!target[RETURNS])
+                    target[RETURNS] = ref[RETURNS];
+            }
+            if (ref[THROWS]) {
+                if (!target[THROWS]) {
+                    target[THROWS] = tools.newCollection (target[THROWS]);
+                    target[THROWS][PARENT] = target;
+                } else for (var name in ref[THROWS])
+                    if (!Object.hasOwnProperty.call (target[THROWS], NAME))
+                        target[THROWS][name] = ref[THROWS][name];
+            }
+        }
 
         // process arguments and returns
         if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
@@ -3426,6 +3680,9 @@ function generateComponents (context, mode, defaultScope) {
 
         for (var key in level)
             didFinishDeref += recurse (level[key], undefined);
+
+        if (target[NO_SET])
+            return didFinishDeref;
 
         if (level[MEMBERS]) for (var key in level[MEMBERS]) {
             var nextTarget = level[MEMBERS][key];
@@ -3560,7 +3817,10 @@ function generateComponents (context, mode, defaultScope) {
 
             // submit, if we should
             if (
-                !level[SILENT]
+                fullpath.length
+             && fullpath[0][1]
+             && typeof fullpath[0][1] === 'string'
+             && !level[SILENT]
              && ( force || path.length || localDefault.length )
              && (
                     level[MOUNT]
@@ -3586,7 +3846,7 @@ function generateComponents (context, mode, defaultScope) {
                     context.submit (
                         fullpath,
                         {
-                            sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
+                            sourceFile: pathLib.relative (level[REFERER], level[DOC]),
                             sourceLine: level[LINE]
                         }
                     );
@@ -3596,10 +3856,16 @@ function generateComponents (context, mode, defaultScope) {
                         { name:level[NAME][1] }
                     );
             }
-        } else if ( !level[SILENT] && (
-            ( level[FORCE] && level[FORCE] > 0 )
-         || ( force && ( !level[FORCE] || level[FORCE] > 0 ) )
-        ) ) {
+        } else if (
+            level[PATH].length
+         && level[PATH][0][1]
+         && typeof level[PATH][0][1] === 'string'
+         && !level[SILENT]
+         && (
+                ( level[FORCE] && level[FORCE] > 0 )
+             || ( force && ( !level[FORCE] || level[FORCE] > 0 ) )
+            )
+        ) {
             // submit due to the FORCE mechanism
             level[FORCE] = -1;
             force = true;
@@ -3618,7 +3884,7 @@ function generateComponents (context, mode, defaultScope) {
                 context.submit (
                     concatPaths (localDefault, level[LOCALPATH]),
                     {
-                        sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
+                        sourceFile: pathLib.relative (level[REFERER], level[DOC]),
                         sourceLine: level[LINE]
                     }
                 );
@@ -3643,9 +3909,6 @@ function generateComponents (context, mode, defaultScope) {
             );
             for (var i=level[INSTANCE].length-1; i>=0; i--) {
                 var constructor = level[INSTANCE][i];
-                var aliasChain = [];
-                while (constructor[DEREF].length == 1 && aliasChain.indexOf (constructor[DEREF][0]) < 0)
-                    aliasChain.push (constructor = constructor[DEREF][0]);
                 if (!constructor[PATH])
                     continue;
                 didSubmit = true;
@@ -3685,7 +3948,7 @@ function generateComponents (context, mode, defaultScope) {
                         context.submit (
                             concatPaths (localDefault, scope),
                             {
-                                sourceFile: pathLib.relative (pathLib.parse (level[REFERER]).dir, level[DOC]),
+                                sourceFile: pathLib.relative (level[REFERER], level[DOC]),
                                 sourceLine: level[LINE]
                             }
                         );
@@ -3717,28 +3980,19 @@ function generateComponents (context, mode, defaultScope) {
                  || context.argv.locals === 'all'
                  || ( context.argv.locals === 'comments' && hasComments (level) )
              )) {
-                var pointer = level[ALIAS];
-                var aliasChain = [];
-                while (
-                    !pointer[PATH]
-                 && pointer[DEREF]
-                 && pointer[DEREF].length === 1
-                 && aliasChain.indexOf (pointer[DEREF][0]) < 0
-                )
-                    aliasChain.push (pointer = pointer[DEREF][0]);
-                if (pointer[PATH]) {
+                if (level[ALIAS][PATH]) {
                     didSubmit = true;
-                    delete level[ALIAS];
                     context.submit (level[PATH], { modifiers:[ {
                         mod:    'alias',
-                        path:   pointer[PATH]
+                        path:   level[ALIAS][PATH]
                     } ] });
+                    delete level[ALIAS];
                 }
             }
             return didSubmit;
         }
 
-        if (level[SILENT])
+        if (level[SILENT] || level[NO_SET])
             return didSubmit;
 
         // recurse to various children
@@ -3747,13 +4001,6 @@ function generateComponents (context, mode, defaultScope) {
             delete level[MEMBERS][PARENT];
             for (var key in level[MEMBERS]) {
                 var pointer = level[MEMBERS][key];
-                var memberChain = [ pointer ];
-                while (
-                    pointer[DEREF]
-                 && pointer[DEREF].length === 1
-                 && memberChain.indexOf (pointer[DEREF][0]) < 0
-                )
-                    memberChain.push (pointer = pointer[DEREF][0]);
                 didSubmit += submitSourceLevel (
                     level[MEMBERS][key],
                     concatPaths (scope, [ [ '#', key ] ]),
@@ -3768,16 +4015,6 @@ function generateComponents (context, mode, defaultScope) {
             delete level[PROPS][IS_COL];
             for (var key in level[PROPS]) {
                 var pointer = level[PROPS][key];
-                // if (pointer[SILENT])
-                //     continue;
-                var propChain = [];
-                while (
-                    !pointer[SILENT]
-                 && pointer[DEREF]
-                 && pointer[DEREF].length === 1
-                 && propChain.indexOf (pointer[DEREF][0]) < 0
-                )
-                    propChain.push (pointer = pointer[DEREF][0]);
                 didSubmit += submitSourceLevel (
                     pointer,
                     concatPaths (scope, [ [ '.', key ] ]),
@@ -3788,7 +4025,7 @@ function generateComponents (context, mode, defaultScope) {
             }
         }
 
-        if (level[ARGUMENTS]) {
+        if (level[ARGUMENTS])
             for (var i=0,j=level[ARGUMENTS].length; i<j; i++) {
                 var arg = level[ARGUMENTS][i];
                 didSubmit += submitSourceLevel (
@@ -3799,9 +4036,8 @@ function generateComponents (context, mode, defaultScope) {
                     force
                 );
             }
-        }
 
-        if (level[RETURNS] && level[RETURNS][TYPES].length) {
+        if (level[RETURNS] && level[RETURNS][TYPES].length)
             didSubmit += submitSourceLevel (
                 level[RETURNS],
                 concatPaths (scope, [ [ ')', '' ] ]),
@@ -3809,7 +4045,6 @@ function generateComponents (context, mode, defaultScope) {
                 chain,
                 force
             );
-        }
 
         if (level[THROWS])
             didSubmit += submitSourceLevel (
@@ -3855,19 +4090,20 @@ function generateComponents (context, mode, defaultScope) {
     langPack.cleanupRoot (context.sources);
 
     // preprocess primitive types
-    context.logger.info ({ parse:context.argv.parse }, 'preprocessing primitive types');
     var finishedADeref;
     var round = 1;
     do {
         finishedADeref = false;
         for (var rootPath in context.sources) {
+            context.logger.setTask (
+                'preprocessing (round '
+              + round
+              + ') '
+              + pathLib.relative (process.cwd(), rootPath)
+            );
             var sourceRoot = context.sources[rootPath];
             delete sourceRoot.globals;
             for (var key in sourceRoot) try {
-                if (key === 'cloneArr')
-                    hackeroo = true;
-                else
-                    hackeroo = false;
                 var target = sourceRoot[key];
                 finishedADeref += preprocessDerefs (target, target, [ target ]);
             } catch (err) {
@@ -3888,11 +4124,12 @@ function generateComponents (context, mode, defaultScope) {
         }
         round++;
     } while (finishedADeref);
+    context.logger.info ({ parse:context.argv.parse }, 'finished preprocessing primitive types');
 
     // generate Components for items defined in each source file
-    context.logger.info ({ parse:context.argv.parse }, 'generating Components');
     langPack.generateComponents (context, submitSourceLevel);
     context.latency.log ('generation');
+    context.logger.info ({ parse:context.argv.parse }, 'finished generating Components');
 }
 
 module.exports = {

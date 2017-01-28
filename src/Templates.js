@@ -26,6 +26,14 @@ function concatArrs () {
             out.push.apply (out, arguments[i]);
     return out;
 }
+function pathStr (type) {
+    var finalStr = type.map (function (step) {
+        if (step.length === 2)
+            return step.join ('');
+        return step[0] + '[' + step[1] + ']';
+    }).join ('')
+    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
+}
 
 var markedRenderer = new marked.Renderer();
 var linkFailureSources = {};
@@ -38,15 +46,7 @@ markedRenderer.link = function (href, title, text) {
         return '<a href="'+href+'">' + ( text || href ) + '</a>'
 
     // typelink
-    var uglySrc = '';
-    for (var i=0, j=currentLinkContext.length; i<j; i++) {
-        var step = currentLinkContext[i];
-        if (step[2])
-            uglySrc += '[' + (step[0]||'.') + step[1] + ']';
-        else
-            uglySrc += (step[0] || '.') + step[1];
-    }
-    uglySrc = uglySrc.slice (1);
+    var uglySrc = pathStr (currentPath);
 
     // is this a loaded document with a local path (like .Foo)
     if (!currentLinkContext && !targetStr[0].match (Patterns.pathWord)) {
@@ -65,7 +65,7 @@ markedRenderer.link = function (href, title, text) {
     else {
         type = Parser.parsePath (targetStr);
         if (type[0] && type[0][0])
-            type = concatArrs (currentLinkContext, type);
+            type = currentLinkContext.concat (type);
     }
 
     var notFound;
@@ -79,9 +79,8 @@ markedRenderer.link = function (href, title, text) {
             )
          || !Object.hasOwnProperty.call (linkFailureSources[uglySrc], targetStr)
         ) {
-            var uglyTarget = type.map (function(a){ return a[0]+a[1]; }).join ('');
             linkFailureSources[uglySrc][targetStr] = true;
-            logger.warn ({ from:uglySrc, type:uglyTarget }, 'cross reference failed');
+            logger.warn ({ from:uglySrc, type:pathStr (type) }, 'cross reference failed');
         }
     }
 
@@ -140,26 +139,8 @@ Handlebars.registerHelper ('link', function linkHelper (tpath) {
         );
         return gotPath;
     } catch (err) {
-        var uglySrc = '';
-        for (var i=0, j=currentPath.length; i<j; i++) {
-            var step = currentPath[i];
-            if (step[2])
-                uglySrc += '[' + (step[0]||'.') + step[1] + ']';
-            else
-                uglySrc += (step[0] || '.') + step[1];
-        }
-        uglySrc = uglySrc.slice (1);
-
-        var uglyDest = '';
-        for (var i=0, j=tpath.length; i<j; i++) {
-            var step = tpath[i];
-            if (step[2])
-                uglyDest += '[' + (step[0]||'.') + step[1] + ']';
-            else
-                uglyDest += (step[0] || '.') + step[1];
-        }
-        uglyDest = uglyDest.slice (1);
-
+        var uglySrc = pathStr (currentPath);
+        var uglyDest = pathStr (tpath);
         if (!Object.hasOwnProperty.call (linkFailureSources, uglySrc))
             linkFailureSources[uglySrc] = {};
         if (!Object.hasOwnProperty.call (linkFailureSources[uglySrc], uglyDest)) {

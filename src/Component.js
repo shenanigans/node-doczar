@@ -12,34 +12,12 @@ var INDENT_REGEX = /^(\s*)[^\s]+/;
 var SPECIAL_SPARES = { summary:true, details:true, constructor:true };
 var DEFAULT_NAMES = { callback:'callback', args:'arguments', kwargs:'namedArguments' };
 function values (a) { var out = []; for (var b in a) out.push (a[b]); return out; };
-function concatArrs () {
-    var out = [];
-    for (var i=0, j=arguments.length; i<j ;i++)
-        if (arguments[i])
-            out.push.apply (out, arguments[i]);
-    return out;
-}
-function isArr (a) {
-    return a && a.__proto__ === Array.prototype;
-}
-function appendToArr (a, b) {
-    a.push.apply (a, b);
-}
 function shallowCopy (a) {
     var b = Object.create (null);
     for (var key in a)
         b[key] = a[key];
     return b;
 }
-function clonePath (a) {
-    if (!a) return [];
-    var out = [];
-    for (var i=0, j=a.length; i<j; i++)
-        out.push ([ a[i][0]||'.', a[i][1] ]);
-    return out;
-}
-var nextID = 1;
-function getSimpleID () { return 'unnamed_'+(nextID++); }
 
 var HIDDEN_CTYPES = {
     module:     true,
@@ -89,56 +67,56 @@ function pathStr (type) {
 @argument:doczar/src/ComponentCache context
     Each new `Component` is a member of a specific `ComponentCache`.
 @argument:doczar/src/Parser/Path path
-    The type of the new `Component`, expressed as an Array of Arrays in the form
-    `[ [ delimiter, name ], ...]`
-@Array #path
-    The type of this `Component` expressed as an Array of Arrays in the form
-    `[ [ delimiter, name ], ...]`
+    The full path of the new `Component`.
 @String #pathstr
-    `path` joined down to a String.
+    A unique String representing this Component's full path.
 @String #ctype
-    The "component type" of this `Component`, better known as the word after the `@`. One of
-    `property`, `member`, `spare`, `module`, `class`, `argument`, `returns`, `callback`, `default`.
-@Array #valtype
-    The working type(s) of the value described by this `Component`. This is simply an Array of
-    String type paths.
-@/Finalization|undefined #final
-    After [finalization](#finalize), `final` is an Object designed to be passed to the template
-    engine ([Handlebars](http://handlebarsjs.com/)).
-@Array #doc
-    An Array of String markdown documents that have been applied to this `Component`.
-@Object<String, doczar/src/Component> #spare
+    The "component type" of this `Component`, better known as the word after the `@`. One of:
+     * `property`
+     * `member`
+     * `spare`
+     * `module`
+     * `class`
+     * `argument`
+     * `returns`
+     * `callback`
+     * `default`.
+@Array<Object> #valtype
+    The working type(s) of the value described by this `Component`.
+@Array<Object> #doc
+    An Array of markdown documents that have been applied to this `Component`, packaged with the
+    scope at which the documentation was found.
+@Object<doczar/src/Component> #spare
     A map of "spare document" names to `Component` instances representing these documents.
 @Object<String, doczar/src/Component> #property
     A map of property names to `Component` instances representing these types.
 @Object<String, doczar/src/Component> #member
     A map of property names to `Component` instances representing these types.
-@Array #argument
+@Array<doczar/src/Component> #argument
     An Array of `Component` instances representing function arguments for this `Component`. If our
     `ctype` is not `"member"` or `"property"` these arguments are rendered as belonging to a
     constructor function. (Further document this constructor by providing `@spare constructor`)
-@Object<String, doczar/src/Component> #argsByName
+@Object<doczar/src/Component> #argsByName
     A map of named items from `argument` to their `Component` instances.
 @Array<doczar/src/Component> #returns
     An array of Component instances representing return values for this Component.
-@Object<String, doczar/src/Component> #returnsByName
+@Object<doczar/src/Component> #returnsByName
     A map of named items from `returns` to their `Component` instances.
 @Array<doczar/src/Component> #throws
     An array of Component instances representing situations when code represented by this Component
     may throw an exception.
 @Object<doczar/src/Component> #throwsByName
     A map of named items from `throws` to their `Component` instances.
-@Boolean #isTotallyEmpty
-@Boolean #isClassValtype
-@Boolean #isJSONValtype
 */
 var Component = module.exports = function (context, tpath, parent, position, logger) {
     if (!logger)
         throw new Error ('no logger!');
     this.context = context;
+    /* @:doczar/src/Parser/Path */
     this.path = tpath;
     this.parent = parent;
     this.position = position;
+    /* @:bunyan.Logger */
     this.logger = logger;
 
     this.superClasses = [];
@@ -215,7 +193,7 @@ Component.prototype.submit = function (info) {
         if (this[key] === info[key])
             continue;
         if (key == 'doc') {
-            if (isArr (info.doc)) {
+            if (info.doc instanceof Array) {
                 for (var i=0,j=info.doc.length; i<j; i++) {
                     var docInfo = info.doc[i];
                     if (docInfo.value.match (/^[\s\n\r]*$/))
@@ -296,7 +274,10 @@ Component.prototype.submit = function (info) {
             if (!this.name) {
                 this.name = this.pathname = this.path[this.path.length-1][1] = info[key];
                 if (this.parent)
-                    this.parent[this.position+'ByName'][this.name] = this;
+                    if (this.position.match (/ByName$/))
+                        this.parent[this.position][this.name] = this;
+                    else
+                        this.parent[this.position+'ByName'][this.name] = this;
             }
             continue;
         }
@@ -482,6 +463,7 @@ var ALIAS_PROPS = [
 @callback
     Called without arguments when finalization is complete and this Component is ready to render.
 */
+var CLEANUP_KEYS = [ 'modules' ];
 Component.prototype.finalize = function (options, callback) {
     this.isFinalizing = true;
     var self = this;
@@ -507,8 +489,9 @@ Component.prototype.finalize = function (options, callback) {
         this.returns,
         this.signature
     ];
-    var children = concatArrs.apply (this, childSets);
-    this.hasChildren = Boolean (children.length);
+    var children = Array.prototype.concat.apply ([], childSets);
+    this.hasChildren = Boolean (children.length || this.doc.length);
+    this.isTotallyEmpty = !this.hasChildren;
 
     // deal with @details and @summary
     this.doc = this.doc.filter (function (item) { return Boolean (item.value.length); });
@@ -518,9 +501,11 @@ Component.prototype.finalize = function (options, callback) {
         var noSummary, noDetails;
         if (!this.spare.summary) { // we have to create a summary node
             noSummary = true;
+            var summaryPath = this.path.concat();
+            summaryPath.push ([ '~', 'summary' ]);
             this.spare.summary = new Component (
                 this.context,
-                concatArrs (this.path, [[ '~', 'summary' ]]),
+                summaryPath,
                 this,
                 'spare',
                 this.logger
@@ -530,9 +515,11 @@ Component.prototype.finalize = function (options, callback) {
         }
         if (!this.spare.details) { // we have to create a details node
             noDetails = true;
+            var detailsPath = this.path.concat();
+            detailsPath.push ([ '~', 'summary' ]);
             this.spare.details = new Component (
                 this.context,
-                concatArrs (this.path, [[ '~', 'details' ]]),
+                detailsPath,
                 this,
                 'spare',
                 this.logger
@@ -549,8 +536,6 @@ Component.prototype.finalize = function (options, callback) {
         else
             this.spare.summary.submit ({ ctype:'spare' });
     }
-
-    this.isTotallyEmpty = !children.length;
 
     async.each (children, function (child, callback) {
         child.finalize (options, callback);
@@ -694,11 +679,18 @@ Component.prototype.finalize = function (options, callback) {
 
             // if we are an @alias, duplicate the target into our file
             if (self.aliasTo) {
-                self.final.aliasTo = self.aliasTo.final;
+                self.final.aliasTo = {
+                    path:       self.aliasTo.final.path,
+                    pathstr:    self.aliasTo.final.pathstr
+                };
                 for (var i=0, j=ALIAS_PROPS.length; i<j; i++) {
                     var key = ALIAS_PROPS[i];
                     self.final[key] = self.aliasTo.final[key];
                 }
+                var pointer = self.aliasTo;
+                do {
+                    pointer.isTotallyEmpty = pointer.final.isTotallyEmpty = false;
+                } while (pointer = pointer.parent)
             }
 
             // if we are a @patch, duplicate our content into the target(s)
@@ -714,7 +706,25 @@ Component.prototype.finalize = function (options, callback) {
                 }
             }
 
-            callback();
+            process.nextTick (function(){
+                for (var i=0,j=CLEANUP_KEYS.length; i<j; i++) {
+                    var key = CLEANUP_KEYS[i];
+                    var item = self.final[key];
+                    if (!item.length)
+                        continue;
+                    if (!(item instanceof Array))
+                        continue;
+                    var foundNonEmpty = false;
+                    for (var k=0,l=item.length; k<l; k++)
+                        if (!item[k].isTotallyEmpty) {
+                            foundNonEmpty = true;
+                            break;
+                        }
+                    if (!foundNonEmpty)
+                        delete self.final[key];
+                }
+                callback();
+            });
         });
     });
 
@@ -741,6 +751,11 @@ Component.prototype.finalize = function (options, callback) {
     var realName;
     if (this.ctype === 'signature')
         this.name = this.parent.name;
+
+    /*  @:/Finalization
+        After [finalization](#finalize), `final` is an Object designed to be passed to the template
+        engine ([Handlebars](http://handlebarsjs.com/)).
+    */
     this.final = {
         elemID:             getElemID(),
         date:               options.date.toLocaleDateString(),
@@ -785,7 +800,8 @@ Component.prototype.finalize = function (options, callback) {
         propertySymbols:    [],
         memberSymbols:      [],
         returnsSymbols:     [],
-        hasChildren:        this.hasChildren
+        hasChildren:        this.hasChildren,
+        isTotallyEmpty:     this.isTotallyEmpty
     };
 
     if (this.sourceFile) {
@@ -1017,7 +1033,8 @@ Component.prototype.finalize = function (options, callback) {
             this.final.hasConstructorInfo = false;
 
         this.final.isFunction = Boolean (!this.final.hasConstructorInfo && !this.isClasslike && (
-            this.ctype == 'callback'
+            this.final.isFunction
+         || this.ctype == 'callback'
          || this.ctype == 'iterator'
          || this.ctype == 'generator'
          || this.argument.length
@@ -1197,10 +1214,11 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
 
     this.final.baseTagPath = baseTagPath;
 
-    if (!this.hasChildren)
+    if (this.isTotallyEmpty)
         return callback();
 
     this.context.latency.log();
+    this.context.logger.setTask ('writing to filesystem: ' + this.pathstr);
     var self = this;
     fs.mkdirs (basedir, function (err) {
         if (err) return callback (err);
