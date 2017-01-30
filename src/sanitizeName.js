@@ -1,6 +1,12 @@
 
-var RE_SANITIZE = /[<>:"\/\\|?*#]/g;
+var RE_SANITIZE = /[<>:"\/\\|?*#~]/g;
 function sanitizeName (pathstr, known) {
+    if (!pathstr) {
+        var i=0;
+        while (Object.hasOwnProperty.call (known, '~' + i))
+            i++;
+        return '~' + i;
+    }
     pathstr = String (pathstr).replace (RE_SANITIZE, '_').replace (/\.\./g, '_');
     var canonicalPath = pathstr.toLowerCase();
     if (canonicalPath[canonicalPath.length-1] == '.')

@@ -1,6 +1,6 @@
 
 var path = require ('path');
-var assert = require ('assert');
+var url = require ('url');
 var child_process = require ('child_process');
 var async = require ('async');
 var fs = require ('fs-extra');
@@ -342,6 +342,64 @@ function runTest (name, args) {
             }
 
             checkLevel (testname, done);
+        });
+
+        it ("produces no broken links", function (done) {
+            this.timeout (10000);
+            this.slow (3000);
+            var knownPaths = Object.create (null);
+            Error.stackTraceLimit = 10;
+            function checkLevel (level, levelDone) {
+                fs.readdir (level, function (err, children) {
+                    if (err)
+                        return callback (err);
+                    async.each (children, function (child, childDone) {
+                        var childPath = path.join (level, child);
+                        fs.stat (childPath, function (err, stats) {
+                            if (err)
+                                return childDone (err);
+                            if (child[0] === '.')
+                                return callback();
+                            if (stats.isDirectory())
+                                return checkLevel (childPath, childDone);
+                            if (!child.match (/\.html$/))
+                                return childDone();
+                            fs.readFile (childPath, function (err, buf) {
+                                if (err)
+                                    return callback (err);
+                                var content = buf.toString();
+                                var GET_LINK = /href="([^"#]+)(?:#[^";]+)?"/g;
+                                var match;
+                                async.whilst (function(){
+                                    return Boolean (match = GET_LINK.exec (content));
+                                }, function (callback) {
+                                    var linkStr = decodeURIComponent (match[1]);
+                                    if (linkStr === 'javascript:return false;') {
+                                        console.log ('unfilled link in', childPath);
+                                        return callback (new Error ('unfilled link'));
+                                    }
+                                    var urlInfo = url.parse (linkStr);
+                                    if (urlInfo.hostname || !urlInfo.path)
+                                        return callback();
+                                    var targetPath = path.resolve (level, linkStr);
+                                    if (Object.hasOwnProperty.call (knownPaths, targetPath))
+                                        return callback();
+                                    fs.stat (targetPath, function (err, stats) {
+                                        if (err) {
+                                            console.log ('broken link from', childPath, 'to', targetPath);
+                                            return callback (new Error ('broken link'));
+                                        }
+                                        knownPaths[targetPath] = true;
+                                        callback();
+                                    });
+                                }, childDone);
+                            });
+                        });
+                    }, levelDone);
+                });
+            }
+
+            checkLevel (path.resolve (path.join ('test', 'out', testname)), done);
         });
 
     });

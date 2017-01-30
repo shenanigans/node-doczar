@@ -1239,6 +1239,8 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
         async.each (Object.keys (children), function (colDir, callback) {
             async.each (children[colDir], function (i, callback) {
                 var child = self[colDir][i];
+                if (!child.sanitaryName)
+                    return callback (new Error ('child without name'));
                 if (child.final)
                     child.writeFiles (
                         path.join (

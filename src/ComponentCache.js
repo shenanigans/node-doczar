@@ -18,11 +18,12 @@ var Templates       = require ('./Templates');
 var sanitizeName    = require ('./sanitizeName');
 
 function pathStr (type) {
-    return type.map (function (step) {
+    var finalStr = type.map (function (step) {
         if (step.length === 2)
             return step.join ('');
         return step[0] + '[' + step[1] + ']';
-    }).join ('').slice (1);
+    }).join ('')
+    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
 }
 
 var ComponentCache = function (logger) {
@@ -171,130 +172,89 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     if (!type || !type.length)
         return 'javascript:return false;';
 
+    // determine how close we are to sharing a direct parent
     var sameFromRoot = 0;
     try {
         for (var i=0,j=start.length; i<j; i++)
             if (
                 type[i]
-             && start[i][1] == type[i][1]
+             && start[i][1] === type[i][1]
              && (
                     !i
                  || !start[i][0]
                  || !type[i][0]
-                 || start[i][0] == type[i][0]
+                 || start[i][0] === type[i][0]
                 )
             )
                 sameFromRoot++;
             else
                 break;
     } catch (err) {
-        logger.error ({ err:err, from:start, to:type }, 'failed to resolve ancestry for path');
+        this.logger.error ({ err:err, from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
         return 'javascript:return false;';
     }
 
     // advance a pointer to ensure existence of the ancestor
-    var pointer;
-    var str = '';
     if (!Object.hasOwnProperty.call (this.root, type[0][1]))
         return 'javascript:return false;';
-    pointer = this.root[type[0][1]];
-    var location, stepCType;
-    for (var i=1; i<sameFromRoot; i++) {
-        stepCType = Patterns.delimiters[type[i][0]||'.']
-        if (pointer.inherited && Object.hasOwnProperty.call (pointer.inherited, stepCType))
-            location = pointer.inherited[stepCType];
-        else
-            location = pointer[stepCType];
-        if (location instanceof Array)
-            location = pointer[stepCType+'ByName'];
-        else if (type[i][2]) // Symbol
-            location = pointer[stepCType+'Symbols'];
-        if (!Object.hasOwnProperty.call (location, type[i][1]))
+    var pointer  = this.root[type[0][1]];
+    for (var i=1; i<sameFromRoot; i++)
+        if (!(pointer = this.walkStep (pointer, type[i], false))) {
+            this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
             return 'javascript:return false;';
-        pointer = location[type[i][1]];
-    }
+        }
 
-    // create a ../../ navback
+    // start with ../ as many times as necessary
+    var resultPath = '';
     for (var i=0, j=start.length-sameFromRoot; i<j; i++)
-        str += '../../';
-    if (type.length == sameFromRoot)
+        resultPath += '../../';
+    if (type.length === sameFromRoot)
         if (pointer.remotePath)
             return pointer.remotePath;
         else
-            return str += 'index.html';
+            return resultPath += 'index.html';
 
-    // if not starting from root but sameFromRoot == 0, we must manually add the first name
-    // if (start.length && type.length > 1 && !sameFromRoot)
+    // if not starting from root but sameFromRoot === 0, we must manually add the first name
     if (type.length > 1 && !sameFromRoot)
-        str += (pointer.ctype === 'module' ? 'module/' : 'property/') + pointer.sanitaryName + '/';
+        resultPath +=
+            (pointer.ctype === 'module' ? 'module/' : 'property/')
+          + pointer.sanitaryName
+          + '/'
+          ;
 
     // add steps from the common ancestor
     // stop before the last step
     for (var i=Math.max (1, sameFromRoot), j=type.length-1; i<j; i++) {
         var frag = type[i];
-        stepCType = Patterns.delimiters[frag[0]||'.']
-        if (pointer.inherited && Object.hasOwnProperty.call (pointer.inherited, stepCType))
-            location = pointer.inherited[stepCType];
-        else
-            location = pointer[stepCType];
         var childClass = Patterns.delimiters[frag[0]||'.'];
-        if (location instanceof Array)
-            location = pointer[stepCType+'ByName'];
-        else if (frag[2]) { // Symbol
-            location = pointer[stepCType+'Symbols'];
+        if (frag[2]) // Symbol
             childClass += 'Symbols';
-        }
-        try {
-            pointer = location[frag[1]];
-        } catch (err) {
-            self.logger.error (err);
+        if (!(pointer = this.walkStep (pointer, frag, false))) {
+            this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
             return 'javascript:return false;';
         }
-        if (!pointer)
-            return 'javascript:return false;';
-        str += childClass + '/';
-        if (frag[1])
-            str += pointer.sanitaryName + '/';
+        resultPath += childClass + '/';
+        // if (frag[1] !== undefined)
+            resultPath += pointer.sanitaryName + '/';
+    }
+
+    // walk the last step but do not add to resultPath
+    if (type.length > 1 && !(pointer = this.walkStep (pointer, type[type.length-1], false))) {
+        this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        return 'javascript:return false;';
     }
 
     // prepare to take the last step
-    var finalI = type.length - 1;
-    var finalName = type[finalI];
-    var childClass = Patterns.delimiters[finalName[0]||'.'];
-    if (finalI) {
-        stepCType = Patterns.delimiters[finalName[0]||'.'];
-        if (pointer.inherited && Object.hasOwnProperty.call (pointer.inherited, stepCType))
-            location = pointer.inherited[stepCType];
-        else
-            location = pointer[stepCType];
-        if (location instanceof Array)
-            location = pointer[stepCType+'ByName'];
-        else if (type[finalI][2]) { // Symbol
-            location = pointer[stepCType+'Symbols'];
-            childClass += 'Symbols';
-        }
-        pointer = location[finalName[1]];
-        if (!pointer)
-            return 'javascript:return false;';
-    }
-
     // if the Component has no children it has no root page
     // if (!pointer.hasChildren && pointer.ctype !== 'spare')
     if (pointer.isTotallyEmpty)
         // link to its parent and hashlink the last step
-        str += 'index.html#' + pointer.final.elemID;
     else {
-        str += childClass + '/';
-        if (type[type.length-1][1])
-            str += pointer.sanitaryName + '/index.html';
-        else
-            return 'javascript:return false;'
     }
 
     // @remote
     if (pointer.remotePath)
         return pointer.remotePath;
-    return str;
 };
 
 
