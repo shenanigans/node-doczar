@@ -246,15 +246,25 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
 
     // prepare to take the last step
     // if the Component has no children it has no root page
-    // if (!pointer.hasChildren && pointer.ctype !== 'spare')
     if (pointer.isTotallyEmpty)
         // link to its parent and hashlink the last step
+        resultPath += 'index.html#' + pointer.final.elemID;
     else {
+        var lastFrag = type[type.length-1];
+        var childClass = lastFrag[0] ?
+            Patterns.delimiters[lastFrag[0]]
+          : pointer.ctype === 'module' ? 'module' : 'property'
+          ;
+        if (lastFrag[2])
+            childClass += 'Symbols';
+        resultPath += childClass + '/';
+        resultPath += pointer.sanitaryName + '/index.html';
     }
 
     // @remote
     if (pointer.remotePath)
         return pointer.remotePath;
+    return resultPath;
 };
 
 
