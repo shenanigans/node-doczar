@@ -164,9 +164,9 @@ Component.prototype.submit = function (info) {
     for (var key in info) {
         if (this[key] === undefined) {
             if (key === 'ctype') {
-                if (info.ctype == 'kwarg' || info.ctype == 'kwargs')
+                if (info.ctype === 'kwarg' || info.ctype === 'kwargs')
                     this.isKeywordArg = true;
-                if (info.ctype == 'args' || info.ctype == 'kwargs')
+                if (info.ctype === 'args' || info.ctype === 'kwargs')
                     this.isMultiArg = true;
             } else if (key === 'modifiers') {
                 for (var i=0,j=info.modifiers.length; i<j; i++) {
@@ -192,11 +192,11 @@ Component.prototype.submit = function (info) {
         }
         if (this[key] === info[key])
             continue;
-        if (key == 'doc') {
+        if (key === 'doc') {
             if (info.doc instanceof Array) {
                 for (var i=0,j=info.doc.length; i<j; i++) {
                     var docInfo = info.doc[i];
-                    if (docInfo.value.match (/^[\s\n\r]*$/))
+                    if (!docInfo.value || docInfo.value.match (/^[\s\n\r]*$/))
                         continue;
                     var found = false;
                     for (var k=0,l=this.doc.length; k<l; k++)
@@ -225,7 +225,7 @@ Component.prototype.submit = function (info) {
             this.valtype.push.apply (this.valtype, info.valtype);
             continue;
         }
-        if (key == 'modifiers') {
+        if (key === 'modifiers') {
             this.modifiers.push.apply (this.modifiers, info.modifiers);
             for (var i=0,j=info.modifiers.length; i<j; i++) {
                 var mod = info.modifiers[i];
@@ -247,12 +247,17 @@ Component.prototype.submit = function (info) {
             continue;
         }
         if (key === 'ctype') {
-            // ignore lower-level overrides of these types
+            // ignore attempts to downgrade these types
             if (
                 ( this.ctype === 'class' && info.ctype === 'property' )
              || ( this.ctype === 'callback' && info.ctype === 'argument' )
             )
                 continue;
+            // conversions to class should set the isClassValtype flag
+            if (info.ctype === 'class') {
+                this.isClassValtype = true;
+                continue;
+            }
             if (Patterns.delimitersInverse[this.ctype] === Patterns.delimitersInverse[info[key]])
                 this.ctype = info[key];
             else
@@ -495,7 +500,7 @@ Component.prototype.finalize = function (options, callback) {
 
     // deal with @details and @summary
     this.doc = this.doc.filter (function (item) { return Boolean (item.value.length); });
-    if (this.ctype != 'spare' && this.doc.length) {
+    if (this.ctype !== 'spare' && this.doc.length) {
         // all documentation is expressed as spares.
         // Raw docs become ~details, ~summary, or both.
         var noSummary, noDetails;
@@ -603,8 +608,10 @@ Component.prototype.finalize = function (options, callback) {
             });
             for (var i=0, j=sparenames.length; i<j; i++) {
                 var spareName = sparenames[i];
-                if (SPECIAL_SPARES.hasOwnProperty (spareName))
+                if (SPECIAL_SPARES.hasOwnProperty (spareName)) {
+                    delete self.spare[spareName];
                     continue;
+                }
                 var spare = spareSource[spareName];
                 if (
                     (!showNormal || spare.final.isDevelopment)
@@ -1241,7 +1248,7 @@ Component.prototype.writeFiles = function (basedir, baseTagPath, options, callba
                 var child = self[colDir][i];
                 if (!child.sanitaryName)
                     return callback (new Error ('child without name'));
-                if (child.final)
+                if (child.final && !child.isTotallyEmpty)
                     child.writeFiles (
                         path.join (
                             basedir,

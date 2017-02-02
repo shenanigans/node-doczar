@@ -319,6 +319,10 @@ function onStatement () {
 
 }
 
+function onCallable () {
+
+}
+
 function onCallExpression () {
 
 }

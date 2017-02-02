@@ -6,9 +6,9 @@
 */
 
 var path            = require ('path');
-// var async           = require ('async');
+var async           = require ('async');
 // var fs              = require ('fs-extra');
-// var filth           = require ('filth');
+var filth           = require ('filth');
 var Component       = require ('./Component');
 
 var ComponentCache = function(){

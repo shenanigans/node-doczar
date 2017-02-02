@@ -11,7 +11,7 @@
             {{name}}
         </a>
         <span class="punctuation">=</span>
-        <span>{{#if valtype}}{{#valtype}}
+        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#if valtype}}{{#valtype}}
             <span class="valsep punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>
             {{#if isArray}}[ ]{{/if}}
@@ -23,9 +23,9 @@
                 {{/generics}}</span>
                 <span class="punctuation">&gt;</span>
             {{/if}}
-        {{/valtype}}{{else}}*{{/if}}</span>
+        {{/valtype}}{{else}}*{{/if}}{{/if}}</span>
     {{else}}
-        <span>{{#valtype}}
+        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#valtype}}
             <span class="valsep punctuation punctuation">|</span>
             <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
             {{#if isArray}}[ ]{{/if}}
@@ -37,7 +37,7 @@
                 {{/generics}}</span>
                 <span class="punctuation">&gt;</span>
             {{/if}}
-        {{/valtype}}</span>
+        {{/valtype}}{{/if}}</span>
         {{#if name}}
             <a class="title" href="{{softlink path}}">
                 {{name}}

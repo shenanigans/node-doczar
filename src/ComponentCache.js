@@ -168,9 +168,11 @@ ComponentCache.prototype.resolve = function (tpath) {
     Either a relative url to the requested [Component](doczar/src/Component) root page, or
     `"javascript:return false;"`.
 */
-ComponentCache.prototype.getRelativeURLForType = function (start, type) {
-    if (!type || !type.length)
+ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
+    if (!type || !type.length) {
+        this.logger.error ({ from:pathStr (start) }, 'cannot generate link to empty path');
         return 'javascript:return false;';
+    }
 
     // determine how close we are to sharing a direct parent
     var sameFromRoot = 0;
@@ -190,19 +192,50 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
             else
                 break;
     } catch (err) {
-        this.logger.error ({ err:err, from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
         return 'javascript:return false;';
     }
 
     // advance a pointer to ensure existence of the ancestor
-    if (!Object.hasOwnProperty.call (this.root, type[0][1]))
+    if (!Object.hasOwnProperty.call (this.root, type[0][1])) {
+        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
         return 'javascript:return false;';
+    }
     var pointer  = this.root[type[0][1]];
-    for (var i=1; i<sameFromRoot; i++)
-        if (!(pointer = this.walkStep (pointer, type[i], false))) {
-            this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+    if (pointer.aliasTo) {
+        if (!chain)
+            chain = [ pointer ];
+        if (chain.indexOf (pointer.aliasTo) < 0) {
+            chain.push (pointer.aliasTo);
+            return this.getRelativeURLForType (
+                start,
+                pointer.aliasTo.path.concat (type.slice (1)),
+                chain
+            );
+        }
+    }
+    for (var i=1; i<sameFromRoot; i++) {
+        pointer = this.walkStep (pointer, type[i], false);
+        if (!pointer) {
+            this.logger.warn (
+                { from:pathStr (start), to:pathStr (type), nearest:pathStr(type.slice (0, i+1)) },
+                'failed to resolve type'
+            );
             return 'javascript:return false;';
         }
+        if (pointer.aliasTo) {
+            if (!chain)
+                chain = [ pointer ];
+            if (chain.indexOf (pointer.aliasTo) < 0) {
+                chain.push (pointer.aliasTo);
+                return this.getRelativeURLForType (
+                    start,
+                    pointer.aliasTo.path.concat (type.slice (i+1)),
+                    chain
+                );
+            }
+        }
+    }
 
     // start with ../ as many times as necessary
     var resultPath = '';
@@ -229,19 +262,45 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
         var childClass = Patterns.delimiters[frag[0]||'.'];
         if (frag[2]) // Symbol
             childClass += 'Symbols';
-        if (!(pointer = this.walkStep (pointer, frag, false))) {
-            this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        pointer = this.walkStep (pointer, frag, false);
+        if (!pointer) {
+            this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
             return 'javascript:return false;';
         }
+        if (pointer.aliasTo) {
+            if (!chain)
+                chain = [ pointer ];
+            if (chain.indexOf (pointer.aliasTo) < 0) {
+                chain.push (pointer.aliasTo);
+                return this.getRelativeURLForType (
+                    start,
+                    pointer.aliasTo.path.concat (type.slice (i+1)),
+                    chain
+                );
+            }
+        }
         resultPath += childClass + '/';
-        // if (frag[1] !== undefined)
-            resultPath += pointer.sanitaryName + '/';
+        resultPath += pointer.sanitaryName + '/';
     }
 
     // walk the last step but do not add to resultPath
+    var last = pointer;
     if (type.length > 1 && !(pointer = this.walkStep (pointer, type[type.length-1], false))) {
-        this.logger.error ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
         return 'javascript:return false;';
+    }
+
+    if (pointer.aliasTo) {
+        if (!chain)
+            chain = [ pointer ];
+        if (chain.indexOf (pointer.aliasTo) < 0) {
+            chain.push (pointer.aliasTo);
+            return this.getRelativeURLForType (
+                start,
+                pointer.aliasTo.path,
+                chain
+            );
+        }
     }
 
     // prepare to take the last step
@@ -262,7 +321,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type) {
     }
 
     // @remote
-    if (pointer.remotePath)
+    if (pointer.remotePath && !pointer.hasChildren)
         return pointer.remotePath;
     return resultPath;
 };

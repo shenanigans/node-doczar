@@ -24,11 +24,11 @@
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_ismaster`
 @Boolean #isWorker
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_isworker`
-@Function #setupMaster
+@Function .setupMaster
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_setupmaster_settings`
-@Function #fork
+@Function .fork
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_fork_env`
-@Function #disconnect
+@Function .disconnect
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_disconnect_callback`
 @.Worker #worker
     @remote `https://nodejs.org/api/cluster.html#cluster_cluster_worker`

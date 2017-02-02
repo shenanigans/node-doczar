@@ -1,23 +1,23 @@
 
 /*      @module child_process
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process`
-@member/Function exec
+@property:Function exec
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback`
-@member/Function execFile
+@property:Function execFile
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_execFile_file_args_options_callback`
-@member/Function fork
+@property:Function fork
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulePath_args_options`
 @spare `Synchronous Process Creation`
     @remote `https://nodejs.org/api/child_process.html#child_process_synchronous_process_creation`
-@member/Function spawnSync
+@property:Function spawnSync
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_spawnSync_command_args_options`
-@member/Function execFileSync
+@property:Function execFileSync
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_execFileSync_command_args_options`
-@member/Function execSync
+@property:Function execSync
     @remote `https://nodejs.org/api/child_process.html#child_process_child_process_execSync_command_options`
 */
 /*      @submodule/class ChildProcess
-    @remote https://nodejs.org/api/child_process.html#child_process_class_childprocess
+    @remote `https://nodejs.org/api/child_process.html#child_process_class_childprocess`
 @event error
     @remote `https://nodejs.org/api/child_process.html#child_process_event_error`
 @event exit
@@ -55,25 +55,25 @@
 child_process.spawn(command[, args][, options])
 */
 /*      @submodule/class Options
-@member/ cwd
+@member cwd
     String Current working directory of the child process.
-@member/ env
+@member env
     Object Environment key-value pairs.
-@member/ encoding
+@member encoding
     String (Default: 'utf8').
-@member/ shell
+@member shell
     String Shell to execute the command with (Default: '/bin/sh' on UNIX, 'cmd.exe' on Windows, The
     shell should understand the -c switch on UNIX or /s /c on Windows. On Windows, command line
     parsing should be compatible with cmd.exe.).
-@member/ timeout
+@member timeout
     Number (Default: 0).
-@member/ maxBuffer
+@member maxBuffer
     Number (Default: 200*1024).
-@member/ killSignal
+@member killSignal
     String (Default: 'SIGTERM').
-@member/ uid
+@member uid
     Number Sets the user identity of the process. (See setuid(2).).
-@member/ gid
+@member gid
     Number Sets the group identity of the process. (See setgid(2).).
 @member/String|Array stdio
     @remote `https://nodejs.org/api/child_process.html#child_process_options_stdio`

@@ -2,9 +2,9 @@
 /*      @module tty
 @spare `Library Documentation`
     @remote `https://nodejs.org/api/tty.html#tty_tty`
-@Function #isatty
+@Function .isatty
     @remote `https://nodejs.org/api/tty.html#tty_tty_isatty_fd`
-@Function #setRawMode
+@Function .setRawMode
     @remote `https://nodejs.org/api/tty.html#tty_tty_setrawmode_mode`
 */
 

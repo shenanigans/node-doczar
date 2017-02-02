@@ -141,11 +141,12 @@ var ARGV_OPTIONS = {
         code:           'github',
         optArgs:        'none',
         maxDepth:       '4',
-        maxRefDepth:    '8'
+        maxRefDepth:    '8',
+        jTrap:          true,
     },
     boolean:        [
         'dev',          'api',          'json',         'raw',          'noImply',      'noDeps',
-        'node',         'destructive'
+        'node',         'destructive',  'jTrap'
     ],
     string:         [
         'verbose',      'jsmod',        'in',           'with',         'code',         'date',
@@ -164,7 +165,8 @@ var ARGV_OPTIONS = {
         nodeps:         'noDeps',
         nodep:          'noDeps',
         noimply:        'noImply',
-        noimp:          'noImply'
+        noimp:          'noImply',
+        jtrap:          'jTrap'
     },
     unknown:        function (optionName) { unknownOptions.push (optionName); }
 };
@@ -208,23 +210,30 @@ if (OPTIONS_VERBOSE.indexOf (argv.verbose) < 0) {
     return process.exit (1);
 }
 if (argv.raw) {
-    logger = bunyan.createLogger ({ name:"doczar", level:argv.verbose });
+    logger = bunyan.createLogger ({ name:'doczar', level:argv.verbose });
     logger.setTask = function(){ };
 } else {
     logger = bunyan.createLogger ({
-        name:       "doczar",
+        name:       'doczar',
         streams:    [ { level:argv.verbose, type:'raw', stream:{ write:outputLogLine } } ]
     });
     logger.setTask = function (task) {
-        if (process.stdout.clearLine) {
-            if (spinning) {
-                process.stdout.clearLine();
-                process.stdout.cursorTo (0);
-            }
-            if (task)
-                process.stdout.write (task.green);
+        if (!process.stdout.clearLine)
+            return;
+        if (spinning) {
+            process.stdout.clearLine();
+            process.stdout.cursorTo (0);
         }
-        spinning = task;
+        if (!task)
+            spinning = undefined;
+        else {
+            spinning = task.slice (0, process.stdout.getWindowSize()[0]-1);
+            process.stdout.write (spinning.green);
+        }
+    };
+    logger.fatal = function(){
+        spinning = undefined;
+        logger.fatal.apply (logger, arguments);
     };
 }
 function createChildFactory (childFactory) {
@@ -232,6 +241,7 @@ function createChildFactory (childFactory) {
         var child = childFactory.apply (this, arguments);
         child.setTask = logger.setTask;
         child.child = createChildFactory (child.child);
+        child.fatal = logger.fatal;
         return child;
     }
 }
@@ -662,6 +672,7 @@ function processSource (filenames) {
                 var finalLatencies = context.latency.getFinalLatency();
                 finalLatencies.etc = finalLatencies[''];
                 delete finalLatencies[''];
+                logger.setTask();
                 logger.info (finalLatencies, 'latencies');
                 logger.info ('done');
                 return process.exit (0);

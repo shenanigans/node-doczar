@@ -80,10 +80,10 @@
     @super stream.Readable
     @super stream.Writable
     @remote `https://nodejs.org/api/zlib.html#zlib_class_zlib_zlib`
-@Function #flush
+@Function .flush
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_flush_kind_callback`
-@Function #params
+@Function .params
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_params_level_strategy_callback`
-@Function #reset
+@Function .reset
     @remote `https://nodejs.org/api/zlib.html#zlib_zlib_reset`
 */

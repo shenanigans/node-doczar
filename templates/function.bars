@@ -5,7 +5,7 @@
         {{/flags}}
         <span>{{#returns}}
             <span class="valsep">,</span>
-            <span class="types">{{#valtype}}
+            <span class="types">{{#if isClasslike}}<a class="valtype">class</a>{{else}}{{#valtype}}
                 <span class="valsep punctuation">|</span>
                 <a class="valtype" href="{{link path}}">{{name}}</a>{{#if isPointer}}<span class="star">*</span>{{/if}}
                 {{#if generics}}
@@ -16,7 +16,7 @@
                     {{/generics}}</span>
                     <span class="punctuation">&gt;</span>
                 {{/if}}
-            {{/valtype}}</span>
+            {{/valtype}}{{/if}}</span>
         {{/returns}}</span>
         <a href="{{link path}}" class="title">
             {{name}}
@@ -37,6 +37,11 @@
                 Overrides <a class="super" href="{{link path}}">{{name}}</a>
             </div>
         {{/override}}
+    {{/if}}
+    {{#if aliasTo}}
+        <div class="source alias">
+            Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
+        </div>
     {{/if}}
     {{#if patchedBy}}
         <div class="source alias">
@@ -85,15 +90,15 @@
                                                             {{name}}
                                                         </a>
                                                         =
-                                                        <span>{{#valtype}}
+                                                        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#valtype}}
                                                             <span class="valsep">|</span>
                                                             <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                        {{/valtype}}</span>
+                                                        {{/valtype}}{{/if}}</span>
                                                     {{else}}
-                                                        <span>{{#valtype}}
+                                                        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#valtype}}
                                                             <span class="valsep">|</span>
                                                             <a class="valtype" href="{{link path}}">{{name}}</a>
-                                                        {{/valtype}}</span>
+                                                        {{/valtype}}{{/if}}</span>
                                                         <a class="title" href="{{link path}}">
                                                             {{name}}
                                                         </a>
@@ -114,10 +119,10 @@
                                 {{#args}}
                                     <span class="signature">
                                         , ...
-                                        <span>{{#valtype}}
+                                        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#valtype}}
                                             <span class="valsep">|</span>
                                             <a class="valtype" href="{{link path}}">{{name}}</a>
-                                        {{/valtype}}</span>
+                                        {{/valtype}}{{/if}}</span>
                                         <a class="title" href="{{link path}}">
                                             {{name}}
                                         </a>
@@ -126,10 +131,10 @@
                                 {{#kwargs}}
                                     <span class="signature">
                                         , ...
-                                        <span>{{#valtype}}
+                                        <span>{{#if isClasslike}}<a class="ctype">class</a>{{else}}{{#valtype}}
                                             <span class="valsep">|</span>
                                             <a class="valtype" href="{{link path}}">{{name}}</a>
-                                        {{/valtype}}</span>
+                                        {{/valtype}}{{/if}}</span>
                                         **<a class="title" href="{{link path}}">
                                             {{name}}
                                         </a>

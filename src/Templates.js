@@ -68,22 +68,6 @@ markedRenderer.link = function (href, title, text) {
             type = currentLinkContext.concat (type);
     }
 
-    var notFound;
-    try {
-        currentContext.resolve (type);
-    } catch (err) {
-        if (
-            (
-                !Object.hasOwnProperty.call (linkFailureSources, uglySrc)
-             && ( linkFailureSources[uglySrc] = {} )
-            )
-         || !Object.hasOwnProperty.call (linkFailureSources[uglySrc], targetStr)
-        ) {
-            linkFailureSources[uglySrc][targetStr] = true;
-            logger.warn ({ from:uglySrc, type:pathStr (type) }, 'cross reference failed');
-        }
-    }
-
     return '<a href="'
      + currentContext.getRelativeURLForType (
         currentPath,
@@ -132,21 +116,20 @@ Handlebars.registerHelper ('markdown', function (doc) {
 
 Handlebars.registerHelper ('link', function linkHelper (tpath) {
     try {
-        currentContext.resolve (tpath);
         var gotPath = currentContext.getRelativeURLForType (
             currentPath,
             tpath
         );
         return gotPath;
-    } catch (err) {
-        var uglySrc = pathStr (currentPath);
-        var uglyDest = pathStr (tpath);
-        if (!Object.hasOwnProperty.call (linkFailureSources, uglySrc))
-            linkFailureSources[uglySrc] = {};
-        if (!Object.hasOwnProperty.call (linkFailureSources[uglySrc], uglyDest)) {
-            linkFailureSources[uglySrc][uglyDest] = true;
-            logger.warn ({ from:uglySrc, type:uglyDest }, 'link resolution failed');
-        }
+    } catch (err) {  }
+
+    var uglySrc = pathStr (currentPath);
+    var uglyDest = pathStr (tpath);
+    if (!Object.hasOwnProperty.call (linkFailureSources, uglySrc))
+        linkFailureSources[uglySrc] = {};
+    if (!Object.hasOwnProperty.call (linkFailureSources[uglySrc], uglyDest)) {
+        linkFailureSources[uglySrc][uglyDest] = true;
+        logger.warn ({ from:uglySrc, type:uglyDest }, 'failed to resolve type FOX');
     }
     return 'javascript:return false;';
 });

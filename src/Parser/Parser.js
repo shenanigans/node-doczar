@@ -787,7 +787,27 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
     Parse a javadoc-format path.
 */
 function parseJavadocFlavorPath (pathstr) {
-    var frags = pathstr.split (Patterns.jpathSplitter);
+    var frags = pathstr.split (Patterns.jpathWord);
+    var newPath = [ ];
+    if (!frags.length)
+        return newPath;
+    for (var i=1,j=frags.length; i<j; i+=4)
+        if (frags[i+1]) {
+            // module, event or external
+            var stepType = frags[i+1];
+            if (stepType === 'module') {
+                // split slashes
+                var subfrags = frags[i+2].split ('/');
+                for (var k=0,l=subfrags.length; k<l; k++)
+                    newPath.push ([ '/', subfrags[k] ]);
+            } else
+                newPath.push ([
+                    stepType === 'event' ? '+' : '.',
+                    frags[i+2]
+                ])
+        } else
+            newPath.push ([ frags[i], frags[i+2] ]);
+    return newPath;
 }
 
 function startsWith (str, substr) {
@@ -809,9 +829,9 @@ var JDOC_CTYPE = {
 };
 // adds the mapped string to mount.extras
 var JDOC_EXTRAS = {
-    inner:      '.asLocal',
-    global:     '.remountGlobal',
-    static:     '.remountProperty'
+    inner:      'asLocal',
+    global:     'remountGlobal',
+    static:     'remountProperty'
 };
 // creates a flag modifier and may alter mount.type and mount.path - @tag [type] [path]
 var JDOC_MOUNT_FLAG = {
@@ -820,13 +840,13 @@ var JDOC_MOUNT_FLAG = {
 };
 // adds the mapped string to mount.extras and may alter mount.path - @tag [path]
 var JDOC_MOUNT_EXTRA = {
-    callback:   '.callback',
+    callback:   'callback'
 };
 var JDOC_CHILD = {
 
 };
 var JDOC_SPECIAL = {
-    access:     function (line, mount, scopeParent) {
+    access:     function (line, mount, scopeParent, rootPath, argv) {
         // push a modifier with the correct access level
         if (startsWith (line, 'public'))
             mount.modifiers.push ({ mod:'public' });
@@ -837,21 +857,76 @@ var JDOC_SPECIAL = {
         else
             throw new Error ('invalid access level');
     },
-    borrows:    function (line, mount, scopeParent) {
+    borrows:    function (line, mount, scopeParent, rootPath, argv) {
         // create a child with an @alias modifier
     },
-    constructs: function (line, mount, scopeParent) {
+    constructs: function (line, mount, scopeParent, rootPath, argv) {
         // @constructs [name]
         // apply documentation on this node to the class' node
+    },
+    name:       function (line, mount, scopeParent, rootPath, argv) {
+        var mountPath = parseJavadocFlavorPath (line.replace (/^\s*/, '').replace (/\s*$/, ''));
+        if (mountPath.length > 1)
+            return;
+        if (scopeParent[NAME])
+            scopeParent[NAME][1] = mountPath[0][1];
+        else
+            scopeParent[NAME] = [ mountPath[0][0] || '.', mountPath[0][1] ];
+        if (mount.path)
+            mount.path[mount.path.length-1] = scopeParent[NAME].concat();
+    },
+    memberOf:   function (line, mount, scopeParent, rootPath, argv) {
+        if (!scopeParent[NAME])
+            return;
+        var mountPath = parseJavadocFlavorPath (line.replace (/^\s*/, '').replace (/\s*$/, ''));
+        if (!mountPath[0][0])
+            mountPath[0][0] = '.';
+        mountPath.push ([ '.', scopeParent[NAME][1] ]);
+        if (argv.jTrap) {
+            var ok, clip;
+            for (var i=rootPath.length-1; i>=0; i--) {
+                clip = i;
+                if (rootPath[i][0] === mountPath[0][0] && rootPath[i][1] === mountPath[0][1]) {
+                    ok = true;
+                    for (var k=1,l=Math.min (rootPath.length - i, mountPath.length); k<l; k++)
+                        if (rootPath[i+k] !== mountPath[k]) {
+                            ok = false;
+                            break;
+                        }
+                    if (ok)
+                        break;
+                }
+                if (ok)
+                    mountPath = rootPath.slice (0, clip).concat (mountPath);
+                else
+                    mountPath = rootPath.concat (mountPath);
+            }
+        }
+        if (!mountPath.length)
+            return;
+        mount.path = mountPath;
     }
 };
 
 /*
     Parse a documentation tag written in javadoc-flavored syntax.
 */
-function parseJavadocFlavorTag (docstr, scopeParent, logger) {
+function parseJavadocFlavorTag (docstr, scopeParent, rootPath, argv, logger) {
     var lines = docstr.split (/\r?\n/g);
-    var mount = { TYPES:[], '.modifiers':[], '.extras':[] };
+    var mount;
+    if (scopeParent[MOUNT]) {
+        mount = scopeParent[MOUNT];
+        if (!mount.modifiers) {
+            mount.modifiers = [];
+            mount.extras = [];
+        }
+    } else {
+        mount = scopeParent[MOUNT] = Object.create (null);
+        mount.valtype = [];
+        mount.modifiers = [];
+        mount.extras = [];
+    }
+
     var children = [];
     var currentChild;
     var tagname;
@@ -859,7 +934,41 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
     for (var i=0,j=lines.length; i<j; i++) {
         var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1] || '';
         if (cleanLine[0] !== '@') {
-            outputDocstr += cleanLine + ' \n';
+            if (currentChild)
+                currentChild[DOCSTR][currentChild[DOCSTR].length-1] += cleanLine + ' \n';
+            else {
+                cleanLine = cleanLine.replace (Patterns.jLink, function (match, $1, $2) {
+                    var newPath = parseJavadocFlavorPath ($2);
+                    if (argv.jTrap) {
+                        var ok, clip;
+                        for (var i=rootPath.length-1; i>=0; i--) {
+                            clip = i;
+                            if (rootPath[i][0] === newPath[0][0] && rootPath[i][1] === newPath[0][1]) {
+                                ok = true;
+                                for (var k=1,l=Math.min (rootPath.length - i, newPath.length); k<l; k++)
+                                    if (rootPath[i+k] !== newPath[k]) {
+                                        ok = false;
+                                        break;
+                                    }
+                                if (ok)
+                                    break;
+                            }
+                            if (ok)
+                                newPath = rootPath.slice (0, clip).concat (newPath);
+                            else
+                                newPath = rootPath.concat (newPath);
+                        }
+                    }
+                    return (
+                        $1
+                      + '('
+                      // + (parseJavadocFlavorPath ($2).map (function(a){return a.join('');}).join(''))
+                      + pathStr (newPath)
+                      + ')'
+                    );
+                });
+                outputDocstr += cleanLine + ' \n';
+            }
             continue;
         }
 
@@ -867,7 +976,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
         // wrap up the previous one
         if (currentChild) {
             if (tagname === 'example')
-                outputDocstr += '```\n\n';
+                outputDocstr += currentChild[DOCSTR][currentChild[DOCSTR].length-1] + '```\n\n';
 
             delete tagname;
             delete currentChild;
@@ -885,12 +994,12 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
         // // use this to consume errant doc text
         var dummy = {};
-        dummy[DOCSTR] = '';
+        dummy[DOCSTR] = [ '' ];
         currentChild = dummy;
 
         // // simple flag modifiers
         if (Object.hasOwnProperty.call (JDOC_MOD_FLAG, tagname)) {
-            // mount['.modifiers'].push ({ mod:JDOC_MOD_FLAG[tagname] });
+            mount.modifiers.push ({ mod:JDOC_MOD_FLAG[tagname] });
             continue;
         }
 
@@ -903,7 +1012,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 continue;
             }
             var path = parseJavadocFlavorPath (pathMatch[1]);
-            // mount['.modifiers'].push ({ mod:JDOC_MOD_PATH[tagname], path:path });
+            mount.modifiers.push ({ mod:JDOC_MOD_PATH[tagname], path:path });
             continue;
         }
 
@@ -913,10 +1022,10 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
             continue;
         }
 
-        // add hacky flag properties to the target's `.extras` property
+        // add hacky flag properties to the target's EXTRAS property
         if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
-            // if (mount['.extras'].indexOf(JDOC_EXTRAS[tagname]) < 0)
-            //     mount['.extras'].push (JDOC_EXTRAS[tagname]);
+            if (mount.extras.indexOf(JDOC_EXTRAS[tagname]) < 0)
+                mount.extras.push (JDOC_EXTRAS[tagname]);
             continue;
         }
 
@@ -928,23 +1037,29 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
                 continue;
             }
-            // mount['.modifiers'].push ({ mod:JDOC_MOUNT_FLAG[tagname] });
+            mount.modifiers.push ({ mod:JDOC_MOUNT_FLAG[tagname] });
             var types = match[1];
             if (types)
-                mount[TYPES].push.apply (
-                    mount[TYPES],
+                mount.valtype.push.apply (
+                    mount.valtype,
                     types.split ('|').map (function (typeStr) {
                         return { path:parseJavadocFlavorPath (typeStr) };
                     })
                 );
             var mountPath = match[2];
-            if (mountPath)
-                mount[PATH] = parseJavadocFlavorPath (mountPath);
+            if (mountPath) {
+                var renamePath = parseJavadocFlavorPath (mountPath);
+                if (renamePath.length === 1)
+                    if (scopeParent[NAME])
+                        scopeParent[NAME][1] = renamePath[0][1];
+                    else
+                        scopeParent[NAME] = [ '.', renamePath[0][1] ];
+            }
             continue;
         }
 
-        // creates a hacky flag property in the target's `.extras` property AND
-        // optionally alters the target's mount.type and mount.path
+        // creates a hacky flag property in the target's EXTRAS property
+        // and optionally alters the target's mount.type and mount.path
         if (Object.hasOwnProperty.call (JDOC_MOUNT_EXTRA, tagname)) {
             // try to consume either a path or type(s) and a path
             var match = cleanLine.match (Patterns.jtagPaths);
@@ -952,12 +1067,12 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
                 logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
                 continue;
             }
-            // if (mount['.extras'].indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
-            //     mount['.extras'].push (JDOC_MOUNT_EXTRA[tagname]);
+            if (mount.extras.indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
+                mount.extras.push (JDOC_MOUNT_EXTRA[tagname]);
             var types = match[1];
             if (types)
-                mount[TYPES].push.apply (
-                    mount[TYPES],
+                mount.valtype.push.apply (
+                    mount.valtype,
                     types.split ('|').map (function (typeStr) {
                         return { path:parseJavadocFlavorPath (typeStr) };
                     })
@@ -975,7 +1090,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
         // special tags
         if (Object.hasOwnProperty.call (JDOC_SPECIAL, tagname)) {
-            JDOC_SPECIAL[tagname] (cleanLine, mount, scopeParent);
+            JDOC_SPECIAL[tagname] (cleanLine, mount, scopeParent, rootPath, argv);
             continue;
         }
 
@@ -987,25 +1102,17 @@ function parseJavadocFlavorTag (docstr, scopeParent, logger) {
 
     // wrap up the last subtag
     if (tagname === 'example')
-        outputDocstr += '```\n\n';
+        outputDocstr += currentChild[DOCSTR][currentChild[DOCSTR].length-1] + '```\n\n';
 
-    if (scopeParent[DOCSTR])
-        scopeParent[DOCSTR].push (outputDocstr);
+    // if (scopeParent[DOCSTR])
+    //     scopeParent[DOCSTR].push (outputDocstr);
+    // else
+    //     scopeParent[DOCSTR] = [ outputDocstr ];
+
+    if (mount.docstr)
+        mount.docstr.push (outputDocstr);
     else
-        scopeParent[DOCSTR] = [ outputDocstr ];
-}
-
-function digDerefs (level) {
-    var chain = [];
-    var pointer = level;
-    var next;
-    while (
-        pointer[DEREF]
-     && pointer[DEREF].length === 1
-     && chain.indexOf (next = pointer[DEREF][0]) < 0
-    )
-        chain.push (pointer = next);
-    return pointer;
+        mount.docstr = [ outputDocstr ];
 }
 
 /*
@@ -1382,8 +1489,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         function divineTypes (node, value, localThisNode) {
             switch (value.type) {
                 case 'Identifier':
-                    if (!Object.hasOwnProperty.call (scope, value.name))
+                    if (!Object.hasOwnProperty.call (scope, value.name)) {
                         scope[value.name] = newNode (scope);
+                        scope[value.name][NAME] = value.name;
+                    }
                     if (node[DEREF].indexOf (scope[value.name]) < 0)
                         node[DEREF].push (scope[value.name]);
                     if (scope[value.name][SILENT])
@@ -1439,6 +1548,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         else {
                             propNode = props[propDef.key.name] = newNode (node);
                             propNode[LINE] = propDef.key.loc.start.line;
+                            propNode[NAME] = [ '.', propDef.key.name ];
                         }
                         divineTypes (propNode, propDef.value, node);
                         processComments (
@@ -1542,11 +1652,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             context.latency.log ('parsing');
                             if (node[IS_COL]) {
                                 if (dummy[PROPS])
-                                    for (var key in dummy[PROPS])
+                                    for (var key in dummy[PROPS]) {
                                         node[key] =
                                          targetNode[key] =
                                          rebase (dummy[PROPS][key])
                                          ;
+                                        node[key][NAME][0] = '#';
+                                    }
                                 if (dummy[MEMBERS])
                                     for (var key in dummy[MEMBERS])
                                         node[key] =
@@ -1555,11 +1667,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                          ;
                                 if (dummy[DEREF].length) {
                                     if (dummy[DEREF][0][PROPS])
-                                        for (var key in dummy[DEREF][0][PROPS])
+                                        for (var key in dummy[DEREF][0][PROPS]) {
                                             node[key] =
                                              targetNode[key] =
                                              rebase (dummy[DEREF][0][PROPS][key])
                                              ;
+                                            node[key][NAME][0] = '#';
+                                        }
                                     if (dummy[DEREF][0][MEMBERS])
                                         for (var key in dummy[DEREF][0][MEMBERS])
                                             node[key] =
@@ -1575,11 +1689,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     node[MEMBERS][PARENT] = node;
                                 }
                                 if (dummy[PROPS])
-                                    for (var key in dummy[PROPS])
+                                    for (var key in dummy[PROPS]) {
                                         node[MEMBERS][key] =
                                          targetNode[key] =
                                          rebase (dummy[PROPS][key])
                                          ;
+                                        node[MEMBERS][key][NAME][0] = '#';
+                                    }
                                 if (dummy[MEMBERS])
                                     for (var key in dummy[MEMBERS])
                                         node[MEMBERS][key] =
@@ -1588,11 +1704,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                          ;
                                 if (dummy[DEREF].length) {
                                     if (dummy[DEREF][0][PROPS])
-                                        for (var key in dummy[DEREF][0][PROPS])
+                                        for (var key in dummy[DEREF][0][PROPS]) {
                                             node[MEMBERS][key] =
                                              targetNode[key] =
                                              rebase (dummy[DEREF][0][PROPS][key])
                                              ;
+                                            node[MEMBERS][key][NAME][0] = '#';
+                                        }
                                     if (dummy[DEREF][0][MEMBERS])
                                         for (var key in dummy[DEREF][0][MEMBERS])
                                             node[MEMBERS][key] =
@@ -1688,8 +1806,10 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     if (node[TYPES].indexOf ('Function') < 0)
                         node[TYPES].push ('Function');
                     if (value.id) {
-                        if (!Object.hasOwnProperty.call (scope, value.id.name))
+                        if (!Object.hasOwnProperty.call (scope, value.id.name)) {
                             scope[value.id.name] = newNode();
+                            scope[value.id.name][NAME] = [ '.', value.id.name ];
+                        }
                         scope[value.id.name][DEREF].push (node);
                     }
                     // manage arguments
@@ -1919,6 +2039,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         pointer = pointer[level.name];
                     else {
                         pointer = pointer[level.name] = newNode (pointer);
+                        pointer[NAME] = [ '.', level.name ];
                         pointer[LINE] = level.loc.start.line;
                     }
                     break;
@@ -2204,7 +2325,13 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // javadoc comment?
                     if (comment.value.match (/^\*[^*]/)) {
                         if (node)
-                            parseJavadocFlavorTag (comment.value, node, logger);
+                            parseJavadocFlavorTag (
+                                comment.value,
+                                node,
+                                baseNode[MODULE],
+                                context.argv,
+                                logger
+                            );
                     } else {
                         // normal or doczar comment
                         if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/'))) {
@@ -2432,6 +2559,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             selfPointer[MEMBERS][PARENT] = selfPointer;
                         }
                         node = scope[declaration.id.name] = newNode();
+                        node[NAME] = [ '.', declaration.id.name ];
                         node[DEREF].push (selfPointer[MEMBERS]);
                         continue;
                     }
@@ -2440,6 +2568,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         node = scope[declaration.id.name];
                     else {
                         node = scope[declaration.id.name] = newNode (scope);
+                        node[NAME] = [ '.', declaration.id.name ];
                         node[LINE] = declaration.loc.start.line;
                     }
 
@@ -2450,17 +2579,19 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             case 'ExpressionStatement':
                 switch (level.expression.type) {
                     case 'AssignmentExpression':
-                        if (level.expression.right.type == 'ThisExpression') {
+                        if (level.expression.right.type === 'ThisExpression') {
                             // either a self pointer, or set this-type to a prop/member
-                            if (level.expression.left.type == 'Identifier') {
+                            if (level.expression.left.type === 'Identifier') {
                                 // simple self pointer
-                                node = scope[level.expression.left.name] = thisNode || newNode (scope);
                                 var selfPointer = thisNode || newNode (scope);
                                 if (!selfPointer[MEMBERS]) {
                                     selfPointer[MEMBERS] = tools.newCollection();
                                     selfPointer[MEMBERS][PARENT] = selfPointer;
                                 }
-                                node = scope[declaration.id.name] = selfPointer[MEMBERS];
+                                node = scope[level.expression.left.name] = newNode();
+                                node[NAME] = [ '.', level.expression.left.name ];
+                                node[DEREF].push (selfPointer[MEMBERS]);
+                                node = selfPointer;
                             } else {
                                 // set `this` into a prop somewhere
                             }
@@ -3572,6 +3703,13 @@ function generateComponents (context, mode, defaultScope) {
                 continue;
             recurse (ref, target);
 
+            // alias to mount
+            if (ref[MOUNT] && ref[MOUNT].path) {
+                target[ALIAS] = ref;
+                recurse (ref);
+            }
+
+            // basic types
             var baseTypes = ref[TYPES];
             for (var k=0,l=baseTypes.length; k<l; k++)
                 if (target[TYPES].indexOf (baseTypes[k]) < 0) {
@@ -3590,7 +3728,7 @@ function generateComponents (context, mode, defaultScope) {
                     }
             }
             // promote documentation
-            if (ref[DOCSTR])
+            if (ref[DOCSTR]) {
                 if (!target[DOCSTR]) {
                     target[DOCSTR] = ref[DOCSTR].concat();
                     didFinishDeref = true;
@@ -3599,6 +3737,7 @@ function generateComponents (context, mode, defaultScope) {
                         target[DOCSTR].push (ref[DOCSTR][i]);
                         didFinishDeref = true;
                     }
+            }
             // promote children
             if (ref[PROPS]) {
                 if (!target[PROPS]) {
@@ -3758,14 +3897,18 @@ function generateComponents (context, mode, defaultScope) {
             didSubmit = true;
             var path, ctype, docstr, fileScope, types = [];
             if (level[MOUNT]) {
-                ctype = level[MOUNT].ctype;
-                path = level[MOUNT].path;
+                path = level[MOUNT].path || scope;
+                ctype = level[MOUNT].ctype || (
+                    path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property'
+                );
                 if (level[MOUNT].parent) {
                     if (!level[MOUNT].parent[LOCALPATH])
                         return false;
                     path = level[MOUNT].parent[LOCALPATH].concat (level[MOUNT].path);
                 }
                 scope = path;
+                types.push.apply (types, level[TYPES]);
+                types = parseType (types.join ('|'), localDefault, true);
                 types.push.apply (types, level[MOUNT].valtype);
                 docstr = level[MOUNT].docstr;
                 fileScope = level[MOUNT].docContext;
@@ -3837,8 +3980,8 @@ function generateComponents (context, mode, defaultScope) {
                     ctype,
                     types,
                     path.length ? path : localDefault,
-                    [],
                     path.length ? localDefault : [],
+                    [],
                     docstr,
                     function (fname) { nextFiles.push (fname); }
                 );
@@ -3875,8 +4018,8 @@ function generateComponents (context, mode, defaultScope) {
                 level[CTYPE],
                 level[FINALTYPES],
                 level[LOCALPATH].length ? level[LOCALPATH] : localDefault,
-                [],
                 level[LOCALPATH].length ? localDefault : [],
+                [],
                 ( level[MOUNT] ? level[MOUNT].docstr : level[DOCSTR] ) || [],
                 function (fname) { nextFiles.push (fname); }
             );
@@ -3939,8 +4082,8 @@ function generateComponents (context, mode, defaultScope) {
                         level[CTYPE],
                         parseType (typePath, [], true),
                         scope,
-                        [],
                         localDefault,
+                        [],
                         [],
                         function (fname) { nextFiles.push (fname); }
                     );
@@ -3980,6 +4123,15 @@ function generateComponents (context, mode, defaultScope) {
                  || context.argv.locals === 'all'
                  || ( context.argv.locals === 'comments' && hasComments (level) )
              )) {
+                if (!level[ALIAS][PATH] && level[ALIAS][MOUNT] && level[ALIAS][MOUNT].path) {
+                    didSubmit += submitSourceLevel (
+                        level[ALIAS],
+                        [],
+                        localDefault,
+                        chain,
+                        force
+                    );
+                }
                 if (level[ALIAS][PATH]) {
                     didSubmit = true;
                     context.submit (level[PATH], { modifiers:[ {
@@ -4138,7 +4290,6 @@ module.exports = {
     parseType:              parseType,
     parseTag:               parseTag,
     parseJavadocFlavorTag:  parseJavadocFlavorTag,
-    digDerefs:              digDerefs,
     parseSyntaxFile:        parseSyntaxFile,
     generateComponents:     generateComponents
 };

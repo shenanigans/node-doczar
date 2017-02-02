@@ -40,17 +40,29 @@ var modtypes    = 'development|api|super|implements|public|protected|private|abs
 /*
     Splits a javadoc-flavor path.
 */
-module.exports.jpathSplitter = new RegExp (util.format ('(event:|module:)?(%s)', pathWord));
-
-var jpath = util.format (
-    '(?:event:|module:)?%s(?:[.#](?:event:|module:)?%s)*',
-                        pathWord,                   pathWord
+module.exports.jpathWord = new RegExp (
+    '([.#~])?'
+    + '(?:(event|module|external):[ \\t]*)?'
+    + '("(?:[^"]|[^\\\\]\\\\(?:\\\\\\\\)*")+"|[^.#~"]+)',
+    'g'
 );
 
-module.exports.jpathConsumer = new RegExp (util.format (
-    '[ \t]*(%s).*',
-            jpath
-));
+/*
+    Selects a javadoc-flavor path.
+*/
+var jpath = module.exports.jpath =
+          '(?:event:|module:|external:)?(?:[^.#~"]+|"(?:[^"]|[^\\\\]\\\\(?:\\\\\\\\)*")+")'
++ '(?:[.#~](?:event:|module:|external:)?(?:[^.#~"]+|"(?:[^"]|[^\\\\]\\\\(?:\\\\\\\\)*")+"))*'
+;
+
+/*
+    Selects and groups a Javadoc-flavored inline type link.
+*/
+module.exports.jLink = new RegExp (util.format (
+    '(\\[[^\\]\\r\\n]+])\\{@link (%s)}',
+                                  jpath
+), 'g');
+
 
 /*
     Parses one or two paths, the first of which may be multiple paths separated by pipes `|`.
@@ -256,8 +268,7 @@ module.exports.signatureArgument = new RegExp (
 );
 
 /*
-    Maps delimiter characters to their Component type. The ambiguous period delimiter maps to
-    "property".
+    Maps delimiter characters to their Component type.
 */
 module.exports.delimiters = {
     '~':        'spare',

@@ -49,7 +49,7 @@ var ARGUMENTS = {
     "__proto__.js":                 "--parse node --root test",
     "Prototype.js":                 "--parse node --root test",
     "Overrides.js":                 "--parse node --root test",
-    "Skeleton.js":                  "--parse node --root skeleton",
+    "Skeleton.js":                  "--parse node --root skeleton --with node",
     "SyntaxParsingChallenges.js":   "--parse node --root test"
 };
 var SKIP = [

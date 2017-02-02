@@ -120,6 +120,8 @@ function parseType (typeStr, fileScope) {
     (skeleton.ComponentCache) instance.
 @argument:String fname
     An OS-localized absolute filename to read.
+@argument:String fstr
+@argument:/Path defaultScope
 @argument:skeleton/skl/ComponentCache context
     Parsed information will be [reported](skeleton/skl/ComponentCache#submit) to this
     [ComponentCache](skeleton/skl/ComponentCache) instance.

@@ -98,7 +98,7 @@ option             | description
 --raw              | Log console events as json strings instead of pretty printing them. (`doczar` uses [Bunyan](https://github.com/trentm/node-bunyan) logging)
 --json             | Create an `index.json` file in each directory instead of a rendered `index.html`.
 --date             | By default, every page is marked with the (local) time it was generated. This option explicitly sets the datestamp on each page. Accepts any date/time string compatible with the common javascript Date constructor.
-
+--jTrap, --jtrap   | Ensures that all javadoc-flavored documentation produced by the parser is contained within the parent `@module`.
 
 Development
 -----------

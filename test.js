@@ -379,7 +379,7 @@ function runTest (name, args) {
                                         return callback (new Error ('unfilled link'));
                                     }
                                     var urlInfo = url.parse (linkStr);
-                                    if (urlInfo.hostname || !urlInfo.path)
+                                    if (urlInfo.protocol || urlInfo.hostname || !urlInfo.path)
                                         return callback();
                                     var targetPath = path.resolve (level, linkStr);
                                     if (Object.hasOwnProperty.call (knownPaths, targetPath))
@@ -419,7 +419,7 @@ runTest ('Node Parsing Without Root', '--parse node');
 runTest ('Prototype', '--parse node --root test');
 runTest ('__proto__', '--parse node --root test');
 runTest ('Overrides', '--parse node --root test');
-runTest ('Skeleton', '--parse node --root skeleton');
+runTest ('Skeleton', '--parse node --root skeleton --with node');
 runTest ('Syntax Parsing Challenges', '--parse node --root test');
 runTest ('ES6 Parsing', '--parse js');
 runTest ('Locals --All', '--parse node --root test --locals all');
