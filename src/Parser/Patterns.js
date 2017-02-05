@@ -34,7 +34,7 @@ var tpath = util.format (
 module.exports.cpath = cpath;
 module.exports.tpath = tpath;
 var modtypes    = 'development|api|super|implements|public|protected|private|abstract|final'
-  + '|volatile|optional|const|root|alias|patches|remote|default'
+  + '|volatile|optional|const|root|alias|patches|remote|default|blind'
   ;
 
 /*

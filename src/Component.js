@@ -287,7 +287,7 @@ Component.prototype.submit = function (info) {
             continue;
         }
 
-        // unknown property
+        // unspecial property
         this.logger.error (
             { key:key, path:this.pathstr, from:this[key], to:info[key]},
             'illegal property redefinition'

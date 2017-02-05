@@ -98,6 +98,8 @@ option             | description
 --raw              | Log console events as json strings instead of pretty printing them. (`doczar` uses [Bunyan](https://github.com/trentm/node-bunyan) logging)
 --json             | Create an `index.json` file in each directory instead of a rendered `index.html`.
 --date             | By default, every page is marked with the (local) time it was generated. This option explicitly sets the datestamp on each page. Accepts any date/time string compatible with the common javascript Date constructor.
+--noDeps, --nodeps | Skip library dependencies.
+--noImply, --noimp | Do not allow shell options to load a standard doc library by implying the `--with` option.
 --jTrap, --jtrap   | Ensures that all javadoc-flavored documentation produced by the parser is contained within the parent `@module`.
 
 Development
@@ -306,6 +308,7 @@ Here is a list of the available Modifiers and Flags:
  * `@patches` copies this Component's documentation into another path
  * `@remote` replaces this Component's documentation with links to an internet url
  * `@default` documents this Component's default value
+ * `@blind` indicates to the syntax parsing system that properties and members of a Component are not to be documented
 
 #### Flags
  * `@public`

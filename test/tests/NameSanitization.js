@@ -22,21 +22,21 @@
 @member/String CASEPROPALFA
     The sixth `@member` is only separated from its siblings by case.
 */
-/*      @spare CaseClass#casePropAlfa~fooSpare
+/*      @spare #casePropAlfa~fooSpare
     Foo bar baz.
 */
-/*      @spare CaseClass#CasePropAlfa~fooSpare
+/*      @spare #CasePropAlfa~fooSpare
     Foo bar baz.
 */
-/*      @spare CaseClass#CasepropAlfa~fooSpare
+/*      @spare #CasepropAlfa~fooSpare
     Foo bar baz.
 */
-/*      @spare CaseClass#casepropAlfa~fooSpare
+/*      @spare #casepropAlfa~fooSpare
     Foo bar baz.
 */
-/*      @spare CaseClass#casepropalfa~fooSpare
+/*      @spare #casepropalfa~fooSpare
     Foo bar baz.
 */
-/*      @spare CaseClass#CASEPROPALFA~fooSpare
+/*      @spare #CASEPROPALFA~fooSpare
     Foo bar baz.
 */

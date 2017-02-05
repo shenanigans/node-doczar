@@ -67,7 +67,7 @@
 
 /*      @submodule:class Submission
     An intermediate structure for data hot off the `Parser` and ready to integrate into a
-    [Component](doczar:Component). Encapsulates information included in a single declaration or
+    [Component](doczar/Component). Encapsulates information included in a single declaration or
     inner declaration.
 @member/String ctype
     The Component type of the declaration.
@@ -381,6 +381,49 @@ var parseFile = function (fname, fstr, defaultScope, context, next) {
     context.logger.debug ({ filename:fname }, 'finished parsing file');
 };
 
+function consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers) {
+    var modmatch;
+    while (modmatch = docstr.match (Patterns.modifier)) {
+        if (!modmatch[0].length)
+            break;
+        if (!modmatch[1]) {
+            docstr = docstr.slice (modmatch[0].length);
+            continue;
+        }
+        var modDoc = { mod:modmatch[1] };
+        var modPath = modmatch[2];
+
+        if (modmatch[1] == 'default') {
+            if (modmatch[2] && modmatch[2][0] == '`')
+                modDoc.value = modmatch[2].slice (1, -1);
+            else
+                modDoc.value = modmatch[2];
+        } else if (modPath) {
+            var pathfrags = parsePath (modPath, fileScope);
+
+            if (modDoc.mod == 'requires') {
+                var newFilename = pathfrags[0][1];
+                var localDir = pathLib.dirname (fname);
+                next (pathLib.resolve (localDir, newFilename));
+                docstr = docstr.slice (modmatch[0].length);
+                continue;
+            }
+
+            if (!pathfrags[0][0])
+                pathfrags[0][0] = '.';
+            else
+                pathfrags = concatPaths (fileScope, pathfrags);
+            modDoc.path = pathfrags;
+        }
+
+        if (modDoc.mod == 'root')
+            replaceElements (fileScope, modPath ? pathfrags : tagScope);
+        else
+            modifiers.push (modDoc);
+        docstr = docstr.slice (modmatch[0].length);
+    }
+    return docstr;
+}
 
 /*
     Parse the contents of a documentation tag with its header already broken out.
@@ -424,40 +467,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
 
     // consume modifiers
     var modifiers = [];
-    var modmatch;
-    while (modmatch = docstr.match (Patterns.modifier)) {
-        var modDoc = { mod:modmatch[1] };
-        var modPath = modmatch[2];
-
-        if (modmatch[1] == 'default') {
-            if (modmatch[2] && modmatch[2][0] == '`')
-                modDoc.value = modmatch[2].slice (1, -1);
-            else
-                modDoc.value = modmatch[2];
-        } else if (modPath) {
-            var pathfrags = parsePath (modPath, fileScope);
-
-            if (modDoc.mod == 'requires') {
-                var newFilename = pathfrags[0][1];
-                var localDir = pathLib.dirname (fname);
-                next (pathLib.resolve (localDir, newFilename));
-                docstr = docstr.slice (modmatch[0].length);
-                continue;
-            }
-
-            if (!pathfrags[0][0])
-                pathfrags[0][0] = '.';
-            else
-                pathfrags = concatPaths (fileScope, pathfrags);
-            modDoc.path = pathfrags;
-        }
-
-        if (modDoc.mod == 'root')
-            fileScope = cloneArr (modPath ? pathfrags : tagScope);
-        else
-            modifiers.push (modDoc);
-        docstr = docstr.slice (modmatch[0].length);
-    }
+    docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
 
     // begin searching for inner tags
     var innerMatch = docstr ? docstr.match (Patterns.innerTag) : undefined;
@@ -465,7 +475,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
         // the entire comment is one component
         try {
             lastComponent = context.submit (
-                tagScope,
+                tagScope.length ? tagScope : fileScope,
                 {
                     ctype:      ctype,
                     valtype:    valtype,
@@ -633,41 +643,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
         valtype = parseType (valtype, fileScope.length ? fileScope : defaultScope);
 
         // consume modifiers
-        var modmatch;
-        while (modmatch = docstr.match (Patterns.modifier)) {
-            var modDoc = { mod:modmatch[1] };
-            var modPath = modmatch[2];
-
-            if (modmatch[1] == 'default') {
-                if (modmatch[2] && modmatch[2][0] == '`')
-                    modDoc.value = modmatch[2].slice (1, -1);
-                else
-                    modDoc.value = modmatch[2];
-            } else if (modPath) {
-                var pathfrags = parsePath (modPath, fileScope);
-
-                if (modDoc.mod == 'requires') {
-                    var newFilename = pathfrags[0][1];
-                    var localDir = pathLib.dirname (fname);
-                    next (pathLib.resolve (localDir, newFilename));
-                    docstr = docstr.slice (modmatch[0].length);
-                    continue;
-                }
-
-                if (!pathfrags[0][0])
-                    pathfrags[0][0] = '.';
-                else
-                    pathfrags = concatPaths (fileScope, pathfrags);
-                modDoc.path = pathfrags;
-            }
-
-            if (modDoc.mod == 'root')
-                fileScope = cloneArr (modPath ? pathfrags : tagScope);
-            else
-                modifiers.push (modDoc);
-
-            docstr = docstr.slice (modmatch[0].length);
-        }
+        docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
 
         // some tags affect the scope
         if (ctype == 'module') {
@@ -695,36 +671,7 @@ function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, default
         submissionPath = concatPaths (cloneArr (tagScope), inpathfrags);
 
     // consume modifiers
-    var modmatch;
-    while (modmatch = docstr.match (Patterns.modifier)) {
-        var modDoc = { mod:modmatch[1] };
-        var modPath = modmatch[2];
-
-        if (modmatch[1] == 'default') {
-            if (modmatch[2] && modmatch[2][0] == '`')
-                modDoc.value = modmatch[2].slice (1, -1);
-            else
-                modDoc.value = modmatch[2];
-        } else if (modPath) {
-            var pathfrags = parsePath (modPath, fileScope);
-
-            if (modDoc.mod == 'requires') {
-                var newFilename = pathfrags[0][1];
-                var localDir = pathLib.dirname (fname);
-                next (pathLib.resolve (localDir, newFilename));
-                docstr = docstr.slice (modmatch[0].length);
-                continue;
-            }
-
-            if (!pathfrags[0][0])
-                pathfrags[0][0] = '.';
-            else
-                pathfrags = concatPaths (fileScope, pathfrags);
-            modDoc.path = pathfrags;
-        }
-        modifiers.push (modDoc);
-        docstr = docstr.slice (modmatch[0].length);
-    }
+    docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
 
     // any chance this is just a @load declaration?
     if (ctype == 'load') {
@@ -1960,7 +1907,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         if (i < args.length)
                             arg = args[i];
                         else {
-                            arg = args[i] = newNode (typeNode);
+                            arg = args[i] = newNode();
                             arg[NO_SET] = true;
                             arg[NAME] = [ '(', '' ];
                         }
@@ -2336,6 +2283,24 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         // normal or doczar comment
                         if (!(match = Patterns.tag.exec ('/*'+comment.value+'*/'))) {
                             if (node) {
+                                var modPortionMatch = comment.value.match (/^[ \t]*(@[^]*)/m);
+                                if (modPortionMatch && modPortionMatch[1]) {
+                                    var mods = [];
+                                    consumeModifiers (
+                                        fname,
+                                        fileScope,
+                                        [],
+                                        function(){},
+                                        modPortionMatch[1],
+                                        mods
+                                    );
+                                    for (var i=0,j=mods.length; i<j; i++) {
+                                        if (mods[i].mod === 'blind') {
+                                            node[BLIND] = true;
+                                            break;
+                                        }
+                                    }
+                                }
                                 node[DOCSTR] = [ comment.value ];
                                 if (fileScope.length)
                                     node[OVERRIDE] = fileScope.concat();
@@ -2415,6 +2380,21 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 if (workingParent)
                                     node[MOUNT].parent = workingParent;
                                 node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
+                                var mods = [];
+                                consumeModifiers (
+                                    fname,
+                                    fileScope,
+                                    [],
+                                    function(){},
+                                    docstr,
+                                    mods
+                                );
+                                for (var i=0,j=mods.length; i<j; i++) {
+                                    if (mods[i].mod === 'blind') {
+                                        node[BLIND] = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -2435,6 +2415,24 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // try to parse it
                     Patterns.tag.lastIndex = 0;
                     if (!(match = Patterns.tag.exec ('/*'+trailer.value+'*/'))) {
+                        var modPortionMatch = trailer.value.match (/^[ \t]*(@[^]*)/m);
+                        if (modPortionMatch && modPortionMatch[1]) {
+                            var mods = [];
+                            consumeModifiers (
+                                fname,
+                                fileScope,
+                                [],
+                                function(){},
+                                modPortionMatch[1],
+                                mods
+                            );
+                            for (var i=0,j=mods.length; i<j; i++) {
+                                if (mods[i].mod === 'blind') {
+                                    node[BLIND] = true;
+                                    break;
+                                }
+                            }
+                        }
                         if (node[DOCSTR])
                             node[DOCSTR].push (trailer.value);
                         else
@@ -2500,6 +2498,21 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 fname:      fname
                             };
                             node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
+                            var mods = [];
+                            consumeModifiers (
+                                fname,
+                                fileScope,
+                                [],
+                                function(){},
+                                docstr,
+                                mods
+                            );
+                            for (var i=0,j=mods.length; i<j; i++) {
+                                if (mods[i].mod === 'blind') {
+                                    node[BLIND] = true;
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -2558,7 +2571,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             selfPointer[MEMBERS] = tools.newCollection();
                             selfPointer[MEMBERS][PARENT] = selfPointer;
                         }
-                        node = scope[declaration.id.name] = newNode();
+                        node = scope[declaration.id.name] = newNode (scope);
                         node[NAME] = [ '.', declaration.id.name ];
                         node[DEREF].push (selfPointer[MEMBERS]);
                         continue;
@@ -2588,7 +2601,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     selfPointer[MEMBERS] = tools.newCollection();
                                     selfPointer[MEMBERS][PARENT] = selfPointer;
                                 }
-                                node = scope[level.expression.left.name] = newNode();
+                                node = scope[level.expression.left.name] = newNode (scope);
                                 node[NAME] = [ '.', level.expression.left.name ];
                                 node[DEREF].push (selfPointer[MEMBERS]);
                                 node = selfPointer;
@@ -3671,11 +3684,14 @@ function generateComponents (context, mode, defaultScope) {
         if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
             target[NAME] = level[NAME];
 
+        if (level[BLIND])
+            target[BLIND] = true;
+
         if (!level[DEREF])
             return false;
 
         // dive for LINE definitions
-        if (!target[LINE] && !target[TRANSIENT]) {
+        if (target === level && !target[LINE] && !target[TRANSIENT]) {
             var pointer = level;
             var lineChain = [ level ];
             while (
@@ -4023,7 +4039,8 @@ function generateComponents (context, mode, defaultScope) {
                 ( level[MOUNT] ? level[MOUNT].docstr : level[DOCSTR] ) || [],
                 function (fname) { nextFiles.push (fname); }
             );
-            if (level[LINE] !== undefined)
+            var fullpath = concatPaths (localDefault, level[LOCALPATH]);
+            if (level[LINE])
                 context.submit (
                     concatPaths (localDefault, level[LOCALPATH]),
                     {
@@ -4087,7 +4104,8 @@ function generateComponents (context, mode, defaultScope) {
                         [],
                         function (fname) { nextFiles.push (fname); }
                     );
-                    if (level[LINE] !== undefined)
+                    var fullpath = concatPaths (localDefault, scope);
+                    if (level[LINE])
                         context.submit (
                             concatPaths (localDefault, scope),
                             {
@@ -4148,7 +4166,7 @@ function generateComponents (context, mode, defaultScope) {
             return didSubmit;
 
         // recurse to various children
-        if (level[MEMBERS]) {
+        if (level[MEMBERS] && !level[BLIND]) {
             delete level[MEMBERS][IS_COL];
             delete level[MEMBERS][PARENT];
             for (var key in level[MEMBERS]) {
