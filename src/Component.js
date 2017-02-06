@@ -155,6 +155,15 @@ var Component = module.exports = function (context, tpath, parent, position, log
     this.local = Object.create (null);
 };
 
+function pathsEqual (able, baker) {
+    if (!able || !baker || able.length !== baker.length)
+        return false;
+    for (var i=0,j=able.length; i<j; i++)
+        if (able[i][0] !==baker[i][0] || able[i][1] !== baker[i][1])
+            return false;
+    return true;
+}
+
 /*
     Merge additional information into this Component.
 @argument:doczar/src/Parser/Submission info
@@ -263,7 +272,7 @@ Component.prototype.submit = function (info) {
             else
                 this.logger.error (
                     { key:'ctype', path:this.pathstr, from:this[key], to:info[key]},
-                    'illegal Component type redefinition'
+                    'illegal property redefinition'
                 );
             continue;
         }
@@ -284,6 +293,14 @@ Component.prototype.submit = function (info) {
                     else
                         this.parent[this.position+'ByName'][this.name] = this;
             }
+            continue;
+        }
+        if (key === 'sourceModule') {
+            if (!pathsEqual (this[key], info[key]))
+                this.logger.error (
+                    { key:key, path:this.pathstr, from:pathStr (this[key]), to:pathStr (info[key])},
+                    'illegal property redefinition'
+                );
             continue;
         }
 

@@ -965,13 +965,15 @@ function parseJavadocFlavorTag (docstr, scopeParent, rootPath, argv, logger) {
 
         // modify the target's ctype
         if (Object.hasOwnProperty.call (JDOC_CTYPE, tagname)) {
-            mount[CTYPE] = JDOC_CTYPE[tagname];
+            mount.ctype = JDOC_CTYPE[tagname];
             continue;
         }
 
         // add hacky flag properties to the target's EXTRAS property
         if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
-            if (mount.extras.indexOf(JDOC_EXTRAS[tagname]) < 0)
+            if (!mount.extras)
+                mount.extras = [ JDOC_EXTRAS[targetNode] ];
+            else if (mount.extras.indexOf(JDOC_EXTRAS[tagname]) < 0)
                 mount.extras.push (JDOC_EXTRAS[tagname]);
             continue;
         }
@@ -1050,11 +1052,6 @@ function parseJavadocFlavorTag (docstr, scopeParent, rootPath, argv, logger) {
     // wrap up the last subtag
     if (tagname === 'example')
         outputDocstr += currentChild[DOCSTR][currentChild[DOCSTR].length-1] + '```\n\n';
-
-    // if (scopeParent[DOCSTR])
-    //     scopeParent[DOCSTR].push (outputDocstr);
-    // else
-    //     scopeParent[DOCSTR] = [ outputDocstr ];
 
     if (mount.docstr)
         mount.docstr.push (outputDocstr);
@@ -3690,7 +3687,7 @@ function generateComponents (context, mode, defaultScope) {
 
         if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
             target[NAME] = level[NAME];
-        else if (level[MOUNT] && level[MOUNT].path)
+        else if (level[MOUNT] && level[MOUNT].path && level[MOUNT].path.length)
             target[NAME] = level[MOUNT].path[level[MOUNT].path.length-1].concat();
 
         if (level[BLIND])
@@ -3920,7 +3917,11 @@ function generateComponents (context, mode, defaultScope) {
 
         if (!level[PATH]) {
             didSubmit = true;
-            var path, ctype, docstr, fileScope, types = [];
+            var path, ctype, docstr, fileScope;
+            var types = level[TYPES] ?
+                parseType (level[TYPES].concat().join ('|'), localDefault, true)
+              : []
+              ;
             if (level[MOUNT]) {
                 path = level[MOUNT].path || scope;
                 ctype = level[MOUNT].ctype || (
@@ -3932,17 +3933,13 @@ function generateComponents (context, mode, defaultScope) {
                     path = level[MOUNT].parent[LOCALPATH].concat (level[MOUNT].path);
                 }
                 scope = path;
-                types.push.apply (types, level[TYPES]);
-                types = parseType (types.join ('|'), localDefault, true);
                 types.push.apply (types, level[MOUNT].valtype);
                 docstr = level[MOUNT].docstr || [ '' ];
-                fileScope = level[MOUNT].docContext;
-                if (!level[OVERRIDE])
+                fileScope = level[MOUNT].docContext || [];
+                if (!level[OVERRIDE] && level[MOUNT].path)
                     localDefault = [];
             } else {
                 path = scope;
-                types.push.apply (types, level[TYPES]);
-                types = parseType (types.join ('|'), localDefault, true);
                 if (level[MEMBERS])
                     ctype = 'class';
                 else
