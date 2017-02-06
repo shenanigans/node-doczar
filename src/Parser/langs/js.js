@@ -62,13 +62,15 @@ function getGlobalNode (context) {
     return globalNode;
 }
 
-function getRoot (context, filepath, root) {
+function getRoot (context, filepath, module, root) {
     if (Object.hasOwnProperty.call (context.sources, filepath))
         return context.sources[filepath];
     var newRoot = new filth.SafeMap (getGlobalNode (context));
     newRoot[ROOT] = root;
+    newRoot[MODULE] = module;
     var exports = newRoot[EXPORTS] = tools.newNode();
     exports[ROOT] = root;
+    exports[MODULE] = module;
     exports[PROPS] = tools.newCollection();
     context.sources[filepath] = newRoot;
     return newRoot;
@@ -96,8 +98,11 @@ function generateComponents (context, submitSourceLevel) {
     var didSubmit;
     var failed = [];
     var globalFailed = [];
+    var round = 1;
     do {
         didSubmit = false;
+
+        context.logger.setTask ('submitting (round ' + round + ') global names');
 
         // work globals
         for (var key in globalNode) try {
@@ -118,6 +123,7 @@ function generateComponents (context, submitSourceLevel) {
 
         // work each source file
         for (var rootPath in context.sources) try {
+            context.logger.setTask ('submitting (round ' + round + ') ' + rootPath);
             var sourceRoot = context.sources[rootPath];
 
             // work exports
@@ -155,6 +161,7 @@ function generateComponents (context, submitSourceLevel) {
                 );
             }
         }
+        round++;
     } while (didSubmit);
 }
 

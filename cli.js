@@ -89,7 +89,7 @@ var PARSE_SYNONYMS_DEP = {
     'strict':           'browser-strict'  // subject to future change
 };
 var PARSE_LIB_DEPS = {
-    node:               [ 'es6' ],
+    node:               [ 'es6', 'node' ],
     js:                 [ 'es5' ],
     browser:            [ 'browser' ],
     'browser-strict':   [ 'browser', 'es6' ]
@@ -149,9 +149,9 @@ var ARGV_OPTIONS = {
         'node',         'destructive',  'jTrap'
     ],
     string:         [
-        'verbose',      'jsmod',        'in',           'with',         'code',         'date',
-        'parse',        'locals',       'root',         'fileRoot',     'optArgs',      'maxDepth',
-        'maxRefDepth'
+        'verbose',      'jsmod',        'in',           'out',          'with',         'code',
+        'date',         'parse',        'locals',       'root',         'fileRoot',     'optArgs',
+        'maxDepth',     'maxRefDepth'
     ],
     alias:          {
         o:              'out',

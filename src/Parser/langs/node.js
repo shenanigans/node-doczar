@@ -51,20 +51,26 @@ function getGlobalNode (context) {
     return globalNode;
 }
 
-function getRoot (context, filepath, root) {
+function getRoot (context, filepath, module, root) {
     if (Object.hasOwnProperty.call (context.sources, filepath))
         return context.sources[filepath];
 
     var exports = tools.newNode();
     exports[ROOT] = root;
     exports[DOC] = filepath;
+    exports[MODULE] = module;
+    var newModuleNode = tools.newNode();
+    newModuleNode[PROPS] = tools.newCollection ({ exports:exports });
+    newModuleNode[ROOT] = root;
+    newModuleNode[DOC] = filepath;
+    newModuleNode[MODULE] = module;
     var newRoot = new filth.SafeMap (getGlobalNode (context), {
-        module:     tools.newNode(),
+        module:     newModuleNode,
         exports:    exports
     });
     newRoot[ROOT] = root;
     newRoot[DOC] = filepath;
-    newRoot.module[PROPS] = tools.newCollection ({ exports:exports });
+    newRoot[MODULE] = module;
     context.sources[filepath] = newRoot;
     return newRoot;
 }
@@ -288,8 +294,6 @@ function generateComponents (context, submitSourceLevel) {
             var sourceRoot = context.sources[rootPath];
 
             // work exports
-            if (sourceRoot.module[MEMBERS])
-                console.log ('ACK', rootPath);
             var exports = sourceRoot.module[PROPS].exports;
             didSubmit += submitSourceLevel (
                 exports,
@@ -311,6 +315,7 @@ function generateComponents (context, submitSourceLevel) {
                 'failed to generate Declarations from source file'
             );
         }
+        round++;
     } while (didSubmit);
 }
 

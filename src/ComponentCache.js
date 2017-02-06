@@ -32,6 +32,20 @@ var ComponentCache = function (logger) {
     this.root = Object.create (null);
     this.resolvedDependencies = Object.create (null);
     this.sources = Object.create (null);
+
+    this.failedPaths = {};
+};
+
+ComponentCache.prototype.logFailure = function (start, type) {
+    var startStr = pathStr (start);
+    var typeStr = pathStr (type);
+    if (!Object.hasOwnProperty.call (this.failedPaths, typeStr)) {
+        this.failedPaths[typeStr] = [ startStr ];
+        this.logger.warn ({ source:startStr, type:typeStr }, 'failed to resolve type');
+    } else if (this.failedPaths[typeStr].indexOf (startStr) < 0) {
+        this.failedPaths[typeStr].push (startStr);
+        this.logger.debug ({ source:startStr, type:typeStr }, 'failed to resolve type');
+    }
 };
 
 
@@ -192,13 +206,13 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
             else
                 break;
     } catch (err) {
-        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        this.logFailure (start, type);
         return 'javascript:return false;';
     }
 
     // advance a pointer to ensure existence of the ancestor
     if (!Object.hasOwnProperty.call (this.root, type[0][1])) {
-        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        this.logFailure (start, type);
         return 'javascript:return false;';
     }
     var pointer  = this.root[type[0][1]];
@@ -217,10 +231,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
     for (var i=1; i<sameFromRoot; i++) {
         pointer = this.walkStep (pointer, type[i], false);
         if (!pointer) {
-            this.logger.warn (
-                { from:pathStr (start), to:pathStr (type), nearest:pathStr(type.slice (0, i+1)) },
-                'failed to resolve type'
-            );
+            this.logFailure (start, type);
             return 'javascript:return false;';
         }
         if (pointer.aliasTo) {
@@ -264,7 +275,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
             childClass += 'Symbols';
         pointer = this.walkStep (pointer, frag, false);
         if (!pointer) {
-            this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+            this.logFailure (start, type);
             return 'javascript:return false;';
         }
         if (pointer.aliasTo) {
@@ -286,7 +297,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
     // walk the last step but do not add to resultPath
     var last = pointer;
     if (type.length > 1 && !(pointer = this.walkStep (pointer, type[type.length-1], false))) {
-        this.logger.warn ({ from:pathStr (start), to:pathStr (type) }, 'failed to resolve type');
+        this.logFailure (start, type);
         return 'javascript:return false;';
     }
 
@@ -333,7 +344,7 @@ ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
     provided `info` Object.
 @argument:doczar/src/Parser/Path tpath
     A path to the Component that should contain the submitted information.
-@argument:doczar/src/Component/Submission info
+@argument:doczar/src/Parser/Submission info
     An Object containing fresly-parsed data that will be overwritten into the requested [Component]
     (doczar/src/Component).
 */

@@ -22,7 +22,7 @@ var cpath =
   + '(?:[/:\\.#~\\(\\)+%]\\[|[\\w\\$_@\x7f-\xff:\\.#~\\(\\)+%\\]])+' // delimiter-[ or non-[
   ;
 /*
-    A selector, as a String, for either a [cpath](%cpath), an es6 symbol (a [cpath](%cpath) wrapped
+    A selector, as a String, for either a [cpath](.cpath), an es6 symbol (a [cpath](.cpath) wrapped
     in square brackets) or an arbitrary String wrapped in backticks. Stands for Tricky Path.
 
     Backticks are escapable with backslash. Paired backslashes do not escape a backtick.

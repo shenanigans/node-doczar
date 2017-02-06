@@ -115,23 +115,10 @@ Handlebars.registerHelper ('markdown', function (doc) {
 });
 
 Handlebars.registerHelper ('link', function linkHelper (tpath) {
-    try {
-        var gotPath = currentContext.getRelativeURLForType (
-            currentPath,
-            tpath
-        );
-        return gotPath;
-    } catch (err) {  }
-
-    var uglySrc = pathStr (currentPath);
-    var uglyDest = pathStr (tpath);
-    if (!Object.hasOwnProperty.call (linkFailureSources, uglySrc))
-        linkFailureSources[uglySrc] = {};
-    if (!Object.hasOwnProperty.call (linkFailureSources[uglySrc], uglyDest)) {
-        linkFailureSources[uglySrc][uglyDest] = true;
-        logger.warn ({ from:uglySrc, type:uglyDest }, 'failed to resolve type FOX');
-    }
-    return 'javascript:return false;';
+    return currentContext.getRelativeURLForType (
+        currentPath,
+        tpath
+    );
 });
 
 Handlebars.registerHelper ('symbolLink', function (tpath) {

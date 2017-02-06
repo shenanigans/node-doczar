@@ -20,25 +20,25 @@
 
 /*      @submodule:class Valtype
     Represents a value type.
-@member/String name
+@member:String name
     The simple String representation of the type name.
-@member/:Path path
-    A [Path](:Path) representing the type.
-@member/Boolean isPointer
+@member:/Path path
+    A [Path](/Path) representing the type.
+@member:Boolean isPointer
     Whether the type was followed by an asterisk to identify it as a pointer.
-@member/Boolean isArray
+@member:Boolean isArray
     Whether the type was followed by an empty set of square brackets to indicate that it is a bare
     array of its own type.
-@member/Array<:Generic> generics
+@member:Array<:Generic> generics
     Any included generic types, e.g. `Array<String>`.
 */
 
 /*      @submodule:class Generic
     Represents a type slotted into a generic/template type.
-@member/String name
+@member:String name
     The simple String representation of the type name.
-@member/:Path path
-    A [Path](:Path) representing the type.
+@member:/Path path
+    A [Path](/Path) representing the type.
 */
 
 /*      @submodule:class Modifier
@@ -67,15 +67,15 @@
 
 /*      @submodule:class Submission
     An intermediate structure for data hot off the `Parser` and ready to integrate into a
-    [Component](doczar/Component). Encapsulates information included in a single declaration or
+    [Component](doczar.Component). Encapsulates information included in a single declaration or
     inner declaration.
-@member/String ctype
+@member:String ctype
     The Component type of the declaration.
-@member/:DocumentFragment doc
+@member:/DocumentFragment doc
     Markdown documentation String or Array of Strings.
-@member/Array<:Valtype> valtype
+@member:Array</Valtype> valtype
     Value types loaded from the declaration.
-@member/Array<:Modifier> modifiers
+@member:Array</Modifier> modifiers
     All the modifiers in the declaration.
 */
 
@@ -222,7 +222,7 @@ function parsePath (pathstr, fileScope) {
 /*
     Parse a standard type String. This may include any number of pipe-delimited iterations of paths
     with optional generic types.
-@returns:Array<Valtype>
+@returns:Array</Valtype>
     Each type in the pipe-delimited sequence (by default, length 1) represented as a [Valtype]
     (/Valtype).
 */
@@ -1026,7 +1026,7 @@ function parseJavadocFlavorTag (docstr, scopeParent, rootPath, argv, logger) {
                 );
             var mountPath = match[2];
             if (mountPath)
-                mount[PATH] = parseJavadocFlavorPath (mountPath);
+                mount.path = parseJavadocFlavorPath (mountPath);
             continue;
         }
 
@@ -1090,7 +1090,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         return process.exit (1);
     }
     var langPack = langs[mode];
-    var baseNode = langPack.getRoot (context, fname, defaultScope);
+    var baseNode = langPack.getRoot (context, fname, defaultScope, defaultScope);
     defaultScope = baseNode[ROOT];
     if (!baseNode[MODULE])
         baseNode[MODULE] = defaultScope;
@@ -1107,8 +1107,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         var node = tools.newNode.apply (tools, arguments);
         node[DOC] = fname;
         node[REFERER] = referer;
-        if (parent)
+        if (parent) {
             node[ROOT] = parent[ROOT];
+            node[MODULE] = parent[MODULE] || baseNode[MODULE];
+        } else
+            node[MODULE] = baseNode[MODULE];
         return node;
     }
 
@@ -1224,7 +1227,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 dummy[MODULE] = pathInfo.root;
                 return dummy; // dummy
             }
-            sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.path);
+            sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.root, pathInfo.path);
             sourceRoot[MODULE] = pathInfo.root;
             next (pathInfo.file, pathInfo.referer || referer);
             var foreignExports = sourceRoot.module[PROPS].exports;
@@ -2355,7 +2358,12 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 pathfrags = [];
                             }
 
-                            if (!node || ctype === 'spare' || ctype === 'module') {
+                            if (
+                                !node
+                              || ctype === 'spare'
+                              || ctype === 'module'
+                              || ctype === 'submodule'
+                            ) {
                                 // no related expression
                                 parseTag (
                                     context,
@@ -2475,7 +2483,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             replaceElements (fileScope, pathfrags);
                             pathfrags = [];
                         }
-                        if (ctype === 'spare' || ctype === 'module') {
+                        if (ctype === 'spare' || ctype === 'module' || ctype === 'module') {
                             // no related expression
                             parseTag (
                                 context,
@@ -3411,11 +3419,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 // if there's no path info, an error occured and was logged
                 if (!pathInfo)
                     break;
-                var moduleNode = langPack.getRoot (context, pathInfo.file, pathInfo.path);
-                if (!moduleNode[MODULE]) {
-                    moduleNode[MODULE] = pathInfo.root;
-                    next (pathInfo.file, pathInfo.referer || referer);
-                }
+                var moduleNode = langPack.getRoot (context, pathInfo.file, pathInfo.root, pathInfo.path);
+                next (pathInfo.file, pathInfo.referer || referer);
 
                 // first check if it's `import * as ModName from "foo.js"`
                 if (level.specifiers[0].type == "ImportNamespaceSpecifier") {
@@ -3662,12 +3667,14 @@ function generateComponents (context, mode, defaultScope) {
     context.latency.log();
 
     // tools for syntax parsing
-    function preprocessDerefs (level, target, chain) {
+    function preprocessDerefs (level, target, chain, isTransient) {
         var didFinishDeref = false;
         if (!target)
             target = level;
         if (!chain)
             chain = [ target ];
+        if (target[TRANSIENT])
+            isTransient = true;
 
         function recurse (level, target) {
             if (chain.length >= context.argv.maxRefDepth)
@@ -3678,11 +3685,13 @@ function generateComponents (context, mode, defaultScope) {
                 return false;
             var newChain = chain.concat();
             newChain.push (level);
-            return preprocessDerefs (level, target || level, newChain);
+            return preprocessDerefs (level, target || level, newChain, isTransient);
         }
 
         if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
             target[NAME] = level[NAME];
+        else if (level[MOUNT] && level[MOUNT].path)
+            target[NAME] = level[MOUNT].path[level[MOUNT].path.length-1].concat();
 
         if (level[BLIND])
             target[BLIND] = true;
@@ -3720,7 +3729,7 @@ function generateComponents (context, mode, defaultScope) {
             recurse (ref, target);
 
             // alias to mount
-            if (ref[MOUNT] && ref[MOUNT].path) {
+            if (ref[MOUNT] && !isTransient && ref[MOUNT].path) {
                 target[ALIAS] = ref;
                 recurse (ref);
             }
@@ -3926,7 +3935,7 @@ function generateComponents (context, mode, defaultScope) {
                 types.push.apply (types, level[TYPES]);
                 types = parseType (types.join ('|'), localDefault, true);
                 types.push.apply (types, level[MOUNT].valtype);
-                docstr = level[MOUNT].docstr;
+                docstr = level[MOUNT].docstr || [ '' ];
                 fileScope = level[MOUNT].docContext;
                 if (!level[OVERRIDE])
                     localDefault = [];
@@ -3954,7 +3963,7 @@ function generateComponents (context, mode, defaultScope) {
                 if (ctype === 'class') {
                     var foundClass = false;
                     for (var i=types.length-1; i>=0; i--) {
-                        if (types[i].name == 'class') {
+                        if (types[i].name === 'class') {
                             foundClass = true;
                             break;
                         }
@@ -4001,14 +4010,15 @@ function generateComponents (context, mode, defaultScope) {
                     docstr,
                     function (fname) { nextFiles.push (fname); }
                 );
-                if (level[LINE] !== undefined)
-                    context.submit (
-                        fullpath,
-                        {
-                            sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                            sourceLine: level[LINE]
-                        }
-                    );
+                if (level[LINE]) {
+                    var lineDoc = {
+                        sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                        sourceLine: level[LINE]
+                    };
+                    if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
+                        lineDoc.sourceModule = level[MODULE];
+                    context.submit (fullpath, lineDoc);
+                }
                 if (level[NAME] !== undefined && level[NAME][1])
                     context.submit (
                         fullpath,
@@ -4040,14 +4050,18 @@ function generateComponents (context, mode, defaultScope) {
                 function (fname) { nextFiles.push (fname); }
             );
             var fullpath = concatPaths (localDefault, level[LOCALPATH]);
-            if (level[LINE])
+            if (level[LINE]) {
+                var lineDoc = {
+                    sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                    sourceLine: level[LINE]
+                };
+                if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
+                    lineDoc.sourceModule = level[MODULE];
                 context.submit (
                     concatPaths (localDefault, level[LOCALPATH]),
-                    {
-                        sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                        sourceLine: level[LINE]
-                    }
+                    lineDoc
                 );
+            }
         } else {
             // alias?
             if (force && !pathsEqual (scope, level[LOCALPATH])) {
@@ -4105,14 +4119,15 @@ function generateComponents (context, mode, defaultScope) {
                         function (fname) { nextFiles.push (fname); }
                     );
                     var fullpath = concatPaths (localDefault, scope);
-                    if (level[LINE])
-                        context.submit (
-                            concatPaths (localDefault, scope),
-                            {
-                                sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                                sourceLine: level[LINE]
-                            }
-                        );
+                    if (level[LINE]) {
+                        var lineDoc = {
+                            sourceFile: pathLib.relative (level[REFERER], level[DOC]),
+                            sourceLine: level[LINE]
+                        };
+                        if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
+                            lineDoc.sourceModule = level[MODULE];
+                        context.submit (concatPaths (localDefault, scope), lineDoc);
+                    }
                 }
             }
         }
@@ -4210,7 +4225,7 @@ function generateComponents (context, mode, defaultScope) {
         if (level[RETURNS] && level[RETURNS][TYPES].length)
             didSubmit += submitSourceLevel (
                 level[RETURNS],
-                concatPaths (scope, [ [ ')', '' ] ]),
+                concatPaths (scope, [ [ ')', 0 ] ]),
                 localDefault,
                 chain,
                 force

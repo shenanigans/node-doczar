@@ -28,6 +28,11 @@
             {{/if}}
         </span>
     </span>
+    {{#if sourceFile}}
+        <div class="source file">
+            {{#if sourceModule}}<a class="sourceModule" href="{{link sourceModule.path}}">{{sourceModule.pathstr}}</a>{{/if}} {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+        </div>
+    {{/if}}
     {{#if isInherited}}
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
@@ -64,11 +69,6 @@
             Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
     {{/interfaces}}
-    {{#if sourceFile}}
-        <div class="source file">
-            {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
-        </div>
-    {{/if}}
     <div class="info">
 <span class="markdown">{{{markdown summaryDoc}}}</span>
         {{#if isInline}}

@@ -645,7 +645,7 @@ Component.prototype.finalize = function (options, callback) {
                         !Object.hasOwnProperty.call (NATURALIZE_CHILDREN, propName)
                      && !matchPaths (finalChild.source, self.path || [])
                     ) {
-                        finalChild.isInherited = true;
+                        finalChild.isInherited = child.final.isInherited = true;
                         for (var m=0,n=self.interfaces.length; m<n; m++)
                             if (Object.hasOwnProperty.call (self.interfaces[m].property, key))
                                 finalChild.satisfies.push ({
@@ -710,6 +710,21 @@ Component.prototype.finalize = function (options, callback) {
                         var key = ALIAS_PROPS[k];
                         target.final[key] = self.final[key];
                     }
+                }
+            }
+
+            // handle document position
+            if (self.sourceFile) {
+                self.final.sourceFile = self.sourceFile;
+                self.final.sourceLine = self.sourceLine;
+                if (self.sourceModule) try {
+                    var resolved = self.context.resolve (self.sourceModule);
+                    self.final.sourceModule = {
+                        path:       resolved.final.path,
+                        pathstr:    resolved.final.pathstr
+                    };
+                } catch (err) {
+                    self.context.logFailure (self.path, self.sourceModule);
                 }
             }
 
@@ -811,11 +826,6 @@ Component.prototype.finalize = function (options, callback) {
         isTotallyEmpty:     this.isTotallyEmpty
     };
 
-    if (this.sourceFile) {
-        this.final.sourceFile = this.sourceFile;
-        this.final.sourceLine = this.sourceLine;
-    }
-
     // copy ~summary and ~details into the finalization
     if (this.spare.summary)
         this.final.summaryDoc = this.spare.summary.final.doc;
@@ -896,14 +906,14 @@ Component.prototype.finalize = function (options, callback) {
             }
             continue;
         }
-        if (mod.mod == 'super') {
+        if (mod.mod === 'super') {
             if (mod.path)
                 this.superClasses.push (mod.path);
             else
                 this.logger.warn ({ modifier:'super', type:this.pathstr }, 'modifier missing path');
             continue;
         }
-        if (mod.mod == 'implements') {
+        if (mod.mod === 'implements') {
             if (mod.path)
                 try {
                     this.interfaces.push (this.context.resolve (mod.path));
@@ -921,7 +931,7 @@ Component.prototype.finalize = function (options, callback) {
                 this.logger.warn ({ modifier:'implements', type:this.pathstr }, 'modifier missing path');
             continue;
         }
-        if (mod.mod == 'alias') {
+        if (mod.mod === 'alias') {
             if (mod.path)
                 try {
                     this.aliasTo = this.context.resolve (mod.path);
@@ -945,7 +955,7 @@ Component.prototype.finalize = function (options, callback) {
                     'modifier missing path'
                 );
         }
-        if (mod.mod == 'patches') {
+        if (mod.mod === 'patches') {
             if (mod.path)
                 try {
                     var target = this.context.resolve (mod.path);
@@ -966,10 +976,10 @@ Component.prototype.finalize = function (options, callback) {
             else
                 this.logger.warn ({ modifier:'patches', type:this.pathstr }, 'modifier missing path');
         }
-        if (mod.mod == 'remote') {
+        if (mod.mod === 'remote') {
             if (mod.path)
                 try {
-                    this.remotePath = mod.path[mod.path.length-1][1];
+                    this.remotePath = this.final.remotePath = mod.path[mod.path.length-1][1];
                 } catch (err) {
                     this.logger.warn (
                         { modifier:'remote', failed:mod.path },

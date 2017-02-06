@@ -41,9 +41,30 @@
             <span class="breadcrumbs">
                 {{#breadcrumbs}}<span class="delimiter">{{delimiter}}</span><a href="{{link path}}" class="breadcrumb {{ctype}}">{{name}}</a>{{/breadcrumbs}}
             </span>
+            {{#if sourceFile}}
+                <div class="source file">
+                    {{#if sourceModule}}<a class="sourceModule" href="{{link sourceModule.path}}">{{sourceModule.pathstr}}</a>{{/if}} {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+                </div>
+            {{/if}}
             {{#if aliasTo}}
                 <div class="source alias">
                     Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
+                </div>
+            {{/if}}
+            {{#if isInherited}}
+                <div class="source super">
+                    Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
+                </div>
+            {{else}}
+                {{#override}}
+                    <div class="source super">
+                        Overrides <a class="super" href="{{link path}}">{{name}}</a>
+                    </div>
+                {{/override}}
+            {{/if}}
+            {{#if remotePath}}
+                <div class="source remote">
+                    <a class="alias" href="{{remotePath}}">External Documentation</a>
                 </div>
             {{/if}}
             {{#if patchedBy}}
@@ -66,11 +87,6 @@
                     Implements <a class="super" href="{{link path}}">{{name}}</a>
                 </div>
             {{/interfaces}}
-            {{#if sourceFile}}
-                <div class="source file">
-                    {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
-                </div>
-            {{/if}}
         </div>
         {{#unless isSpare}}
 {{> TOC}}

@@ -21,6 +21,14 @@ module.exports.classy = function (able) {
 module.exports.classy (4);
 
 /*
+    Do a thing.
+@returns:String
+    Should be named `bar` and typed `String`. It's not called `foo` because that name has been
+    remounted.
+*/
+module.exports.classy.prototype.doThing = function(){ return this.foo; };
+
+/*
     Argument implied name test.
 @argument
     Should be named `foo`.

@@ -30,6 +30,11 @@
     {{#if default}}
         <div class="default">default: <span class="value">{{default}}</span></div>
     {{/if}}
+    {{#if sourceFile}}
+        <div class="source file">
+            {{#if sourceModule}}<a class="sourceModule" href="{{link sourceModule.path}}">{{sourceModule.pathstr}}</a>{{/if}} {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
+        </div>
+    {{/if}}
     {{#if isInherited}}
         <div class="source super">
             Inherited from <a class="super" href="{{link source}}">{{sourcestr}}</a>
@@ -46,6 +51,11 @@
             Alias to <a class="alias" href="{{link aliasTo.path}}">{{aliasTo.pathstr}}</a>
         </div>
     {{/if}}
+    {{#unless isTotallyEmpty}}{{#if remotePath}}
+        <div class="source remote">
+            <a class="alias" href="{{remotePath}}">External Documentation</a>
+        </div>
+    {{/if}}{{/unless}}
     {{#if patchedBy}}
         <div class="source alias">
             Patched by <a class="alias" href="{{link patchedBy.path}}">{{patchedBy.pathstr}}</a>
@@ -66,11 +76,6 @@
             Implements <a class="interface" href="{{link path}}">{{pathstr}}</a>
         </div>
     {{/interfaces}}
-    {{#if sourceFile}}
-        <div class="source file">
-            {{sourceFile}} <span class="sourceLine">line {{sourceLine}}</span>
-        </div>
-    {{/if}}
     <div class="info">
 <div class="markdown">{{{markdown summaryDoc}}}</div>
         {{#if isInline}}{{#unless isModule}}

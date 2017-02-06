@@ -352,21 +352,21 @@ function runTest (name, args) {
             function checkLevel (level, levelDone) {
                 fs.readdir (level, function (err, children) {
                     if (err)
-                        return callback (err);
+                        return levelDone (err);
                     async.each (children, function (child, childDone) {
                         var childPath = path.join (level, child);
                         fs.stat (childPath, function (err, stats) {
                             if (err)
                                 return childDone (err);
                             if (child[0] === '.')
-                                return callback();
+                                return childDone();
                             if (stats.isDirectory())
                                 return checkLevel (childPath, childDone);
                             if (!child.match (/\.html$/))
                                 return childDone();
                             fs.readFile (childPath, function (err, buf) {
                                 if (err)
-                                    return callback (err);
+                                    return childDone (err);
                                 var content = buf.toString();
                                 var GET_LINK = /href="([^"#]+)(?:#[^";]+)?"/g;
                                 var match;
