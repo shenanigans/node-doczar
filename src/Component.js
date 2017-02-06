@@ -158,9 +158,15 @@ var Component = module.exports = function (context, tpath, parent, position, log
 function pathsEqual (able, baker) {
     if (!able || !baker || able.length !== baker.length)
         return false;
-    for (var i=0,j=able.length; i<j; i++)
-        if (able[i][0] !==baker[i][0] || able[i][1] !== baker[i][1])
+    for (var i=0,j=able.length; i<j; i++) {
+        var aI = able[i];
+        var bI = baker[i];
+        if (aI[0] !== bI[0] || aI[1] !== bI[1])
             return false;
+        if (( aI[2] && !bI[2] ) || ( bI[2] && !aI[2] ))
+            return false;
+        // we can assume symbol paths are equal since their string representations are equal
+    }
     return true;
 }
 
@@ -231,7 +237,16 @@ Component.prototype.submit = function (info) {
             continue;
         }
         if (key === 'valtype') {
-            this.valtype.push.apply (this.valtype, info.valtype);
+            for (var i=0,j=info.valtype.length; i<j; i++) {
+                var found = false;
+                for (var k=0,l=this.valtype.length; k<l; k++)
+                    if (pathsEqual (this.valtype[k].path, info.valtype[i].path)) {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    this.valtype.push (info.valtype[i]);
+            }
             continue;
         }
         if (key === 'modifiers') {
@@ -791,6 +806,37 @@ Component.prototype.finalize = function (options, callback) {
     if (this.ctype === 'signature')
         this.name = this.parent.name;
 
+    // process value types and check whether this Component lists "f|Function" or "class" as a type
+    // also, check for an explicit type to force type overwriting
+    var didFindExplicit = false;
+    for (var i=0,j=this.valtype.length; i<j; i++) {
+        if (this.valtype[i].explicit)
+            didFindExplicit = true;
+        var thistype = this.valtype[i].path;
+        if (thistype.length != 1)
+            continue;
+        if (thistype[0][1] === 'function' || thistype[0][1] === 'Function') {
+            this.isFunction = true;
+            continue;
+        }
+        if (thistype[0][1] === 'class') {
+            this.isClassValtype = true;
+            this.valtype.splice (i, 1);
+            i--; j--;
+            continue;
+        }
+        if (thistype[0][1] === 'json') {
+            this.isJSONValtype = true;
+            thistype[0][1] = 'Object';
+            this.valtype[i].name = 'Object';
+            continue;
+        }
+    }
+    // if there's an explicit type, clear all implicit types
+    if (didFindExplicit) for (var i=this.valtype.length-1; i>=0; i--)
+        if (!this.valtype[i].explicit)
+            this.valtype.splice (i, 1);
+
     /*  @:/Finalization
         After [finalization](#finalize), `final` is an Object designed to be passed to the template
         engine ([Handlebars](http://handlebarsjs.com/)).
@@ -811,6 +857,7 @@ Component.prototype.finalize = function (options, callback) {
         satisfies:          [],
         ctype:              this.ctype,
         valtype:            this.valtype,
+        isFunction:         Boolean (this.isFunction),
         isKwarg:            Boolean (this.isKeywordArg),
         isMultiArg:         Boolean (this.isMultiArg),
         isSpare:            this.ctype === 'spare',
@@ -1008,37 +1055,6 @@ Component.prototype.finalize = function (options, callback) {
             continue;
         }
     }
-
-    // process value types and check whether this Component lists "f|Function" or "class" as a type
-    // also, check for an explicit type to force type overwriting
-    var didFindExplicit = false;
-    for (var i=0,j=this.valtype.length; i<j; i++) {
-        if (this.valtype[i].explicit)
-            didFindExplicit = true;
-        var thistype = this.valtype[i].path;
-        if (thistype.length != 1)
-            continue;
-        if (thistype[0][1] == 'function' || thistype[0][1] == 'Function') {
-            this.final.isFunction = true;
-            continue;
-        }
-        if (thistype[0][1] == 'class') {
-            this.isClassValtype = true;
-            this.valtype.splice (i, 1);
-            i--; j--;
-            continue;
-        }
-        if (thistype[0][1] == 'json') {
-            this.isJSONValtype = true;
-            thistype[0][1] = 'Object';
-            this.valtype[i].name = 'Object';
-            continue;
-        }
-    }
-    // if there's an explicit type, clear all implicit types
-    if (didFindExplicit) for (var i=this.valtype.length-1; i>=0; i--)
-        if (!this.valtype[i].explicit)
-            this.valtype.splice (i, 1);
 
     // certain special cases/flags
     if (this.ctype === 'callback')

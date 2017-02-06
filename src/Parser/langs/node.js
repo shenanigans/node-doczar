@@ -97,10 +97,33 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
         var sourceFrags = path.parse (sourceName).dir.split (DELIMIT);
         // we can go above the source level slightly
         var sourceCutoff = Math.max (0, sourceFrags.length-refererDepth-workingRootPath.length);
+        var isDep = false;
         for (var i=sourceFrags.length; i>=sourceCutoff; i--) {
             if (i <= refererDepth)
                 workingRootPath.pop();
             var searchPath = path.join.apply (path, sourceFrags.slice (0, i));
+
+            // look for a package.json that specifies this module as a dependency
+            try {
+                var pkg = JSON.parse (
+                    fs.readFileSync (
+                        path.join (searchPath, 'package.json')
+                    ).toString()
+                );
+                if (
+                    (pkg.dependencies && HAZ.call (pkg.dependencies, targetFrags[0]))
+                 || (pkg.devDependencies && HAZ.call (pkg.devDependencies, targetFrags[0]))
+                )
+                    isDep = true;
+            } catch (err) {
+                if (err.code !== 'ENOENT' && err.name !== 'SyntaxError') {
+                    context.logger.error (
+                        { source:sourceName, target:target, root:workingRootPath },
+                        'unable to resolve a dependency'
+                    );
+                    return;
+                }
+            }
 
             // look for node_modules
             var nodeModulesPath = path.join (searchPath, 'node_modules');
@@ -124,34 +147,15 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
                 continue;
             }
 
-            // entering the first node_modules directory
-            // is there a matching package.json?
-            try {
-                var pkg = JSON.parse (
-                    fs.readFileSync (
-                        path.join (searchPath, 'package.json')
-                    ).toString()
-                );
-                if (
-                    (pkg.dependencies && HAZ.call (pkg.dependencies, targetFrags[0]))
-                 || (pkg.devDependencies && HAZ.call (pkg.devDependencies, targetFrags[0]))
-                ) {
-                    // this is a true dependency!
-                    modulePath = targetFrags.map (function (frag) { return [ '/', frag ]; });
-                    targetName = path.join (nodeModulesPath, path.join.apply (path, targetFrags));
-                    workingRootPath = modulePath;
-                    workingRefererName = targetName;
-                    break;
-                }
-            } catch (err) {
-                if (err.code !== 'ENOENT' && err.name !== 'SyntaxError') {
-                    context.logger.error (
-                        { source:sourceName, target:target, root:workingRootPath },
-                        'unable to resolve a dependency'
-                    );
-                    return;
-                }
+            if (isDep) {
+                // this is a true dependency!
+                modulePath = targetFrags.map (function (frag) { return [ '/', frag ]; });
+                targetName = path.join (nodeModulesPath, path.join.apply (path, targetFrags));
+                workingRootPath = modulePath;
+                workingRefererName = targetName;
+                break;
             }
+
             // this is a file found in a local node_modules
             modulePath = workingRootPath.concat (
                 sourceFrags.slice (refererDepth, i).map (function (frag) { return [ '/', frag ]; })
@@ -225,9 +229,12 @@ function getDependency (context, refererName, sourceName, rootPath, target) {
             return;
         }
         // is there a .js file?
-        var tryName = targetName.match (/\.js$/) ? targetName : targetName + '.js';
+        var doesMatch = targetName.match (/\.js$/);
+        var tryName = doesMatch ? targetName : targetName + '.js';
         try {
             fs.statSync (tryName);
+            if (doesMatch)
+                modulePath[modulePath.length-1][1] = modulePath[modulePath.length-1][1].slice (0, -3);
             targetName = tryName;
         } catch (err) {
             // is this a directory containing an index.js?

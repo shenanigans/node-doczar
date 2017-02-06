@@ -3697,7 +3697,7 @@ function generateComponents (context, mode, defaultScope) {
             return false;
 
         // dive for LINE definitions
-        if (target === level && !target[LINE] && !target[TRANSIENT]) {
+        if (target === level && !target[LINE] && !isTransient) {
             var pointer = level;
             var lineChain = [ level ];
             while (
