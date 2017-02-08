@@ -68,59 +68,37 @@ function pathStr (type) {
     Each new `Component` is a member of a specific `ComponentCache`.
 @argument:doczar/src/Parser/Path path
     The full path of the new `Component`.
-@String #pathstr
-    A unique String representing this Component's full path.
+@argument:doczar.Component|undefined parent
+    The containing Component, or `undefined` if this Component resides directly on the root.
+@argument:String position
+    The name of the property in `parent` where the new Component will be stored.
+@argument:Bunyan.Logger logger
 @String #ctype
     The "component type" of this `Component`, better known as the word after the `@`. One of:
-     * `property`
-     * `member`
-     * `spare`
-     * `module`
-     * `class`
-     * `argument`
-     * `returns`
-     * `callback`
-     * `default`.
-@Array<Object> #valtype
-    The working type(s) of the value described by this `Component`.
-@Array<Object> #doc
-    An Array of markdown documents that have been applied to this `Component`, packaged with the
-    scope at which the documentation was found.
-@Object<doczar/src/Component> #spare
-    A map of "spare document" names to `Component` instances representing these documents.
-@Object<String, doczar/src/Component> #property
-    A map of property names to `Component` instances representing these types.
-@Object<String, doczar/src/Component> #member
-    A map of property names to `Component` instances representing these types.
-@Array<doczar/src/Component> #argument
-    An Array of `Component` instances representing function arguments for this `Component`. If our
-    `ctype` is not `"member"` or `"property"` these arguments are rendered as belonging to a
-    constructor function. (Further document this constructor by providing `@spare constructor`)
-@Object<doczar/src/Component> #argsByName
-    A map of named items from `argument` to their `Component` instances.
-@Array<doczar/src/Component> #returns
-    An array of Component instances representing return values for this Component.
-@Object<doczar/src/Component> #returnsByName
-    A map of named items from `returns` to their `Component` instances.
-@Array<doczar/src/Component> #throws
-    An array of Component instances representing situations when code represented by this Component
-    may throw an exception.
-@Object<doczar/src/Component> #throwsByName
-    A map of named items from `throws` to their `Component` instances.
+     * `spare` Rendered documentation nodes.
+     * `module` Generic containers.
+     * `property` Static properties.
+     * `member` Instance properties.
+     * `argument` Function arguments, rest and spread declarations and callbacks.
+     * `returns` Function return values.
+     * `throws` Function exception conditions.
+     * `event` Named events.
+     * `signature` Argument signatures for a function.
+     * `local` Names declared in a local scope.
 */
 var Component = module.exports = function (context, tpath, parent, position, logger) {
     if (!logger)
         throw new Error ('no logger!');
     this.context = context;
-    /* @:doczar/src/Parser/Path */
-    this.path = tpath;
-    this.parent = parent;
+    this.path = tpath; /* @:doczar/src/Parser/Path */
+    this.parent = parent; /* @:doczar.Component */
+    /* The property name on the parent Component where this Component is stored. */
     this.position = position;
     /* @:bunyan.Logger */
     this.logger = logger;
 
-    this.superClasses = [];
-    this.interfaces = [];
+    this.superClasses = []; /* @:Array<doczar.Component> */
+    this.interfaces = []; /* @:Array<doczar.Component> */
 
     var lastI = tpath.length - 1;
     if (!tpath[lastI][1] || typeof tpath[lastI][1] !== 'string')
@@ -130,28 +108,120 @@ var Component = module.exports = function (context, tpath, parent, position, log
     this.pathstr = '';
     for (var i=0, j=this.path.length; i<j; i++)
         this.pathstr += (this.path[i][0]||'.') + this.path[i][1];
+    /* A unique String representing this Component's full path. */
     this.pathstr = this.pathstr.slice (1);
 
+    /*  @:Array<doczar.Parser/DocumentFragment>
+        An Array of markdown documents that have been applied to this `Component`, packaged with the
+        scope at which the documentation was found.
+    */
     this.doc = [];
+
+    /*  @:Array<doczar.Parser/Valtype>
+        The working type(s) of the value described by this `Component`.
+    */
     this.valtype = [];
+
+    /*  @:Array{doczar.Parser/Modifier>
+        An Array of all Modifiers attached to this Component.
+    */
     this.modifiers = [];
+
+    /*  @:Object<doczar.Component>
+        A map of "spare document" names to `Component` instances representing these documents.
+    */
     this.spare = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of submodule names to `Component` instances representing these modules.
+    */
     this.module = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of property names to `Component` instances representing these types.
+    */
     this.property = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of ES6 property Symbols to `Component` instances representing these types. The mapping
+        String is the joined canonical path of the Symbol.
+    */
     this.propertySymbols = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of member names to `Component` instances representing these types.
+    */
     this.member = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of ES6 member Symbols to `Component` instances representing these types. The mapping
+        String is the joined canonical path of the Symbol.
+    */
     this.memberSymbols = Object.create (null);
+
+    /*  @:Array<doczar/src/Component>
+        An Array of `Component` instances representing function arguments for this `Component`. If
+        our `ctype` is not `"member"` or `"property"` these arguments are rendered as belonging to a
+        constructor function. (Further document this constructor by providing `@spare constructor`)
+    */
     this.argument = [];
+
+    /*  @:Object<doczar/src/Component>
+        A map of named items from `argument` to their `Component` instances.
+    */
     this.argumentByName = Object.create (null);
+
+    /*  @:Array<doczar/src/Component>
+        An array of Component instances representing return values for this Component.
+    */
     this.returns = [];
+
+    /*  @:Object<doczar/src/Component>
+        A map of named items from `returns` to their `Component` instances.
+    */
     this.returnsByName = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of ES6-symbolically named items from `returns` to their `Component` instances.
+    */
     this.returnsSymbols = Object.create (null);
+
+    /*  @:Array<doczar/src/Component>
+        An Array of Components representing situations under which this Component may throw an
+        exception.
+    */
     this.throws = [];
+
+    /*  @:Object<doczar/src/Component>
+        A map of named items from `throws`.
+    */
     this.throwsByName = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of enumerated names stored on this Component to further Components documenting each
+        name.
+    */
     this.names = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of named events which may be emitted by this Component.
+    */
     this.event = Object.create (null);
+
+    /*  @:Array<doczar/src/Component>
+        An Array of Components representing argument signatures which may be used to call this
+        Component.
+    */
     this.signature = [];
+
+    /*  @:Object<doczar/src/Component>
+        A map of named items from `signature`.
+    */
     this.signatureByName = Object.create (null);
+
+    /*  @:Object<doczar/src/Component>
+        A map of Components mounted in this Component's local scope.
+    */
     this.local = Object.create (null);
 };
 

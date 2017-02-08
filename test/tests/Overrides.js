@@ -17,8 +17,15 @@ module.exports.classy = function (able) {
         Override name from `foo` to `bar` and type from `Number` to `String`.
     */
     this.foo = 9001;
+    /*  @:Number */
+    this.baz = 'over nine thousand';
 };
 module.exports.classy (4);
+
+module.exports.classy.prototype.typeOnlyOverride = function(){
+    /*  @:Number */
+    this.bilge = 'over nine thousand';
+};
 
 /*
     Do a thing.

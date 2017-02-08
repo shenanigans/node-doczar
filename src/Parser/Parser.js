@@ -2199,6 +2199,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 node[REFERER] = referer;
             }
 
+            pathParent = pathParent && ( pathParent[THIS] || pathParent );
+
             // any documentation?
             // leading comments?
             var foundComment = false;
