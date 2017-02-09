@@ -9,37 +9,21 @@
     @load
         ./README.md
 */
-var path              = require ('path');
-var fs                = require ('fs-extra');
-var async             = require ('async');
-var required          = require ('required');
-var resolve           = require ('resolve');
-var glob              = require ('glob');
-var bunyan            = require ('bunyan');
-var filth             = require ('filth');
-var Parser            = require ('./src/Parser');
-var ComponentCache    = require ('./src/ComponentCache');
-var Patterns          = require ('./src/Parser/Patterns');
+var path           = require ('path');
+var fs             = require ('fs-extra');
+var async          = require ('async');
+var required       = require ('required');
+var resolve        = require ('resolve');
+var glob           = require ('glob');
+var bunyan         = require ('bunyan');
+var filth          = require ('filth');
+var Parser         = require ('./src/Parser');
+var Analyzer       = require ('./src/Analyzer');
+var Generator      = require ('./src/Generator');
+var ComponentCache = require ('./src/ComponentCache');
+var Patterns       = require ('./src/Parser/Patterns');
+var langs          = require ('./src/langs');
 require ('colors');
-
-function concatPaths(){
-    var out = [];
-    for (var i=0,j=arguments.length; i<j; i++)
-        if (arguments[i])
-            out.push.apply (out, Array.prototype.filter.call (arguments[i], function (item) {
-                return Boolean (item && item.length && item[0].length);
-            }));
-    return out;
-}
-function pathStr (type) {
-    var finalStr = type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('')
-    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
-}
-function isArray (a) { return a.__proto__ === Array.prototype; }
 
 var LIB_SYNONYMS = {
     javascript:     'es5',
@@ -366,7 +350,7 @@ function includeLib (libname) {
 var currentDefaultScope = [];
 if (!argv.noImply) {
     if (argv.with) {
-        if (isArray (argv.with))
+        if (argv.with instanceof Array)
             for (var i=0, j=argv.with.length; i<j; i++)
                 includeLib (argv.with[i]);
         else
@@ -386,7 +370,7 @@ if (!argv.noImply && argv.parse) {
 }
 
 if (argv.in)
-    if (isArray (argv.in))
+    if (argv.in instanceof Array)
         for (var i=0, j=argv.in.length; i<j; i++) {
             logger.trace ({ filename:argv.in[i] }, 'checking selector');
             if (argv.in[i].match (/^".*"$/))
@@ -441,7 +425,7 @@ if (argv.parse) {
             'The --jsmod option is only compatible with the "node" parsing mode'
         );
 
-    var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
+    var modules = argv.jsmod instanceof Array ? argv.jsmod : [ argv.jsmod ];
     for (var i=0,j=modules.length; i<j; i++) {
         var mod = modules[i];
         try {
@@ -466,7 +450,7 @@ if (argv.parse) {
     return processSource (libFiles);
 }
 
-var modules = isArray (argv.jsmod) ? argv.jsmod : [ argv.jsmod ];
+var modules = argv.jsmod instanceof Array ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
     try {
@@ -515,15 +499,6 @@ async.eachSeries (modules, function (mod, callback) {
     context.latency.log ('setup');
     processSource (libFiles);
 });
-
-function pathStr (type) {
-    var finalStr = type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('')
-    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
-}
 
 function processSource (filenames) {
     var nextFiles = [];
@@ -575,12 +550,13 @@ function processSource (filenames) {
             try {
                 if (argv.parse) {
                     logger.setTask ('parsing syntax file: ' + path.relative (process.cwd(), fname));
-                    Parser.parseSyntaxFile (
+                    // Parser.parseSyntaxFile (
+                    Analyzer.processSyntaxFile (
                         context,
                         fname,
                         fileInfo.referer,
                         fileStr,
-                        PARSE_SYNONYMS[argv.parse],
+                        langs[PARSE_SYNONYMS[argv.parse]],
                         localDefaultScope,
                         addToNextFiles
                     );
@@ -636,7 +612,7 @@ function processSource (filenames) {
 
         if (argv.parse) {
             logger.setTask ('generating Components');
-            Parser.generateComponents (context, PARSE_SYNONYMS[argv.parse], defaultScope);
+            Generator.generateComponents (context, langs[PARSE_SYNONYMS[argv.parse]], defaultScope);
         }
 
         var renderOptions = {

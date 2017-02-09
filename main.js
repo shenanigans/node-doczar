@@ -45,5 +45,6 @@ module.exports = {
     Component:          require ('./src/Component'),
     Parser:             require ('./src/Parser'),
     Patterns:           require ('./src/Parser/Patterns'),
-    Templates:          require ('./src/Templates')
+    Templates:          require ('./src/Templates'),
+    languages:          require ('./src/langs')
 };

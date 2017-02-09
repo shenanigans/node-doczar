@@ -16,15 +16,7 @@ var Component       = require ('./Component');
 var Patterns        = require ('./Parser/Patterns');
 var Templates       = require ('./Templates');
 var sanitizeName    = require ('./sanitizeName');
-
-function pathStr (type) {
-    var finalStr = type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('')
-    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
-}
+var tools           = require ('tools');
 
 var ComponentCache = function (logger) {
     this.logger = logger;
@@ -37,8 +29,8 @@ var ComponentCache = function (logger) {
 };
 
 ComponentCache.prototype.logFailure = function (start, type) {
-    var startStr = pathStr (start);
-    var typeStr = pathStr (type);
+    var startStr = tools.pathStr (start);
+    var typeStr = tools.pathStr (type);
     if (!Object.hasOwnProperty.call (this.failedPaths, typeStr)) {
         this.failedPaths[typeStr] = [ startStr ];
         this.logger.warn ({ source:startStr, type:typeStr }, 'failed to resolve type');
@@ -184,7 +176,7 @@ ComponentCache.prototype.resolve = function (tpath) {
 */
 ComponentCache.prototype.getRelativeURLForType = function (start, type, chain) {
     if (!type || !type.length) {
-        this.logger.error ({ from:pathStr (start) }, 'cannot generate link to empty path');
+        this.logger.error ({ from:tools.pathStr (start) }, 'cannot generate link to empty path');
         return 'javascript:return false;';
     }
 

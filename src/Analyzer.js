@@ -1,1063 +1,13 @@
 
-/*      @module
-    Digs document comments out of source files, splits them into Declarations and Modifiers, then
-    reports everything it finds to a [ComponentCache](doczar/src/ComponentCache) instance.
+/*  @module
+
 */
 
-/*      @submodule:Array<Array> Path
-    Paths are represented as Arrays of Arrays, each child Array representing the individual portions
-    of a fragement path. That is, the delimiter, the String fragment name, and in the case that the
-    fragment is an es6 symbol a third child contains another `Path` representing the parsed form of
-    the fragment name. Examplia gratia:
-    ```javascript
-    [ [ ".", "name" ], ...]
-    ```
-    Or with a symbol:
-    ```javascript
-    [ [ ".", "Symbol.iterator", [ [ ".", "Symbol" ], [ ".", "iterator" ] ] ]
-    ```
-*/
-
-/*      @submodule:class Valtype
-    Represents a value type.
-@member:String name
-    The simple String representation of the type name.
-@member:/Path path
-    A [Path](/Path) representing the type.
-@member:Boolean isPointer
-    Whether the type was followed by an asterisk to identify it as a pointer.
-@member:Boolean isArray
-    Whether the type was followed by an empty set of square brackets to indicate that it is a bare
-    array of its own type.
-@member:Array<:Generic> generics
-    Any included generic types, e.g. `Array<String>`.
-*/
-
-/*      @submodule:class Generic
-    Represents a type slotted into a generic/template type.
-@member:String name
-    The simple String representation of the type name.
-@member:/Path path
-    A [Path](/Path) representing the type.
-*/
-
-/*      @submodule:class Modifier
-    Represents a modifier declaration.
-@member:String mod
-    The name of the modifier, without the `@`.
-@member:/Path|undefined path
-    If the modifier declaration included a path, it is provided here.
-*/
-
-/*      @submodule:class DocumentFragment
-    Represents a single block of markdown text and wraps it with its context to ensure proper
-    crosslinking.
-    The same markdown doc is often rendered twice, once in a parent context and again on the
-    Component's own page. To make generated docs compatible with local file view, either all links
-    must be local paths or the entire page must be initialized to root with a `<base>`. Because
-    `doczar` chooses to use local links, the `href` for a given path changes between rendering
-    contexts. This necessitates multiple rendering passes and therefor the link context must be
-    passed forward.
-@member:String value
-    The markdown text.
-@member:/Path context
-    The scope path which should be appended to crosslink target paths begining with a delimiter
-    character.
-*/
-
-/*      @submodule:class Submission
-    An intermediate structure for data hot off the `Parser` and ready to integrate into a
-    [Component](doczar.Component). Encapsulates information included in a single declaration or
-    inner declaration.
-@member:String ctype
-    The Component type of the declaration.
-@member:/DocumentFragment doc
-    Markdown documentation String or Array of Strings.
-@member:Array</Valtype> valtype
-    Value types loaded from the declaration.
-@member:Array</Modifier> modifiers
-    All the modifiers in the declaration.
-*/
-
-var fs                = require ('fs-extra');
-var pathLib           = require ('path');
-var filth             = require ('filth');
-var tools             = require ('tools');
-var Patterns          = require ('./Patterns');
-var langs             = require ('./langs');
-
-// handy helpers
-var concatPaths = function(){
-    var out = [];
-    for (var i=0,j=arguments.length; i<j; i++)
-        if (arguments[i])
-            out.push.apply (out, Array.prototype.filter.call (arguments[i], function (item) {
-                return Boolean (item && item.length && item[0] && item[0].length);
-            }));
-    return out;
-};
-var cloneArr = function (a) {
-    var b = [];
-    b.push.apply (b, a);
-    return b;
-}
-function pathStr (type) {
-    var finalStr = type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('')
-    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
-}
-function replaceElements (target, source) {
-    target.splice (0, target.length);
-    target.push.apply (target, source);
-}
-
-/*
-    Convert a path String to a path Array. If no path is generated, `[ [ ] ]` is returned. This is
-    because **all** paths have a length but the final element may be filled contextually rather than
-    explicitly.
-@argument:String pathstr
-    A single path String, potentially containing symbols.
-@returns:/Path
-    Returns an Array of path fragment Arrays.
-*/
-function parsePath (pathstr, fileScope) {
-    if (!pathstr)
-        return [ [ ] ];
-    var pathMatch;
-    var path = [];
-    var offset = 0;
-    while (
-        offset < pathstr.length
-     && (pathMatch = Patterns.word.exec (pathstr.slice (offset)))
-    ) {
-        if (!pathMatch[0]) {
-            if (!pathMatch.length)
-                path.push ([]);
-            break;
-        }
-        offset += pathMatch[0].length;
-
-        var fragName = pathMatch[2];
-        if (fragName[0] == '`') {
-            path.push ([
-                pathMatch[1],
-                fragName
-                 .slice (1, -1)
-                 .replace (/([^\\](?:\\\\)*)\\`/g, function (substr, group) {
-                    return group.replace ('\\\\', '\\') + '`';
-                 })
-            ]);
-            continue;
-        }
-        if (fragName[0] != '[') {
-            var delimit = pathMatch[1];
-            if (delimit == ':')
-                delimit = '/';
-            path.push ([ delimit, fragName ]);
-            continue;
-        }
-
-        // Symbol
-        path.push ((function parseSymbol (symbolName) {
-            var symbolPath = [];
-            var symbolMatch;
-            var symbolRegex = new RegExp (Patterns.word);
-            var symbolOffset = 0;
-            while (
-                symbolOffset < symbolName.length
-             && (symbolMatch = symbolRegex.exec (symbolName.slice (symbolOffset)))
-            ) {
-                if (!symbolMatch[0])
-                    break;
-                symbolOffset += symbolMatch[0].length;
-                var symbolFrag = symbolMatch[2];
-
-                if (symbolFrag[0] == '[') {
-                    // recurse!
-                    var innerLevel = parseSymbol (symbolFrag.slice (1, -1));
-                    if (innerLevel[0] === undefined)
-                        innerLevel[0] = '.';
-                    symbolPath.push (innerLevel);
-                    continue;
-                }
-                if (symbolFrag[0] == '`')
-                    symbolFrag = symbolFrag
-                     .slice (1, -1)
-                     .replace (/([^\\](?:\\\\)*)`/g, function (substr, group) {
-                        return group.replace ('\\\\', '\\') + '`';
-                     })
-                     ;
-                var delimit = symbolMatch[1];
-                if (delimit == ':')
-                    delimit = '/';
-                symbolPath.push ([ delimit, symbolFrag ]);
-            }
-
-            if (!symbolPath.length)
-                symbolPath.push ([ '.', undefined ]);
-            else if (symbolPath[0][0] === undefined)
-                symbolPath[0][0] = '.';
-            else
-                symbolPath = concatPaths (fileScope, symbolPath);
-
-            var fullPathName = symbolPath
-                .map (function (item) { return item[0] + item[1]; })
-                .join ('')
-                ;
-
-            var delimit = pathMatch[1];
-            if (delimit == ':')
-                delimit = '/';
-            return [ delimit, '['+fullPathName.slice (1)+']', symbolPath ];
-        }) (fragName.slice (1, -1)));
-    }
-    if (!path.length)
-        path.push ([]);
-    return path;
-}
-
-/*
-    Parse a standard type String. This may include any number of pipe-delimited iterations of paths
-    with optional generic types.
-@returns:Array</Valtype>
-    Each type in the pipe-delimited sequence (by default, length 1) represented as a [Valtype]
-    (/Valtype).
-*/
-function parseType (typeStr, fileScope, implied) {
-    var valType = [];
-    if (!typeStr)
-        return valType;
-    var valtypeSelectorInfo = typeStr.split(Patterns.typeSelectorWord);
-    for (var i=0,j=valtypeSelectorInfo.length-1; i<j; i+=4) {
-        var generics = !valtypeSelectorInfo[i+3] ? [] : valtypeSelectorInfo[i+3]
-            .split(',')
-            .map(function(z){
-                var genericStr = z.replace (/\s/g, '');
-                var genericTypeMatch;
-                var outPath;
-                if (genericStr == '.')
-                    outPath = fileScope && fileScope.length ? cloneArr (fileScope) : [];
-                else {
-                    var outPath = parsePath (genericStr, fileScope);
-                    if (outPath[0][0])
-                        outPath = concatPaths (fileScope, outPath);
-                }
-                var uglysigvalgenerictypepath = '';
-                for (var i in outPath)
-                    uglysigvalgenerictypepath +=
-                        (outPath[i][0] || '.')
-                      + outPath[i][1]
-                      ;
-                return { name:uglysigvalgenerictypepath.slice(1), path:outPath };
-            })
-            ;
-
-        var vtstr = valtypeSelectorInfo[i+1];
-        var valtypeMatch, valtypefrags;
-        if (vtstr == '.')
-            valtypefrags = fileScope && fileScope.length ? cloneArr (fileScope) : [];
-        else {
-            valtypefrags = parsePath (vtstr, fileScope);
-            if (valtypefrags[0][0])
-                valtypefrags = concatPaths (fileScope, valtypefrags);
-        }
-
-        uglyvaltypepath = '';
-        for (var k=0, l=valtypefrags.length; k<l; k++)
-            uglyvaltypepath +=
-                (valtypefrags[k][0] || '.')
-              + valtypefrags[k][1]
-              ;
-        valType.push ({
-            path:       valtypefrags,
-            isPointer:  Boolean (valtypeSelectorInfo[i+2]),
-            isArray:    Boolean (
-                valtypeSelectorInfo[i+3] !== undefined
-             && valtypeSelectorInfo[i+3].match (/^[ \\t]*$/)
-            ),
-            generics:   generics,
-            name:       uglyvaltypepath.slice(1),
-            explicit:   !implied
-        });
-    }
-    return valType;
-}
-
-
-/*
-    @api
-    Submit every Modifier and Declaration in a single source file to a [ComponentCache]
-    (doczar/src/ComponentCache) instance.
-@argument:String fname
-    An OS-localized absolute filename to read.
-@argument:doczar/src/ComponentCache context
-    Parsed information will be [reported](doczar/ComponentCache#submit) to this [ComponentCache]
-    (doczar/src/ComponentCache) instance.
-@argument:bunyan.Logger logger
-@callback next
-    Called any number of times to request that additional files be processed.
-    @argument:String fname
-        The OS-localized absolute filename of another file that should be processed.
-    @returns
-@callback
-    @argument:Error|undefined err
-        Any fatal filesystem Error that prevents the parser from completing.
-*/
-var loadedDocuments = {};
-var parseFile = function (fname, fstr, defaultScope, context, next) {
-    var fileScope = [];
-    var match, sigMatch;
-    var waitingMatch = Patterns.tag.exec (fstr);
-    var waitingSigMatch = Patterns.signatureTag.exec (fstr);
-    var doneAllTags, doneAllSigs;
-    function fillMatches(){
-        // get the next match, whether the next normal declaration or signature declaration
-        if (match && waitingMatch) {
-            match = undefined;
-            waitingMatch = Patterns.tag.exec (fstr);
-        }
-        if (sigMatch && waitingSigMatch) {
-            sigMatch = undefined;
-            waitingSigMatch = Patterns.signatureTag.exec (fstr);
-        }
-
-        if (waitingMatch && waitingSigMatch)
-            if (waitingMatch.index < waitingSigMatch.index)
-                match = waitingMatch;
-            else
-                sigMatch = waitingSigMatch;
-        else if (waitingMatch)
-            match = waitingMatch;
-        else if (waitingSigMatch)
-            sigMatch = waitingSigMatch;
-
-
-        if (!match && !sigMatch)
-            return false;
-        return true;
-    }
-    var lastComponent;
-    while (fillMatches()) {
-        if (sigMatch) {
-            // signature declaration!
-            // not currently implemented for outer declarations
-
-            continue;
-        }
-
-        // normal declaration
-        var ctype = match[1];
-        // valtypes
-        var valtype;
-        if (match[2])
-            valtype = parseType (match[2], fileScope.length ? fileScope : defaultScope);
-        else
-            valtype = [];
-        var pathstr = match[3];
-        var docstr = match[4] || '';
-        var pathfrags = parsePath (pathstr, fileScope.length ? fileScope : defaultScope);
-
-        if (!pathfrags[0][0])
-            if (pathfrags.length == 1)
-                pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
-            else
-                pathfrags[0][0] = '.';
-
-        parseTag (
-            context,
-            fname,
-            ctype,
-            valtype,
-            pathfrags,
-            fileScope,
-            defaultScope,
-            [ docstr ],
-            next
-        );
-    }
-    context.logger.debug ({ filename:fname }, 'finished parsing file');
-};
-
-function consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers) {
-    var modmatch;
-    while (modmatch = docstr.match (Patterns.modifier)) {
-        if (!modmatch[0].length)
-            break;
-        if (!modmatch[1]) {
-            docstr = docstr.slice (modmatch[0].length);
-            continue;
-        }
-        var modDoc = { mod:modmatch[1] };
-        var modPath = modmatch[2];
-
-        if (modmatch[1] == 'default') {
-            if (modmatch[2] && modmatch[2][0] == '`')
-                modDoc.value = modmatch[2].slice (1, -1);
-            else
-                modDoc.value = modmatch[2];
-        } else if (modPath) {
-            var pathfrags = parsePath (modPath, fileScope);
-
-            if (modDoc.mod == 'requires') {
-                var newFilename = pathfrags[0][1];
-                var localDir = pathLib.dirname (fname);
-                next (pathLib.resolve (localDir, newFilename));
-                docstr = docstr.slice (modmatch[0].length);
-                continue;
-            }
-
-            if (!pathfrags[0][0])
-                pathfrags[0][0] = '.';
-            else
-                pathfrags = concatPaths (fileScope, pathfrags);
-            modDoc.path = pathfrags;
-        }
-
-        if (modDoc.mod == 'root')
-            replaceElements (fileScope, modPath ? pathfrags : tagScope);
-        else
-            modifiers.push (modDoc);
-        docstr = docstr.slice (modmatch[0].length);
-    }
-    return docstr;
-}
-
-/*
-    Parse the contents of a documentation tag with its header already broken out.
-*/
-function parseTag (context, fname, ctype, valtype, pathfrags, fileScope, defaultScope, docstr, next) {
-    if (docstr instanceof Array) {
-        for (var i=0,j=Math.max (1, docstr.length); i<j; i++) {
-            var workingDocstr = docstr[i] || '';
-            workingDocstr = workingDocstr.match (/^[\r\n]*([^]*)[\r\n]*$/)[1];
-            parseTag (
-                context,
-                fname,
-                ctype,
-                valtype,
-                pathfrags,
-                fileScope,
-                defaultScope,
-                workingDocstr,
-                next
-            );
-        }
-        return;
-    }
-    var tagScope;
-    if (fileScope.length)
-        tagScope = concatPaths (fileScope, pathfrags);
-    else if (defaultScope.length && (ctype != 'module' || !pathfrags.length))
-        tagScope = concatPaths (defaultScope, pathfrags);
-    else
-        tagScope = concatPaths (pathfrags);
-
-    if (ctype == 'module')
-        fileScope.push.apply (fileScope, pathfrags);
-    else if (ctype == 'submodule')
-        ctype = 'module';
-    // convert @constuctor to @spare
-    else if (ctype == 'constructor') {
-        ctype = 'spare';
-        pathfrags.push ([ '~', 'constructor' ]);
-    }
-
-    // consume modifiers
-    var modifiers = [];
-    docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
-
-    // begin searching for inner tags
-    var innerMatch = docstr ? docstr.match (Patterns.innerTag) : undefined;
-    if (!innerMatch) {
-        // the entire comment is one component
-        try {
-            lastComponent = context.submit (
-                tagScope.length ? tagScope : fileScope,
-                {
-                    ctype:      ctype,
-                    valtype:    valtype,
-                    doc:        { value:docstr, context:cloneArr(fileScope) },
-                    modifiers:  modifiers
-                }
-            );
-            context.logger.trace ({
-                type:   ctype,
-                file:   fname,
-                path:   tagScope.map (function(a){ return a[0]+a[1]; }).join('')
-            }, 'read declaration');
-            return;
-        } catch (err) {
-            context.logger.error (err, 'parsing error');
-            return;
-        }
-    }
-
-    var argscope = cloneArr (tagScope);
-    var inpathstr = innerMatch[3];
-    var inpathfrags = [];
-    var insigargs;
-    var pathMatch;
-    var linkScope = cloneArr (fileScope);
-    var lastComponent;
-    do {
-        if (
-            ctype == 'callback'
-         || ctype == 'argument'
-         || ctype == 'kwarg'
-         || ctype == 'args'
-         || ctype == 'kwargs'
-         || ctype == 'returns'
-         || ctype == 'signature'
-        )
-            submissionPath = concatPaths (argscope, inpathfrags);
-        else if (ctype != 'load')
-            submissionPath = concatPaths (tagScope, inpathfrags);
-
-        // any chance this is just a @load declaration?
-        if (ctype == 'load') {
-            var lookupPath =
-                inpathfrags[0][1]
-             || docstr.slice (0, innerMatch.index).replace (/^\s*/, '').replace (/\s*$/, '')
-             ;
-            var filename = pathLib.resolve (pathLib.dirname (fname), lookupPath);
-            var loadedDoc;
-            if (Object.hasOwnProperty.call (loadedDocuments, filename))
-                loadedDoc = loadedDocuments[filename];
-            else try {
-                context.latency.log ('parsing');
-                loadedDoc = fs.readFileSync (filename).toString();
-                context.latency.log ('file system');
-            } catch (err) {
-                context.logger.warn (
-                    { filename:filename },
-                    '@load Declaration failed'
-                );
-            }
-            if (loadedDoc)
-                context.submit (
-                    submissionPath,
-                    { doc: { value:loadedDoc } }
-                );
-        } else
-            // submit the previous match
-            try {
-                var inlineDocStr = docstr.slice (0, innerMatch.index);
-                if (inlineDocStr.match (/^[\s\n]*$/))
-                    inlineDocStr = '';
-                if (
-                    ctype != 'returns'
-                 || valtype.length
-                 || inlineDocStr
-                 || modifiers.length
-                 || insigargs
-                 || submissionPath[submissionPath.length-1][1]
-                )
-                    lastComponent = context.submit (
-                        submissionPath,
-                        {
-                            ctype:      ctype,
-                            valtype:    valtype,
-                            doc:        { value:inlineDocStr, context:linkScope },
-                            modifiers:  modifiers,
-                            sigargs:    insigargs
-                        }
-                    );
-                context.logger.trace ({
-                    type:   ctype,
-                    file:   fname,
-                    path:   submissionPath.map (function(a){ return a[0]+a[1]; }).join('')
-                }, 'read declaration');
-            } catch (err) {
-                context.logger.error (err, 'parsing error');
-                return;
-            }
-
-        // prepare the next submission
-        if (ctype == 'returns') {
-            if (!inpathstr && argscope.length > tagScope.length)
-                argscope.pop();
-        } else if (ctype == 'callback')
-            argscope = concatPaths (argscope, inpathfrags);
-        else if (
-            ctype != 'argument'
-         && ctype != 'kwarg'
-         && ctype != 'args'
-         && ctype != 'kwargs'
-         && ctype != 'returns'
-         && ctype != 'signature'
-        )
-            argscope = concatPaths (cloneArr (tagScope), inpathfrags);
-
-        linkScope = cloneArr (fileScope);
-        modifiers = [];
-        ctype = innerMatch[1];
-        valtype = innerMatch[2];
-        inpathstr = innerMatch[3];
-        docstr = innerMatch[4];
-
-        if (ctype == 'signature') {
-            insigargs = [];
-            var sigargSplit = inpathstr.slice(1).slice(0, -1).split (Patterns.signatureArgument);
-            inpathstr = '';
-            for (var i=1,j=sigargSplit.length; i<j; i+=3) {
-                var sigvaltype = parseType (sigargSplit[i], fileScope.length ? fileScope : defaultScope);
-                var sigvalname = parsePath (sigargSplit[i+1], fileScope);
-                if (sigvalname && !sigvalname[0][0])
-                    sigvalname[0][0] = '(';
-                var sigargargpath = concatPaths (cloneArr (tagScope), sigvalname);
-                var sigvalnameStr;
-                if (sigvalname && sigvalname.length)
-                    sigvalnameStr = sigvalname.slice(-1)[0][1];
-                insigargs.push ({
-                    name:       sigvalnameStr,
-                    valtype:    sigvaltype,
-                    path:       sigargargpath
-                });
-            }
-            inpathfrags = [ [ ] ];
-        } else
-            inpathfrags = parsePath (inpathstr, fileScope);
-
-        if (inpathfrags[0] && !inpathfrags[0][0])
-            if (inpathfrags.length == 1)
-                inpathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
-            else
-                inpathfrags[0][0] = '.';
-
-        // direct-to-type syntax
-        if (!Patterns.innerCtypes.hasOwnProperty (ctype)) {
-            valtype = ctype;
-            ctype = Patterns.delimiters[inpathfrags[inpathfrags.length-1][0]];
-        }
-
-        // convert @constuctor to @spare
-        if (ctype == 'constructor') {
-            ctype = 'spare';
-            inpathfrags[inpathfrags.length-1][0] = '~';
-            inpathfrags[inpathfrags.length-1][1] = 'constructor';
-        }
-
-        valtype = parseType (valtype, fileScope.length ? fileScope : defaultScope);
-
-        // consume modifiers
-        docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
-
-        // some tags affect the scope
-        if (ctype == 'module') {
-            fileScope.push.apply (fileScope, inpathfrags);
-            // tagScope.push.apply (tagScope, inpathfrags);
-        }
-        if (ctype == 'submodule')
-            ctype = 'module';
-
-    } while (docstr && (innerMatch = docstr.match (Patterns.innerTag)));
-
-    // submit the final match from this tag
-    var submissionPath;
-    if (
-        ctype == 'callback'
-     || ctype == 'argument'
-     || ctype == 'kwarg'
-     || ctype == 'args'
-     || ctype == 'kwargs'
-     || ctype == 'returns'
-     || ctype == 'signature'
-    )
-        submissionPath = concatPaths (argscope, inpathfrags);
-    else if (ctype != 'load')
-        submissionPath = concatPaths (cloneArr (tagScope), inpathfrags);
-
-    // consume modifiers
-    docstr = consumeModifiers (fname, fileScope, tagScope, next, docstr, modifiers);
-
-    // any chance this is just a @load declaration?
-    if (ctype == 'load') {
-        var lookupPath =
-            inpathfrags[0][1]
-         || docstr.replace (/^\s*/, '').replace (/\s*$/, '')
-         ;
-        var filename = pathLib.resolve (pathLib.dirname (fname), lookupPath);
-        var loadedDoc;
-        if (Object.hasOwnProperty.call (loadedDocuments, filename))
-            loadedDoc = loadedDocuments[filename];
-        else try {
-                context.latency.log ('parsing');
-            loadedDoc = fs.readFileSync (filename).toString();
-                context.latency.log ('file system');
-        } catch (err) {
-            context.logger.warn (
-                { filename:filename },
-                '@load Declaration failed'
-            );
-        }
-        if (loadedDoc)
-            lastComponent = context.submit (
-                submissionPath,
-                { doc: { value:loadedDoc } }
-            );
-    } else {
-        if (
-            ctype != 'returns'
-         || valtype.length
-         || inlineDocStr
-         || modifiers.length
-         || insigargs
-         || submissionPath[submissionPath.length-1][1]
-        )
-            try {
-                lastComponent = context.submit (
-                    submissionPath,
-                    {
-                        ctype:      ctype,
-                        valtype:    valtype,
-                        doc:        { value:docstr, context:linkScope },
-                        modifiers:  modifiers,
-                        sigargs:    insigargs
-                    }
-                );
-                context.logger.trace ({
-                    type:   ctype,
-                    file:   fname,
-                    path:   submissionPath.map (function(a){ return a[0]+a[1]; }).join('')
-                }, 'read declaration');
-            } catch (err) {
-                context.logger.error (err, 'parsing error');
-                return;
-            }
-    }
-}
-
-/*
-    Parse a javadoc-format path.
-*/
-function parseJavadocFlavorPath (pathstr) {
-    var frags = pathstr.split (Patterns.jpathWord);
-    var newPath = [ ];
-    if (!frags.length)
-        return newPath;
-    for (var i=1,j=frags.length; i<j; i+=4)
-        if (frags[i+1]) {
-            // module, event or external
-            var stepType = frags[i+1];
-            if (stepType === 'module') {
-                // split slashes
-                var subfrags = frags[i+2].split ('/');
-                for (var k=0,l=subfrags.length; k<l; k++)
-                    newPath.push ([ '/', subfrags[k] ]);
-            } else
-                newPath.push ([
-                    stepType === 'event' ? '+' : '.',
-                    frags[i+2]
-                ])
-        } else
-            newPath.push ([ frags[i], frags[i+2] ]);
-    return newPath;
-}
-
-function startsWith (str, substr) {
-    return str.slice (0, substr.length) === substr;
-}
-// creates a simple flag modifier
-var JDOC_MOD_FLAG = {
-    abstract:   'abstract',
-    virtual:    'abstract'
-};
-// creates a flag modifier with a type path
-var JDOC_MOD_PATH = {
-    extends:    'super',
-    augments:   'super'
-};
-// sets mount.ctype
-var JDOC_CTYPE = {
-    constructor:    'class'
-};
-// adds the mapped string to mount.extras
-var JDOC_EXTRAS = {
-    inner:      'asLocal',
-    global:     'remountGlobal',
-    static:     'remountProperty'
-};
-// creates a flag modifier and may alter mount.type and mount.path - @tag [type] [path]
-var JDOC_MOUNT_FLAG = {
-    const:      'constant',
-    constant:   'constant'
-};
-// adds the mapped string to mount.extras and may alter mount.path - @tag [path]
-var JDOC_MOUNT_EXTRA = {
-    callback:   'callback'
-};
-var JDOC_CHILD = {
-
-};
-var JDOC_SPECIAL = {
-    access:     function (line, mount, scopeParent, rootPath, argv) {
-        // push a modifier with the correct access level
-        if (startsWith (line, 'public'))
-            mount.modifiers.push ({ mod:'public' });
-        else if (startsWith (line, 'protected'))
-            mount.modifiers.push ({ mod:'protected' });
-        else if (startsWith (line, 'private'))
-            mount.modifiers.push ({ mod:'private' });
-        else
-            throw new Error ('invalid access level');
-    },
-    borrows:    function (line, mount, scopeParent, rootPath, argv) {
-        // create a child with an @alias modifier
-    },
-    constructs: function (line, mount, scopeParent, rootPath, argv) {
-        // @constructs [name]
-        // apply documentation on this node to the class' node
-    },
-    name:       function (line, mount, scopeParent, rootPath, argv) {
-        var mountPath = parseJavadocFlavorPath (line.replace (/^\s*/, '').replace (/\s*$/, ''));
-        if (mountPath.length > 1)
-            return;
-        if (scopeParent[NAME])
-            scopeParent[NAME][1] = mountPath[0][1];
-        else
-            scopeParent[NAME] = [ mountPath[0][0] || '.', mountPath[0][1] ];
-        if (mount.path)
-            mount.path[mount.path.length-1] = scopeParent[NAME].concat();
-    },
-    memberOf:   function (line, mount, scopeParent, rootPath, argv) {
-        if (!scopeParent[NAME])
-            return;
-        var mountPath = parseJavadocFlavorPath (line.replace (/^\s*/, '').replace (/\s*$/, ''));
-        if (!mountPath[0][0])
-            mountPath[0][0] = '.';
-        mountPath.push ([ '.', scopeParent[NAME][1] ]);
-        if (argv.jTrap) {
-            var ok, clip;
-            for (var i=rootPath.length-1; i>=0; i--) {
-                clip = i;
-                if (rootPath[i][0] === mountPath[0][0] && rootPath[i][1] === mountPath[0][1]) {
-                    ok = true;
-                    for (var k=1,l=Math.min (rootPath.length - i, mountPath.length); k<l; k++)
-                        if (rootPath[i+k] !== mountPath[k]) {
-                            ok = false;
-                            break;
-                        }
-                    if (ok)
-                        break;
-                }
-                if (ok)
-                    mountPath = rootPath.slice (0, clip).concat (mountPath);
-                else
-                    mountPath = rootPath.concat (mountPath);
-            }
-        }
-        if (!mountPath.length)
-            return;
-        mount.path = mountPath;
-    }
-};
-
-/*
-    Parse a documentation tag written in javadoc-flavored syntax.
-*/
-function parseJavadocFlavorTag (docstr, scopeParent, rootPath, argv, logger) {
-    var lines = docstr.split (/\r?\n/g);
-    var mount;
-    if (scopeParent[MOUNT]) {
-        mount = scopeParent[MOUNT];
-        if (!mount.modifiers) {
-            mount.modifiers = [];
-            mount.extras = [];
-        }
-    } else {
-        mount = scopeParent[MOUNT] = Object.create (null);
-        mount.valtype = [];
-        mount.modifiers = [];
-        mount.extras = [];
-    }
-
-    var children = [];
-    var currentChild;
-    var tagname;
-    var outputDocstr = '';
-    for (var i=0,j=lines.length; i<j; i++) {
-        var cleanLine = lines[i].match (Patterns.jdocLeadSplitter)[1] || '';
-        if (cleanLine[0] !== '@') {
-            if (currentChild)
-                currentChild[DOCSTR][currentChild[DOCSTR].length-1] += cleanLine + ' \n';
-            else {
-                cleanLine = cleanLine.replace (Patterns.jLink, function (match, $1, $2) {
-                    var newPath = parseJavadocFlavorPath ($2);
-                    if (argv.jTrap) {
-                        var ok, clip;
-                        for (var i=rootPath.length-1; i>=0; i--) {
-                            clip = i;
-                            if (rootPath[i][0] === newPath[0][0] && rootPath[i][1] === newPath[0][1]) {
-                                ok = true;
-                                for (var k=1,l=Math.min (rootPath.length - i, newPath.length); k<l; k++)
-                                    if (rootPath[i+k] !== newPath[k]) {
-                                        ok = false;
-                                        break;
-                                    }
-                                if (ok)
-                                    break;
-                            }
-                            if (ok)
-                                newPath = rootPath.slice (0, clip).concat (newPath);
-                            else
-                                newPath = rootPath.concat (newPath);
-                        }
-                    }
-                    return (
-                        $1
-                      + '('
-                      // + (parseJavadocFlavorPath ($2).map (function(a){return a.join('');}).join(''))
-                      + pathStr (newPath)
-                      + ')'
-                    );
-                });
-                outputDocstr += cleanLine + ' \n';
-            }
-            continue;
-        }
-
-        // starting a new tag
-        // wrap up the previous one
-        if (currentChild) {
-            if (tagname === 'example')
-                outputDocstr += currentChild[DOCSTR][currentChild[DOCSTR].length-1] + '```\n\n';
-
-            delete tagname;
-            delete currentChild;
-        }
-        // consume the tag
-        var match = cleanLine.match (/@([a-zA-Z]+)(?:[ \t]+(.*))?/);
-        tagname = match[1];
-        cleanLine = match[2] || '';
-
-        // work the tag
-        if (tagname === 'example') {
-            outputDocstr += '\n### Example\n```javascript\n';
-            continue;
-        }
-
-        // // use this to consume errant doc text
-        var dummy = {};
-        dummy[DOCSTR] = [ '' ];
-        currentChild = dummy;
-
-        // // simple flag modifiers
-        if (Object.hasOwnProperty.call (JDOC_MOD_FLAG, tagname)) {
-            mount.modifiers.push ({ mod:JDOC_MOD_FLAG[tagname] });
-            continue;
-        }
-
-        // // modifiers that accept a single mandatory path
-        if (Object.hasOwnProperty.call (JDOC_MOD_PATH, tagname)) {
-            // consume a path
-            var pathMatch = cleanLine.match (Patterns.jpathConsumer);
-            if (!pathMatch || !pathMatch[1] || !pathMatch[1].length) {
-                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
-                continue;
-            }
-            var path = parseJavadocFlavorPath (pathMatch[1]);
-            mount.modifiers.push ({ mod:JDOC_MOD_PATH[tagname], path:path });
-            continue;
-        }
-
-        // modify the target's ctype
-        if (Object.hasOwnProperty.call (JDOC_CTYPE, tagname)) {
-            mount.ctype = JDOC_CTYPE[tagname];
-            continue;
-        }
-
-        // add hacky flag properties to the target's EXTRAS property
-        if (Object.hasOwnProperty.call (JDOC_EXTRAS, tagname)) {
-            if (!mount.extras)
-                mount.extras = [ JDOC_EXTRAS[targetNode] ];
-            else if (mount.extras.indexOf(JDOC_EXTRAS[tagname]) < 0)
-                mount.extras.push (JDOC_EXTRAS[tagname]);
-            continue;
-        }
-
-        // creates a flag and optionally alters the target's mount.type and mount.path
-        if (Object.hasOwnProperty.call (JDOC_MOUNT_FLAG, tagname)) {
-            // try to consume either a path or type(s) and a path
-            var match = cleanLine.match (Patterns.jtagPaths);
-            if (!match) {
-                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
-                continue;
-            }
-            mount.modifiers.push ({ mod:JDOC_MOUNT_FLAG[tagname] });
-            var types = match[1];
-            if (types)
-                mount.valtype.push.apply (
-                    mount.valtype,
-                    types.split ('|').map (function (typeStr) {
-                        return { path:parseJavadocFlavorPath (typeStr) };
-                    })
-                );
-            var mountPath = match[2];
-            if (mountPath) {
-                var renamePath = parseJavadocFlavorPath (mountPath);
-                if (renamePath.length === 1)
-                    if (scopeParent[NAME])
-                        scopeParent[NAME][1] = renamePath[0][1];
-                    else
-                        scopeParent[NAME] = [ '.', renamePath[0][1] ];
-            }
-            continue;
-        }
-
-        // creates a hacky flag property in the target's EXTRAS property
-        // and optionally alters the target's mount.type and mount.path
-        if (Object.hasOwnProperty.call (JDOC_MOUNT_EXTRA, tagname)) {
-            // try to consume either a path or type(s) and a path
-            var match = cleanLine.match (Patterns.jtagPaths);
-            if (!match) {
-                logger.trace ({ tag:tagname, raw:lines[i] }, 'invalid javadoc tag');
-                continue;
-            }
-            if (mount.extras.indexOf (JDOC_MOUNT_EXTRA[tagname]) < 0)
-                mount.extras.push (JDOC_MOUNT_EXTRA[tagname]);
-            var types = match[1];
-            if (types)
-                mount.valtype.push.apply (
-                    mount.valtype,
-                    types.split ('|').map (function (typeStr) {
-                        return { path:parseJavadocFlavorPath (typeStr) };
-                    })
-                );
-            var mountPath = match[2];
-            if (mountPath)
-                mount.path = parseJavadocFlavorPath (mountPath);
-            continue;
-        }
-
-        // opens a new child tag and begins consuming documentation
-        if (Object.hasOwnProperty.call (JDOC_CHILD, tagname)) {
-
-        }
-
-        // special tags
-        if (Object.hasOwnProperty.call (JDOC_SPECIAL, tagname)) {
-            JDOC_SPECIAL[tagname] (cleanLine, mount, scopeParent, rootPath, argv);
-            continue;
-        }
-
-        logger.trace (
-            { tag:tagname, line:cleanLine, raw:lines[i] },
-            'unrecognized javadoc-flavor tag'
-        );
-    }
-
-    // wrap up the last subtag
-    if (tagname === 'example')
-        outputDocstr += currentChild[DOCSTR][currentChild[DOCSTR].length-1] + '```\n\n';
-
-    if (mount.docstr)
-        mount.docstr.push (outputDocstr);
-    else
-        mount.docstr = [ outputDocstr ];
-}
+var pathLib  = require ('path');
+var filth    = require ('filth');
+var tools    = require ('tools');
+var Parser   = require ('./Parser');
+var Patterns = require ('./Parser/Patterns');
 
 /*
     A filter function for ignoring the BODY and THIS symbols.
@@ -1081,12 +31,7 @@ var CORE_MODS = [
     Parse an entire document of mixed code and documentation tags.
 */
 // var SIGNATURE_COOLDOWN = 4;
-function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, next) {
-    if (!Object.hasOwnProperty.call (langs, mode)) {
-        context.logger.fatal ({ parse:mode }, 'unknown parse mode');
-        return process.exit (1);
-    }
-    var langPack = langs[mode];
+function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScope, next) {
     var baseNode = langPack.getRoot (context, fname, defaultScope, defaultScope);
     defaultScope = baseNode[ROOT];
     if (!baseNode[MODULE])
@@ -1217,7 +162,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 return newNode();
 
             var sourceRoot;
-            if (context.argv.noDeps && !pathsEqual (pathInfo.root, baseNode[MODULE])) {
+            if (context.argv.noDeps && !tools.pathsEqual (pathInfo.root, baseNode[MODULE])) {
                 var dummy = newNode();
                 dummy[SILENT] = true;
                 dummy[ROOT] = pathInfo.path;
@@ -2227,7 +1172,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // valtypes
                     var valtype;
                     if (match[2])
-                        valtype = parseType (match[2], fileScope);
+                        valtype = Parser.parseType (match[2], fileScope);
                     else
                         valtype = [];
                     var pathstr = match[3];
@@ -2236,7 +1181,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     if (!pathstr)
                         pathfrags = baseNode[ROOT].concat();
                     else {
-                        pathfrags = parsePath (pathstr, fileScope);
+                        pathfrags = Parser.parsePath (pathstr, fileScope);
                         if (!pathfrags[0][0])
                             if (pathfrags.length === 1)
                                 pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
@@ -2245,11 +1190,11 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     }
 
                     if (ctype === 'module') {
-                        replaceElements (fileScope, pathfrags);
+                        tools.replaceElements (fileScope, pathfrags);
                         pathfrags = [];
                     }
 
-                    parseTag (
+                    Parser.parseTag (
                         context,
                         fname,
                         ctype,
@@ -2274,7 +1219,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                     // javadoc comment?
                     if (comment.value.match (/^\*[^*]/)) {
                         if (node)
-                            parseJavadocFlavorTag (
+                            Parser.parseJavadocFlavorTag (
                                 comment.value,
                                 node,
                                 baseNode[MODULE],
@@ -2288,7 +1233,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 var modPortionMatch = comment.value.match (/^[ \t]*(@[^]*)/m);
                                 if (modPortionMatch && modPortionMatch[1]) {
                                     var mods = [];
-                                    consumeModifiers (
+                                    Parser.consumeModifiers (
                                         fname,
                                         fileScope,
                                         [],
@@ -2314,7 +1259,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             // valtypes
                             var valtype;
                             if (match[2])
-                                valtype = parseType (match[2], fileScope);
+                                valtype = Parser.parseType (match[2], fileScope);
                             else
                                 valtype = [];
                             var pathstr = match[3];
@@ -2334,7 +1279,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 } else
                                     pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
                             } else {
-                                pathfrags = parsePath (pathstr, []);
+                                pathfrags = Parser.parsePath (pathstr, []);
                                 if (pathfrags[0][0])
                                     workingParent = pathParent;
                                 else {
@@ -2353,7 +1298,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                 ctype = Patterns.delimiters[pathfrags[0][0]];
 
                             if (ctype === 'module') {
-                                replaceElements (fileScope, pathfrags);
+                                tools.replaceElements (fileScope, pathfrags);
                                 pathfrags = [];
                             }
 
@@ -2364,7 +1309,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                               || ctype === 'submodule'
                             ) {
                                 // no related expression
-                                parseTag (
+                                Parser.parseTag (
                                     context,
                                     fname,
                                     ctype,
@@ -2388,7 +1333,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                                     node[MOUNT].parent = workingParent;
                                 node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
                                 var mods = [];
-                                consumeModifiers (
+                                Parser.consumeModifiers (
                                     fname,
                                     fileScope,
                                     [],
@@ -2425,7 +1370,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         var modPortionMatch = trailer.value.match (/^[ \t]*(@[^]*)/m);
                         if (modPortionMatch && modPortionMatch[1]) {
                             var mods = [];
-                            consumeModifiers (
+                            Parser.consumeModifiers (
                                 fname,
                                 fileScope,
                                 [],
@@ -2452,7 +1397,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         // valtypes
                         var valtype;
                         if (match[2])
-                            valtype = parseType (match[2], fileScope);
+                            valtype = Parser.parseType (match[2], fileScope);
                         else
                             valtype = [];
                         var pathstr = match[3];
@@ -2470,7 +1415,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             } else
                                 pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
                         } else {
-                            pathfrags = parsePath (pathstr, []);
+                            pathfrags = Parser.parsePath (pathstr, []);
                             if (!pathfrags[0][0])
                                 if (pathfrags.length === 1)
                                     pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
@@ -2479,12 +1424,12 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                         }
 
                         if (ctype === 'module') {
-                            replaceElements (fileScope, pathfrags);
+                            tools.replaceElements (fileScope, pathfrags);
                             pathfrags = [];
                         }
                         if (ctype === 'spare' || ctype === 'module' || ctype === 'module') {
                             // no related expression
-                            parseTag (
+                            Parser.parseTag (
                                 context,
                                 fname,
                                 ctype,
@@ -2506,7 +1451,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                             };
                             node[OVERRIDE] = fileScope.length ?  fileScope.concat() : defaultScope.concat();
                             var mods = [];
-                            consumeModifiers (
+                            Parser.consumeModifiers (
                                 fname,
                                 fileScope,
                                 [],
@@ -3540,7 +2485,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             // valtypes
             var valtype;
             if (match[2])
-                valtype = parseType (match[2], fileScope);
+                valtype = Parser.parseType (match[2], fileScope);
             else
                 valtype = [];
             var pathstr = match[3];
@@ -3549,7 +2494,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             if (!pathstr)
                 pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
             else {
-                pathfrags = parsePath (pathstr, []);
+                pathfrags = Parser.parsePath (pathstr, []);
                 if (!pathfrags[0][0])
                     if (pathfrags.length === 1)
                         pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
@@ -3562,7 +2507,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
                 pathfrags = [];
             }
 
-            parseTag (
+            Parser.parseTag (
                 context,
                 fname,
                 ctype,
@@ -3594,7 +2539,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         // valtypes
         var valtype;
         if (match[2])
-            valtype = parseType (match[2], fileScope);
+            valtype = Parser.parseType (match[2], fileScope);
         else
             valtype = [];
         var pathstr = match[3];
@@ -3603,7 +2548,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
         if (!pathstr)
             pathfrags = fileScope.length ? [] : baseNode[ROOT].concat();
         else {
-            pathfrags = parsePath (pathstr, []);
+            pathfrags = Parser.parsePath (pathstr, []);
             if (!pathfrags[0][0])
                 if (pathfrags.length === 1)
                     pathfrags[0][0] = Patterns.delimitersInverse[ctype] || '.';
@@ -3616,7 +2561,7 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
             pathfrags = [];
         }
 
-        parseTag (
+        Parser.parseTag (
             context,
             fname,
             ctype,
@@ -3630,698 +2575,8 @@ function parseSyntaxFile (context, fname, referer, fstr, mode, defaultScope, nex
     }
 }
 
-/*
-    Determine whether two paths are identical.
-*/
-function pathsEqual (able, baker) {
-    if (able.length !== baker.length)
-        return false;
-    for (var i=0,j=able.length; i<j; i++) {
-        var aStep = able[i];
-        var bStep = baker[i];
-        if (aStep.length !== bStep.length)
-            return false;
-        for (var k=0,l=aStep.length; k<l; k++)
-            if (aStep[k] !== bStep[k])
-                return false;
-    }
-    return true;
-}
 
-function mapOf (arr) {
-    var map = Object.create (null);
-    for (var i=0,j=arr.length; i<j; i++)
-        map[arr[i]] = true;
-    return map;
-}
-var PREPROCESS_MAP_KEYS = mapOf ([ MEMBERS, PROPS ]);
-var PREPROCESS_ARR_KEYS = mapOf ([ ARGUMENTS, SUPER ]);
-var PREPROCESS_OBJ_KEYS = mapOf ([ RETURNS, THROWS ]);
-var PREPROCESS_MAX_DEPTH = 8;
-/*
-    Use the compiled information from syntax parsing to add Component definitions to a
-    [ComponentCache](doczar.ComponentCache).
-*/
-function generateComponents (context, mode, defaultScope) {
-    context.latency.log();
-
-    // tools for syntax parsing
-    function preprocessDerefs (level, target, chain, isTransient) {
-        var didFinishDeref = false;
-        if (!target)
-            target = level;
-        if (!chain)
-            chain = [ target ];
-        if (target[TRANSIENT])
-            isTransient = true;
-
-        function recurse (level, target) {
-            if (chain.length >= context.argv.maxRefDepth)
-                return false;
-            if (IS_COL in level)
-                return false;
-            if (chain.indexOf (level) >= 0)
-                return false;
-            var newChain = chain.concat();
-            newChain.push (level);
-            return preprocessDerefs (level, target || level, newChain, isTransient);
-        }
-
-        if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
-            target[NAME] = level[NAME];
-        else if (level[MOUNT] && level[MOUNT].path && level[MOUNT].path.length)
-            target[NAME] = level[MOUNT].path[level[MOUNT].path.length-1].concat();
-
-        if (level[BLIND])
-            target[BLIND] = true;
-
-        if (!level[DEREF])
-            return false;
-
-        // dive for LINE definitions
-        if (target === level && !target[LINE] && !isTransient) {
-            var pointer = level;
-            var lineChain = [ level ];
-            while (
-                !pointer[LINE]
-             && pointer[DEREF]
-             && pointer[DEREF].length === 1
-             && !pointer[DEREF][0][TRANSIENT]
-            ) {
-                pointer = pointer[DEREF][0];
-                if (pointer[LINE])
-                    break;
-                if (lineChain.indexOf (pointer) >= 0)
-                    break;
-                lineChain.push (pointer);
-            }
-            if (pointer[LINE])
-                target[LINE] = pointer[LINE];
-        }
-
-        for (var i=0,j=level[DEREF].length; i<j; i++) {
-            var ref = level[DEREF][i];
-            if (chain.indexOf (ref) >= 0)
-                continue;
-            if (IS_COL in ref)
-                continue;
-            recurse (ref, target);
-
-            // alias to mount
-            if (ref[MOUNT] && !isTransient && ref[MOUNT].path) {
-                target[ALIAS] = ref;
-                recurse (ref);
-            }
-
-            // basic types
-            var baseTypes = ref[TYPES];
-            for (var k=0,l=baseTypes.length; k<l; k++)
-                if (target[TYPES].indexOf (baseTypes[k]) < 0) {
-                    target[TYPES].push (baseTypes[k]);
-                    didFinishDeref = true;
-                }
-            if (ref[INSTANCE]) {
-                var classes = ref[INSTANCE];
-                if (!target[INSTANCE]) {
-                    target[INSTANCE] = classes.concat();
-                    didFinishDeref = true;
-                } else for (var k=0,l=classes.length; k<l; k++)
-                    if (target[INSTANCE].indexOf (classes[k]) < 0) {
-                        target[INSTANCE].push (classes[k]);
-                        didFinishDeref = true;
-                    }
-            }
-            // promote documentation
-            if (ref[DOCSTR]) {
-                if (!target[DOCSTR]) {
-                    target[DOCSTR] = ref[DOCSTR].concat();
-                    didFinishDeref = true;
-                } else for (var i=0,j=ref[DOCSTR].length; i<j; i++)
-                    if (target[DOCSTR].indexOf (ref[DOCSTR][i]) < 0) {
-                        target[DOCSTR].push (ref[DOCSTR][i]);
-                        didFinishDeref = true;
-                    }
-            }
-            // promote children
-            if (ref[PROPS]) {
-                if (!target[PROPS]) {
-                    target[PROPS] = tools.newCollection (target[PROPS]);
-                    target[PROPS][PARENT] = target;
-                } else for (var name in ref[PROPS])
-                    if (!Object.hasOwnProperty.call (target[PROPS], NAME))
-                        target[PROPS][name] = ref[PROPS][name];
-            }
-            if (ref[MEMBERS]) {
-                if (!target[MEMBERS]) {
-                    target[MEMBERS] = tools.newCollection (target[MEMBERS]);
-                    target[MEMBERS][PARENT] = target;
-                } else for (var name in ref[MEMBERS])
-                    if (!Object.hasOwnProperty.call (target[MEMBERS], NAME))
-                        target[MEMBERS][name] = ref[MEMBERS][name];
-            }
-            if (ref[ARGUMENTS]) {
-                if (!target[ARGUMENTS])
-                    target[ARGUMENTS] = ref[ARGUMENTS].concat();
-                else for (var i=0,j=ref[ARGUMENTS].length; i<j; i++) {
-                    var refArg = ref[ARGUMENTS][i];
-                    if (target[ARGUMENTS].indexOf (refArg) >= 0)
-                        continue;
-                    var found = false;
-                    if (!refArg[NAME] || !refArg[NAME][1]) {
-                        // merge argument information by index, if possible
-                        if (i < target[ARGUMENTS].length) {
-                            found = true;
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i])
-                        }
-                    } else for (var k=0,l=target[ARGUMENTS].length; k<l; k++)
-                        // look for an argument of the same name
-                        if (
-                            target[ARGUMENTS][k][NAME]
-                         && target[ARGUMENTS][k][NAME][1]
-                         && target[ARGUMENTS][k][NAME][1] === refArg[NAME][1]
-                        ) {
-                            // merge in place
-                            found = true;
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][k]);
-                            break;
-                        }
-
-                    if (!found) {
-                        // add to arguments
-                        if (i < target[ARGUMENTS].length)
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i]);
-                        else {
-                            target[ARGUMENTS].push (refArg);
-                            didFinishDeref = true;
-                        }
-                    }
-                }
-            }
-            if (ref[RETURNS]) {
-                if (!target[RETURNS])
-                    target[RETURNS] = ref[RETURNS];
-            }
-            if (ref[THROWS]) {
-                if (!target[THROWS]) {
-                    target[THROWS] = tools.newCollection (target[THROWS]);
-                    target[THROWS][PARENT] = target;
-                } else for (var name in ref[THROWS])
-                    if (!Object.hasOwnProperty.call (target[THROWS], NAME))
-                        target[THROWS][name] = ref[THROWS][name];
-            }
-        }
-
-        // process arguments and returns
-        if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
-            didFinishDeref += recurse (level[ARGUMENTS][i]);
-        if (level[RETURNS])
-            didFinishDeref += recurse (level[RETURNS]);
-
-        // recurse
-        if (typeof level !== 'object')
-            throw new Error ('unexpected error');
-
-        for (var key in level)
-            didFinishDeref += recurse (level[key], undefined);
-
-        if (target[NO_SET])
-            return didFinishDeref;
-
-        if (level[MEMBERS]) for (var key in level[MEMBERS]) {
-            var nextTarget = level[MEMBERS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-        if (level[PROPS]) for (var key in level[PROPS]) {
-            var nextTarget = level[PROPS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-        return didFinishDeref;
-    }
-
-    // recursively submit all the information built into the namespace
-    function submitSourceLevel (level, scope, localDefault, chain, force) {
-        if (!chain)
-            chain = [ level ];
-        else if (chain.indexOf (level) >= 0)
-            return false;
-        else {
-            chain = chain.concat();
-            chain.push (level);
-        }
-
-        function isLocalPath (path) {
-            for (var i=0,j=path.length; i<j; i++)
-                if (path[i][0] == '%')
-                    return true;
-            return false;
-        }
-
-        function hasComments (level, chain) {
-            if (!chain)
-                chain = [ level ];
-            else {
-                if (chain.indexOf (level) >= 0)
-                    return false;
-                chain.push (level);
-            }
-            if (level[DOCSTR])
-                return true;
-            for (var key in level)
-                if (hasComments (level[key], chain.concat()))
-                    return true;
-            if (level[MEMBERS]) for (var key in level[MEMBERS])
-                if (hasComments (level[MEMBERS][key], chain.concat()))
-                    return true;
-            if (level[PROPS]) for (var key in level[PROPS])
-                if (hasComments (level[PROPS][key], chain.concat()))
-                    return true;
-            if (level[ARGUMENTS]) for (var key in level[ARGUMENTS])
-                if (hasComments (level[ARGUMENTS][key], chain.concat()))
-                    return true;
-            if (level[THROWS]) for (var key in level[THROWS])
-                if (hasComments (level[THROWS][key], chain.concat()))
-                    return true;
-            if (level[RETURNS] && hasComments (level[RETURNS], chain.concat()))
-                return true;
-            if (level[DEREF]) for (var i=0,j=level[DEREF].length; i<j; i++)
-                if (hasComments (level[DEREF], chain.concat()))
-                    return true;
-            return false;
-        }
-
-        if (!localDefault)
-            localDefault = defaultScope;
-        if (level[OVERRIDE] && level[OVERRIDE].length)
-            localDefault = level[OVERRIDE];
-        var didSubmit = false;
-
-        if (!level[PATH]) {
-            didSubmit = true;
-            var path, ctype, docstr, fileScope;
-            var types = level[TYPES] ?
-                parseType (level[TYPES].concat().join ('|'), localDefault, true)
-              : []
-              ;
-            if (level[MOUNT]) {
-                path = level[MOUNT].path || scope;
-                ctype = level[MOUNT].ctype || (
-                    path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property'
-                );
-                if (level[MOUNT].parent) {
-                    if (!level[MOUNT].parent[LOCALPATH])
-                        return false;
-                    path = level[MOUNT].parent[LOCALPATH].concat (level[MOUNT].path);
-                }
-                scope = path;
-                types.push.apply (types, level[MOUNT].valtype);
-                docstr = level[MOUNT].docstr || [ '' ];
-                fileScope = level[MOUNT].docContext || [];
-                if (!level[OVERRIDE] && level[MOUNT].path)
-                    localDefault = [];
-            } else {
-                path = scope;
-                if (level[MEMBERS])
-                    ctype = 'class';
-                else
-                    ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
-                docstr = level[DOCSTR] || [ '' ];
-                fileScope = [];
-            }
-            level[LOCALPATH] = path;
-            var fullpath = level[PATH] = concatPaths (localDefault, path);
-            if (ctype === 'class') for (var i=types.length-1; i>=0; i--) {
-                var type = types[i];
-                if (type.name === 'function' || type.name === 'Function')
-                    types.splice (i, 1);
-            }
-            if (fullpath.length && (
-                fullpath[fullpath.length-1][0] === '/' || fullpath[fullpath.length-1][0] === ':'
-            )) {
-                if (ctype === 'class') {
-                    var foundClass = false;
-                    for (var i=types.length-1; i>=0; i--) {
-                        if (types[i].name === 'class') {
-                            foundClass = true;
-                            break;
-                        }
-                    }
-                    if (!foundClass)
-                        types.push (parseType ('class')[0]);
-                }
-                ctype = 'module';
-                var i = level[TYPES].indexOf ('Object');
-                if (i >= 0)
-                    types.splice (i, 1);
-                i = level[TYPES].indexOf ('json');
-                if (i >= 0)
-                    types.splice (i, 1);
-            }
-
-            level[CTYPE] = ctype;
-            level[FINALTYPES] = types;
-
-            // submit, if we should
-            if (
-                fullpath.length
-             && fullpath[0][1]
-             && typeof fullpath[0][1] === 'string'
-             && !level[SILENT]
-             && ( force || path.length || localDefault.length )
-             && (
-                    level[MOUNT]
-                 || !isLocalPath (path)
-                 || context.argv.locals === 'all'
-                 || ( context.argv.locals === 'comments' && hasComments (level) )
-             )
-            ) {
-                level[FORCE] = -1; // marks already written
-                force = true;
-                parseTag (
-                    context,
-                    level[DOC],
-                    ctype,
-                    types,
-                    path.length ? path : localDefault,
-                    path.length ? localDefault : [],
-                    [],
-                    docstr,
-                    function (fname) { nextFiles.push (fname); }
-                );
-                if (level[LINE]) {
-                    var lineDoc = {
-                        sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                        sourceLine: level[LINE]
-                    };
-                    if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
-                        lineDoc.sourceModule = level[MODULE];
-                    context.submit (fullpath, lineDoc);
-                }
-                if (level[NAME] !== undefined && level[NAME][1])
-                    context.submit (
-                        fullpath,
-                        { name:level[NAME][1] }
-                    );
-            }
-        } else if (
-            level[PATH].length
-         && level[PATH][0][1]
-         && typeof level[PATH][0][1] === 'string'
-         && !level[SILENT]
-         && (
-                ( level[FORCE] && level[FORCE] > 0 )
-             || ( force && ( !level[FORCE] || level[FORCE] > 0 ) )
-            )
-        ) {
-            // submit due to the FORCE mechanism
-            level[FORCE] = -1;
-            force = true;
-            parseTag (
-                context,
-                level[DOC],
-                level[CTYPE],
-                level[FINALTYPES],
-                level[LOCALPATH].length ? level[LOCALPATH] : localDefault,
-                level[LOCALPATH].length ? localDefault : [],
-                [],
-                ( level[MOUNT] ? level[MOUNT].docstr : level[DOCSTR] ) || [],
-                function (fname) { nextFiles.push (fname); }
-            );
-            var fullpath = concatPaths (localDefault, level[LOCALPATH]);
-            if (level[LINE]) {
-                var lineDoc = {
-                    sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                    sourceLine: level[LINE]
-                };
-                if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
-                    lineDoc.sourceModule = level[MODULE];
-                context.submit (
-                    concatPaths (localDefault, level[LOCALPATH]),
-                    lineDoc
-                );
-            }
-        } else {
-            // alias?
-            if (force && !pathsEqual (scope, level[LOCALPATH])) {
-                context.submit (concatPaths (localDefault, scope), {
-                    modifiers:[ { mod:'alias', path:level[PATH] } ]
-                });
-                return true;
-            }
-            scope = level[PATH];
-            localDefault = [];
-        }
-
-        // are we waiting to add complex paths to the types list?
-        if (level[INSTANCE]) {
-            var writeAndForce = Boolean (
-                !isLocalPath (level[PATH])
-             || context.argv.locals === 'all'
-             || ( context.argv.locals === 'comments' && hasComments (level))
-            );
-            for (var i=level[INSTANCE].length-1; i>=0; i--) {
-                var constructor = level[INSTANCE][i];
-                if (!constructor[PATH])
-                    continue;
-                didSubmit = true;
-                function isRelevantPath (path) {
-                    for (var i=0,j=path.length; i<j; i++) {
-                        var pathChar = path[i][0];
-                        if (pathChar === '(')
-                            return false;
-                    }
-                    return true;
-                }
-                if (!constructor[FORCE] && isRelevantPath (level[PATH]) && (
-                    level[FORCE]
-                 || !isLocalPath (level[PATH])
-                 || context.argv.locals === 'all'
-                 || ( context.argv.locals === 'comments' && hasComments (level))
-                 ))
-                    constructor[FORCE] = 1;
-                level[INSTANCE].splice (i, 1);
-                var typePath = constructor[PATH].map (function (frag) {
-                    return frag[0] + frag[1];
-                }).join ('');
-                if (writeAndForce && level[TYPES].indexOf (typePath) < 0 && !level[SILENT]) {
-                    level[TYPES].push (typePath);
-                    parseTag (
-                        context,
-                        level[DOC],
-                        level[CTYPE],
-                        parseType (typePath, [], true),
-                        scope,
-                        localDefault,
-                        [],
-                        [],
-                        function (fname) { nextFiles.push (fname); }
-                    );
-                    var fullpath = concatPaths (localDefault, scope);
-                    if (level[LINE]) {
-                        var lineDoc = {
-                            sourceFile: pathLib.relative (level[REFERER], level[DOC]),
-                            sourceLine: level[LINE]
-                        };
-                        if (level[MODULE] && !pathsEqual (level[MODULE], context.argv.root))
-                            lineDoc.sourceModule = level[MODULE];
-                        context.submit (concatPaths (localDefault, scope), lineDoc);
-                    }
-                }
-            }
-        }
-
-        if (level[SUPER]) for (var i=level[SUPER].length-1; i>=0; i--) {
-            var pointer = level[SUPER][i];
-            var superChain = [];
-            while (
-                pointer[DEREF]
-             && pointer[DEREF].length == 1
-             && superChain.indexOf (pointer[DEREF][0]) < 0
-            )
-                superChain.push (pointer = pointer[DEREF][0]);
-            if (!pointer[PATH])
-                continue;
-
-            context.submit (level[PATH], { modifiers:[ { mod:'super', path:pointer[PATH] } ] });
-            didSubmit = true;
-            level[SUPER].splice (i, 1);
-        }
-
-        if (level[ALIAS]) {
-            if (level[PATH] && (
-                    level[MOUNT]
-                 || !isLocalPath (level[PATH])
-                 || context.argv.locals === 'all'
-                 || ( context.argv.locals === 'comments' && hasComments (level) )
-             )) {
-                if (!level[ALIAS][PATH] && level[ALIAS][MOUNT] && level[ALIAS][MOUNT].path) {
-                    didSubmit += submitSourceLevel (
-                        level[ALIAS],
-                        [],
-                        localDefault,
-                        chain,
-                        force
-                    );
-                }
-                if (level[ALIAS][PATH]) {
-                    didSubmit = true;
-                    context.submit (level[PATH], { modifiers:[ {
-                        mod:    'alias',
-                        path:   level[ALIAS][PATH]
-                    } ] });
-                    delete level[ALIAS];
-                }
-            }
-            return didSubmit;
-        }
-
-        if (level[SILENT] || level[NO_SET])
-            return didSubmit;
-
-        // recurse to various children
-        if (level[MEMBERS] && !level[BLIND]) {
-            delete level[MEMBERS][IS_COL];
-            delete level[MEMBERS][PARENT];
-            for (var key in level[MEMBERS]) {
-                var pointer = level[MEMBERS][key];
-                didSubmit += submitSourceLevel (
-                    level[MEMBERS][key],
-                    concatPaths (scope, [ [ '#', key ] ]),
-                    localDefault,
-                    chain,
-                    force
-                );
-            }
-        }
-
-        if (level[PROPS]) {
-            delete level[PROPS][IS_COL];
-            for (var key in level[PROPS]) {
-                var pointer = level[PROPS][key];
-                didSubmit += submitSourceLevel (
-                    pointer,
-                    concatPaths (scope, [ [ '.', key ] ]),
-                    localDefault,
-                    chain,
-                    force
-                );
-            }
-        }
-
-        if (level[ARGUMENTS])
-            for (var i=0,j=level[ARGUMENTS].length; i<j; i++) {
-                var arg = level[ARGUMENTS][i];
-                didSubmit += submitSourceLevel (
-                    arg,
-                    concatPaths (scope, [ [ '(', i ] ]),
-                    localDefault,
-                    chain,
-                    force
-                );
-            }
-
-        if (level[RETURNS] && level[RETURNS][TYPES].length)
-            didSubmit += submitSourceLevel (
-                level[RETURNS],
-                concatPaths (scope, [ [ ')', 0 ] ]),
-                localDefault,
-                chain,
-                force
-            );
-
-        if (level[THROWS])
-            didSubmit += submitSourceLevel (
-                level[THROWS],
-                concatPaths (scope, [ [ '!', undefined ] ]),
-                localDefault,
-                chain,
-                force
-            );
-
-        for (var key in level)
-            didSubmit += submitSourceLevel (
-                level[key],
-                concatPaths (scope, [ [ '.', key ] ]),
-                localDefault,
-                chain
-            );
-
-        if (level[SCOPE])
-            for (var key in level[SCOPE])
-                didSubmit += submitSourceLevel (
-                    level[SCOPE][key],
-                    concatPaths (scope, [ [ '%', key ] ]),
-                    localDefault,
-                    chain
-                );
-
-        delete level[SCOPE];
-        return didSubmit;
-    }
-
-    // fish up the appropriate language pack
-    var langPack = langs[mode];
-
-    // clean up roots
-    var globalNode = langPack.cleanupGlobal (context);
-    for (var rootPath in context.sources) {
-        var sourceRoot = context.sources[rootPath];
-        for (var key in globalNode)
-            if (sourceRoot[key] === globalNode[key])
-                delete sourceRoot[key];
-    }
-    langPack.cleanupRoot (context.sources);
-
-    // preprocess primitive types
-    var finishedADeref;
-    var round = 1;
-    do {
-        finishedADeref = false;
-        for (var rootPath in context.sources) {
-            context.logger.setTask (
-                'preprocessing (round '
-              + round
-              + ') '
-              + pathLib.relative (process.cwd(), rootPath)
-            );
-            var sourceRoot = context.sources[rootPath];
-            delete sourceRoot.globals;
-            for (var key in sourceRoot) try {
-                var target = sourceRoot[key];
-                finishedADeref += preprocessDerefs (target, target, [ target ]);
-            } catch (err) {
-                context.logger.error (
-                    { err:err, path:rootPath, parse:context.argv.parse },
-                    'failed to preprocess primitive types'
-                );
-            }
-        }
-        for (var key in globalNode) try {
-            var target = globalNode[key];
-            finishedADeref += preprocessDerefs (target, target, [ target ]);
-        } catch (err) {
-            context.logger.error (
-                { err:err, path:rootPath, parse:context.argv.parse },
-                'failed to process deferred types'
-            );
-        }
-        round++;
-    } while (finishedADeref);
-    context.logger.info ({ parse:context.argv.parse }, 'finished preprocessing primitive types');
-
-    // generate Components for items defined in each source file
-    langPack.generateComponents (context, submitSourceLevel);
-    context.latency.log ('generation');
-    context.logger.info ({ parse:context.argv.parse }, 'finished generating Components');
-}
 
 module.exports = {
-    parseFile:              parseFile,
-    parsePath:              parsePath,
-    parseType:              parseType,
-    parseTag:               parseTag,
-    parseJavadocFlavorTag:  parseJavadocFlavorTag,
-    parseSyntaxFile:        parseSyntaxFile,
-    generateComponents:     generateComponents
+    processSyntaxFile:  processSyntaxFile
 };

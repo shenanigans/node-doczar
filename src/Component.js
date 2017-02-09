@@ -7,6 +7,7 @@ var filth        = require ('filth');
 var Patterns     = require ('./Parser/Patterns');
 var Templates    = require ('./Templates');
 var sanitizeName = require ('./sanitizeName');
+var tools        = require ('tools');
 
 var INDENT_REGEX = /^(\s*)[^\s]+/;
 var SPECIAL_SPARES = { summary:true, details:true, constructor:true };
@@ -30,15 +31,6 @@ var HIDDEN_CTYPES = {
     returns:    true
 };
 
-function matchPaths (able, baker) {
-    if (!able || !baker) return false;
-    if (able.length != baker.length) return false;
-    for (var i=0, j=able.length; i<j; i++)
-        if (able[i][0] != baker[i][0] || able[i][1] != baker[i][1])
-            return false;
-    return true;
-}
-
 function componentSorter (able, baker) {
     if (!able.name || !baker.name)
         return 0;
@@ -49,14 +41,6 @@ function componentSorter (able, baker) {
     if (an < bn)
         return -1;
     return 0;
-}
-
-function pathStr (type) {
-    return type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('').slice (1);
 }
 
 
@@ -225,21 +209,6 @@ var Component = module.exports = function (context, tpath, parent, position, log
     this.local = Object.create (null);
 };
 
-function pathsEqual (able, baker) {
-    if (!able || !baker || able.length !== baker.length)
-        return false;
-    for (var i=0,j=able.length; i<j; i++) {
-        var aI = able[i];
-        var bI = baker[i];
-        if (aI[0] !== bI[0] || aI[1] !== bI[1])
-            return false;
-        if (( aI[2] && !bI[2] ) || ( bI[2] && !aI[2] ))
-            return false;
-        // we can assume symbol paths are equal since their string representations are equal
-    }
-    return true;
-}
-
 /*
     Merge additional information into this Component.
 @argument:doczar/src/Parser/Submission info
@@ -310,7 +279,7 @@ Component.prototype.submit = function (info) {
             for (var i=0,j=info.valtype.length; i<j; i++) {
                 var found = false;
                 for (var k=0,l=this.valtype.length; k<l; k++)
-                    if (pathsEqual (this.valtype[k].path, info.valtype[i].path)) {
+                    if (tools.pathsEqual (this.valtype[k].path, info.valtype[i].path)) {
                         found = true;
                         break;
                     }
@@ -381,9 +350,14 @@ Component.prototype.submit = function (info) {
             continue;
         }
         if (key === 'sourceModule') {
-            if (!pathsEqual (this[key], info[key]))
+            if (!tools.pathsEqual (this[key], info[key]))
                 this.logger.error (
-                    { key:key, path:this.pathstr, from:pathStr (this[key]), to:pathStr (info[key])},
+                    {
+                        key:    key,
+                        path:   this.pathstr,
+                        from:   tools.pathStr (this[key]),
+                        to:     tools.pathStr (info[key])
+                    },
                     'illegal property redefinition'
                 );
             continue;
@@ -745,7 +719,7 @@ Component.prototype.finalize = function (options, callback) {
                     var finalChild = shallowCopy (child.final);
                     if (
                         !Object.hasOwnProperty.call (NATURALIZE_CHILDREN, propName)
-                     && !matchPaths (finalChild.source, self.path || [])
+                     && !tools.pathsEqual (finalChild.source, self.path || [])
                     ) {
                         finalChild.isInherited = child.final.isInherited = true;
                         for (var m=0,n=self.interfaces.length; m<n; m++)
@@ -1056,7 +1030,7 @@ Component.prototype.finalize = function (options, callback) {
                         {
                             modifier:   'implements',
                             type:       this.pathstr,
-                            target:     pathStr (mod.path)
+                            target:     tools.pathStr (mod.path)
                         },
                         'modifier could not resolve path'
                     );
@@ -1074,7 +1048,7 @@ Component.prototype.finalize = function (options, callback) {
                         {
                             modifier:   'alias',
                             type:       this.pathstr,
-                            target:     pathStr (mod.path)
+                            target:     tools.pathStr (mod.path)
                         },
                         'modifier could not resolve path'
                     );
@@ -1084,7 +1058,7 @@ Component.prototype.finalize = function (options, callback) {
                     {
                         modifier:   'alias',
                         type:       this.pathstr,
-                        target:     pathStr (mod.path)
+                        target:     tools.pathStr (mod.path)
                     },
                     'modifier missing path'
                 );
@@ -1101,8 +1075,8 @@ Component.prototype.finalize = function (options, callback) {
                     this.logger.warn (
                         {
                             modifier:   'patches',
-                            type:       this.pathStr,
-                            target:     pathStr (mod.path)
+                            type:       this.pathstr,
+                            target:     tools.pathStr (mod.path)
                         },
                         'modifier could not resolve path'
                     );

@@ -13,27 +13,12 @@ var Handlebars = require ('handlebars');
 var highlight  = require ('highlight.js');
 var Patterns   = require ('./Parser/Patterns');
 var Parser     = require ('./Parser');
+var tools      = require ('tools');
 
 var logger;
 var currentContext;
 var currentPath;
 var currentLinkContext;
-
-function concatArrs () {
-    var out = [];
-    for (var i in arguments)
-        if (arguments[i])
-            out.push.apply (out, arguments[i]);
-    return out;
-}
-function pathStr (type) {
-    var finalStr = type.map (function (step) {
-        if (step.length === 2)
-            return step.join ('');
-        return step[0] + '[' + step[1] + ']';
-    }).join ('')
-    return type[0] && type[0][0] ? finalStr.slice (1) : finalStr;
-}
 
 var markedRenderer = new marked.Renderer();
 var linkFailureSources = {};
@@ -46,7 +31,7 @@ markedRenderer.link = function (href, title, text) {
         return '<a href="'+href+'">' + ( text || href ) + '</a>'
 
     // typelink
-    var uglySrc = pathStr (currentPath);
+    var uglySrc = tools.pathStr (currentPath);
 
     // is this a loaded document with a local path (like .Foo)
     if (!currentLinkContext && !targetStr[0].match (Patterns.pathWord)) {
