@@ -234,7 +234,7 @@ Component.prototype.submit = function (info) {
                         }
                         continue;
                     }
-                    if (mod.mod == 'patches') {
+                    if (mod.mod === 'patches') {
                         if (mod.path) // ensure the patched component exists
                             this.context.getComponent (mod.path);
                         continue;
@@ -292,7 +292,7 @@ Component.prototype.submit = function (info) {
             this.modifiers.push.apply (this.modifiers, info.modifiers);
             for (var i=0,j=info.modifiers.length; i<j; i++) {
                 var mod = info.modifiers[i];
-                if (mod.mod == 'api') {
+                if (mod.mod === 'api') {
                     this.isApi = true;
                     var pointer = this;
                     while (pointer.parent) {
@@ -301,7 +301,7 @@ Component.prototype.submit = function (info) {
                     }
                     continue;
                 }
-                if (mod.mod == 'patches') {
+                if (mod.mod === 'patches') {
                     if (mod.path) // ensure the patched component exists
                         this.context.getComponent (mod.path);
                     continue;
@@ -649,7 +649,7 @@ Component.prototype.finalize = function (options, callback) {
                 backpath = '../../' + backpath;
             }
 
-            if (self.ctype == 'spare')
+            if (self.ctype === 'spare')
                 return callback();
 
             if (Object.hasOwnProperty.call (self.spare, 'constructor'))
@@ -940,7 +940,7 @@ Component.prototype.finalize = function (options, callback) {
     if (this.spare.details)
         this.final.details = this.spare.details.final.doc;
 
-    if (this.ctype == 'spare') { // render markdown
+    if (this.ctype === 'spare') { // render markdown
         var finalsubdocs = [];
         for (var i=0, j=this.doc.length; i<j; i++) {
             // remove leading indentation
@@ -982,7 +982,7 @@ Component.prototype.finalize = function (options, callback) {
             var finalStr = '';
             for (var k=0, l=frags.length; k<l; k++) {
                 var fragstr = frags[k] = frags[k].replace (/[\s\n\r]*$/, '');
-                if (k && fragstr[0] == '('  && frags[k-1][frags[k-1].length-1] == ']')
+                if (k && fragstr[0] === '('  && frags[k-1][frags[k-1].length-1] === ']')
                     finalStr += fragstr
                 else
                     finalStr += '\n' + fragstr;
@@ -999,7 +999,7 @@ Component.prototype.finalize = function (options, callback) {
     var flagsSet = {};
     for (var i=0,j=this.modifiers.length; i<j; i++) {
         var mod = this.modifiers[i];
-        if (mod.mod == 'default') {
+        if (mod.mod === 'default') {
             if (mod.value)
                 this.final.default = mod.value;
             continue;
@@ -1111,7 +1111,7 @@ Component.prototype.finalize = function (options, callback) {
     )
         this.final.isClasslike = true;
 
-    if (this.isJSONValtype || this.ctype == 'enum')
+    if (this.isJSONValtype || this.ctype === 'enum')
         this.final.isInline = true;
 
     // classes
@@ -1128,9 +1128,9 @@ Component.prototype.finalize = function (options, callback) {
 
         this.final.isFunction = Boolean (!this.final.hasConstructorInfo && !this.isClasslike && (
             this.final.isFunction
-         || this.ctype == 'callback'
-         || this.ctype == 'iterator'
-         || this.ctype == 'generator'
+         || this.ctype === 'callback'
+         || this.ctype === 'iterator'
+         || this.ctype === 'generator'
          || this.argument.length
          || this.returns.length
          || this.throws.length

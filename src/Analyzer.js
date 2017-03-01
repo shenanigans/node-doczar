@@ -1,6 +1,10 @@
 
 /*  @module
-
+    Converts a series of abstract syntax trees in [esprima](http://esprima.org/) format into a
+    static model of an application. Walks the syntax file line by line, simulating unique function
+    signatures and gathering all possible value types for each identifier. Creates "dereference
+    chains" when identifiers are set from other identifiers. The model is populated early and
+    completed late, eliminating all dependence on the order in which files are read.
 */
 
 var pathLib  = require ('path');
@@ -16,33 +20,40 @@ function cloneShallowFilter (key) {
     return key === BODY || key === THIS;
 }
 
-var CORE_MODS = [
-    "assert",           "buffer_ieee754",   "buffer",           "child_process",    "cluster",
-    "console",          "constants",        "crypto",           "_debugger",        "dgram",
-    "dns",              "domain",           "events",           "freelist",         "fs",
-    "http",             "https",            "_linklist",        "module",           "net",
-    "os",               "path",             "punycode",         "querystring",      "readline",
-    "repl",             "stream",           "string_decoder",   "sys",              "timers",
-    "tls",              "tty",              "url",              "util",             "vm",
-    "zlib",             "_http_server",     "process",          "v8"
-];
 
 /*
-    Parse an entire document of mixed code and documentation tags.
+    Process an entire document of mixed code and documentation tags. This initial pass produces a
+    loose structure of Nodes linked by the [DEREF]() property. Nodes are produced early and updated
+    late to permit, for example, the simulated execution of call expressions when a function's
+    body is not yet available. The result will not be suitable for [Component generation]
+    (doczar.Generator) until it has been [pre-processed](.preprocessSyntaxTree).
+@argument:doczar.ComponentCache context
+    The syntax file's model root will be stored on this context.
+@argument:String fname
+    The full path of the syntax file that produced this AST.
+@argument:String referer
+    The full path of the entry point syntax file for the current module, package, etc.
+@argument:Object tree
+    An Esprima-compatible AST for a single syntax file.
+@argument:doczar/src/langs/LangPack langPack
+    Language- or environment-specific behaviours for analyzing this individual AST. This will
+    *probably* always be required to be the same for every file in a context.
+@argument:doczar.Parser/Path defaultScope
+    The default root path of the current document, if it is not explicitly configured.
+@callback next
+    Schedule another file to be loaded.
+    @argument:String filename
+        Absolute path to load.
+    @argument:String referer
+        Absolute path of the entry point file for the current module.
 */
-// var SIGNATURE_COOLDOWN = 4;
-function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScope, next) {
+function processSyntaxFile (context, fname, referer, tree, langPack, defaultScope, next) {
     var baseNode = langPack.getRoot (context, fname, defaultScope, defaultScope);
     defaultScope = baseNode[ROOT];
     if (!baseNode[MODULE])
         baseNode[MODULE] = defaultScope;
 
     var dirname = pathLib.parse (fname).dir;
-
-    context.latency.log ('parsing');
-    var tree = langPack.tokenize (fstr);
-    context.latency.log ('tokenization');
-
     var logger = context.logger.child ({ file:fname });
 
     function newNode (parent) {
@@ -65,7 +76,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 case 'VariableDeclaration':
                     for (var k=0,l=loc.declarations.length; k<l; k++) {
                         var name = loc.declarations[k].id.name;
-                        var nameNode = target[name] = newNode (baseNode);
+                        var nameNode = target[name] = newNode();
                         nameNode[LINE] = loc.loc.start.line;
                     }
                     break;
@@ -74,7 +85,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         break;
                     var name = loc.id.name;
                     if (!Object.hasOwnProperty.call (target, name)) {
-                        var funcNode = target[name] = newNode (baseNode);
+                        var funcNode = target[name] = newNode();
                         funcNode[LINE] = loc.loc.start.line;
                     }
                     break;
@@ -104,80 +115,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
         }
     }
 
-    var HACK_line = 0;
     function walkLevel (level, scope, thisNode, deadLine, scopeParent, fnChain, fileScope) {
-        function processRequireStatement (expression, target) {
-            if (target) target[SILENT] = true;
-            // gather the module name
-            var depName;
-            if (expression.arguments[0].type === 'Literal')
-                depName = expression.arguments[0].value;
-            else {
-                // tricky source for the dependency name
-                function getFragStr (level) {
-                    switch (level.type) {
-                        case 'Literal':
-                            if (typeof level.value !== 'string')
-                                throw new Error ('invalid literal');
-                            return level.value;
-                        case 'BinaryExpression':
-                            if (level.operator !== '+')
-                                throw new Error ('invalid binary expression');
-                            return getFragStr (level.left) + getFragStr (level.right);
-                        case 'AssignmentExpression':
-                            // assignment expression?
-                            if (level.operator !== '=')
-                                throw new Error ('invalid assignment expression');
-                            return getFragStr (level.right);
-                        default:
-                            throw new Error ('invalid expression type');
-                    }
-                }
-                try {
-                    depName = getFragStr (expression.arguments[0]);
-                } catch (err) {
-                    // could not generate dep name
-                    return;
-                }
-            }
-
-            if (CORE_MODS.indexOf (depName) >= 0) {
-                logger.debug ({
-                    required:   expression.arguments[0].value,
-                    line:       expression.loc.start.line
-                }, 'ignored core dependency');
-                var dummy = newNode();
-                dummy[SILENT] = true;
-                dummy[ROOT] = [ [ '/', depName ] ];
-                return dummy;
-            }
-            var pathInfo = langPack.getDependency (
-                context,
-                pathLib.resolve (process.cwd(), referer),
-                fname,
-                baseNode[MODULE],
-                depName
-            );
-            if (!pathInfo)
-                return newNode();
-
-            var sourceRoot;
-            if (context.argv.noDeps && !tools.pathsEqual (pathInfo.root, baseNode[MODULE])) {
-                var dummy = newNode();
-                dummy[SILENT] = true;
-                dummy[ROOT] = pathInfo.path;
-                dummy[MODULE] = pathInfo.root;
-                return dummy; // dummy
-            }
-            sourceRoot = langPack.getRoot (context, pathInfo.file, pathInfo.root, pathInfo.path);
-            sourceRoot[MODULE] = pathInfo.root;
-            next (pathInfo.file, pathInfo.referer || referer);
-            var foreignExports = sourceRoot.module[PROPS].exports;
-            if (target)
-                target[ALIAS] = foreignExports;
-            return foreignExports;
-        }
-
         /*
             Apply an argument signature to a CallExpression. `generateReturn` enables reprocessing
             the return value for individual expression arguments.
@@ -195,7 +133,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                     setFunctionPointer[TYPES].push ('Function');
             } while (
                 setFunctionPointer[DEREF]
-             && setFunctionPointer[DEREF].length == 1
+             && setFunctionPointer[DEREF].length === 1
              && ( setFunctionPointer = setFunctionPointer[DEREF][0] )
              && setFunctionChain.indexOf (setFunctionPointer) < 0
             )
@@ -232,84 +170,108 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 callNode[SIGNATURES] = [ targetRow ];
             } else {
                 // if there is a matching signature, return the stored RETURNS node
-                // if (callNode[SIGNATURES].length > SIGNATURE_COOLDOWN)
-                    for (var i=0,j=callNode[SIGNATURES].length; i<j; i++)
-                        if (filth.compare (callNode[SIGNATURES][i].args, argSig)) {
-                            if (callNode[SIGNATURES][i].returns)
-                                return callNode[SIGNATURES][i].returns;
-                            if (!generateReturn)
-                                return callNode;
-                            targetRow = callNode[SIGNATURES][i];
-                            break;
-                        }
+                for (var i=0,j=callNode[SIGNATURES].length; i<j; i++)
+                    if (filth.compare (callNode[SIGNATURES][i].args, argSig)) {
+                        if (callNode[SIGNATURES][i].returns)
+                            return callNode[SIGNATURES][i].returns;
+                        if (!generateReturn)
+                            return callNode;
+                        targetRow = callNode[SIGNATURES][i];
+                        break;
+                    }
                 if (!targetRow) {
                     targetRow = { args:argSig };
                     callNode[SIGNATURES].push (targetRow);
                 }
             }
 
-            // begin processing a new signature
-            var callPack;
-            if (!(BODY in callNode)) {
-                // defer call test for later
-                callPack = [ callNode ];
-                for (var i=0,j=expression.arguments.length; i<j; i++) {
-                    var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode) {
-                        if (argNode[IS_COL]) {
-                            var dummyArg = newNode (argNode[PARENT]);
-                            if (callNode[SILENT])
-                                dummyArg[SILENT] = true;
-                            dummyArg[INSTANCE] = [ argNode ];
-                            argNode = dummyArg;
-                        }
-                        var dummy = newNode (argNode);
-                        dummy[DEREF].push (argNode);
-                        dummy[NO_SET] = true;
-                        dummy[TRANSIENT] = true;
-                        callPack.push (dummy);
-                    }
-                }
-                if (callNode[WAITING_CALLS])
-                    callNode[WAITING_CALLS].push (callPack);
-                else
-                    callNode[WAITING_CALLS] = [ callPack ];
-            } else if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (callNode) < 0) {
-                var localChain = fnChain.concat();
+            function simulateCallExpression (target, body, doApply) {
+                if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (callNode) >= 0)
+                    return;
+                localChain = fnChain.concat();
                 localChain.push (callNode);
-                // run call test
-                var innerScope = new filth.SafeMap (scope, callNode[SCOPE]);
-                for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
-                    var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode) {
-                        var dummy = newNode (argNode);
+
+                // set up the function's inner scope
+                var innerScope = doApply ?
+                // var innerScope =
+                    new filth.SafeMap (scope, callNode[SCOPE])
+                  : new filth.SafeMap (scope)
+                  ;
+                for (var i=0,j=Math.min (argSig.length, callNode[ARGUMENTS].length); i<j; i++) {
+                    var argName = callNode[ARGUMENTS][i][NAME];
+                    if (
+                        !argName
+                     && target[ARGUMENTS]
+                     && target[ARGUMENTS].length > i
+                     && target[ARGUMENTS][i][NAME]
+                    )
+                        argName = target[ARGUMENTS][i][NAME]
+                    if (!argName)
+                        continue;
+                    var argNode = argSig[i];
+                    if (argNode && argNode[IS_COL]) {
+                        var dummyParent = newNode (argNode[PARENT]);
                         if (callNode[SILENT])
-                            dummy[SILENT] = true;
-                        dummy[DEREF].push (argNode);
-                        dummy[NO_SET] = true;
-                        dummy[TRANSIENT] = true;
-                        innerScope[args[i][NAME][1]] = dummy;
+                            dummyParent[SILENT] = true;
+                        dummyParent[INSTANCE] = [ argNode ];
+                        argNode = dummyParent;
                     }
+                    var targetArg = doApply ? callNode[ARGUMENTS][i] : newNode (argNode);
+                    targetArg[NO_SET] = true;
+                    targetArg[TRANSIENT] = true;
+                    if (argNode && targetArg[DEREF].indexOf (argNode) < 0)
+                        targetArg[DEREF].push (argNode);
+                    innerScope[argName[1]] = targetArg;
                 }
 
+                // if we aren't applying our results to the canonical function,
+                // we must also be aware that names have not been hoisted in advance
+                if (!doApply)
+                    hoistNames (innerScope, body);
+
+                // walk the function's body
                 var localDeadLine = deadLine;
-                for (var i=0,j=callNode[BODY].length; i<j; i++) {
+                for (var i=0,j=body.length; i<j; i++) {
                     walkLevel (
-                        callNode[BODY][i],
+                        body[i],
                         innerScope,
                         callNode[THIS],
                         localDeadLine,
-                        callNode,
+                        target,
                         localChain,
                         fileScope.concat()
                     );
-                    localDeadLine = callNode[BODY][i].loc.end.line;
+                    localDeadLine = body[i].loc.end.line;
                 }
+
                 // reduce innerScope to new keys only
                 for (var key in scope)
                     if (scope[key] === innerScope[key] || innerScope[key] === undefined)
                         delete innerScope[key];
             }
+
+            if (!callNode[BODY]) {
+                if (!callNode[WAITING_CALLS])
+                    callNode[WAITING_CALLS] = [];
+                if (!generateReturn) {
+                    callNode[WAITING_CALLS].push (function (body) {
+                        simulateCallExpression (callNode, body, true);
+                    });
+                    return callNode;
+                }
+                var dummy = newNode();
+                dummy[RETURNS] = newNode();
+                dummy[RETURNS][TRANSIENT] = true;
+                targetRow.returns = dummy[RETURNS];
+                callNode[WAITING_CALLS].push (function (body) {
+                    simulateCallExpression (callNode, body, true);
+                    simulateCallExpression (dummy, body, false);
+                });
+                return dummy[RETURNS];
+            }
+
+            // simulate immediately
+            simulateCallExpression (callNode, callNode[BODY], true);
 
             if (!generateReturn)
                 return callNode;
@@ -318,62 +280,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
             dummy[RETURNS] = newNode();
             dummy[RETURNS][TRANSIENT] = true;
             targetRow.returns = dummy[RETURNS];
-
-            if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (callNode) >= 0)
-                return dummy[RETURNS];
-
-            if (!(BODY in callNode)) {
-                var secondPack = [ dummy ];
-                for (var i=0,j=expression.arguments.length; i<j; i++) {
-                    var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode) {
-                        var dummyArg = newNode (argNode);
-                        dummyArg[DEREF].push (argNode);
-                        dummyArg[NO_SET] = true;
-                        dummyArg[TRANSIENT] = true;
-                        if (callNode[SILENT])
-                            dummyArg[SILENT] = true;
-                        secondPack.push (dummyArg);
-                    }
-                }
-                callNode[WAITING_CALLS].push (secondPack);
-            } else {
-                // generate a return value individualized to this CallExpression
-                var innerScope = new filth.SafeMap (scope);
-                for (var i=0,j=Math.min (args.length, expression.arguments.length); i<j; i++) {
-                    var argNode = getNode (scope, expression.arguments[i]);
-                    if (argNode) {
-                        var dummyArg = newNode (argNode);
-                        if (callNode[SILENT])
-                            dummyArg[SILENT] = true;
-                        dummyArg[DEREF].push (argNode);
-                        dummyArg[NO_SET] = true;
-                        dummyArg[TRANSIENT] = true;
-                        innerScope[args[i][NAME][1]] = dummyArg;
-                    }
-                }
-                var localChain = fnChain.concat();
-                localChain.push (callNode);
-                var localDeadLine = deadLine;
-                for (var i=0,j=callNode[BODY].length; i<j; i++) {
-                    walkLevel (
-                        callNode[BODY][i],
-                        innerScope,
-                        callNode[THIS],
-                        localDeadLine,
-                        dummy,
-                        localChain,
-                        fileScope.concat()
-                    );
-                    localDeadLine = callNode[BODY][i].loc.end.line;
-                }
-
-                // reduce innerScope to new keys only
-                for (var key in scope)
-                    if (scope[key] === innerScope[key] || innerScope[key] === undefined)
-                        delete innerScope[key];
-            }
-
+            simulateCallExpression (dummy, callNode[BODY], false);
             return dummy[RETURNS];
         }
 
@@ -383,7 +290,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 case 'Identifier':
                     if (!Object.hasOwnProperty.call (scope, value.name)) {
                         scope[value.name] = newNode (scope);
-                        scope[value.name][NAME] = value.name;
+                        scope[value.name][NAME] = [ '.', value.name ];
                     }
                     if (node[DEREF].indexOf (scope[value.name]) < 0)
                         node[DEREF].push (scope[value.name]);
@@ -426,7 +333,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         if (
                             lastPropDef
                          && propDef.leadingComments
-                         && propDef.leadingComments[0].loc.start.line == lastPropDef.loc.end.line
+                         && propDef.leadingComments[0].loc.start.line === lastPropDef.loc.end.line
                         ) {
                             var lastPropNode = props[lastPropDef.key.name];
                             processComments (propNode, {
@@ -541,7 +448,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                             }
                             // copy the dummy's props into the members collection
                             // and rebase any methods onto the new class
-                            context.latency.log ('parsing');
+                            context.latency.log ('analysis');
                             if (node[IS_COL]) {
                                 if (dummy[PROPS])
                                     for (var key in dummy[PROPS]) {
@@ -623,7 +530,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         if (node[DEREF].indexOf (targetNode) < 0)
                             node[DEREF].push (targetNode);
                         return gotTypes;
-                    } else if (value.operator == '+=') {
+                    } else if (value.operator === '+=') {
                         // either Number or String or Boolean
                     } else { // must be Number
                         if (node[TYPES].indexOf ('Number') < 0)
@@ -632,17 +539,19 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                     }
                     break;
                 case 'CallExpression':
-                    // is this a require statement?
-                    if (
-                        value.arguments.length
-                     && value.callee.type == 'Identifier'
-                     && value.callee.name == 'require'
-                    ) {
-                        var returned = processRequireStatement (value, node);
-                        if (returned && node[DEREF].indexOf (returned) < 0)
-                            node[DEREF].push (returned);
+                    var doProcess = langPack.trip (
+                        'CallExpression',
+                        context,
+                        baseNode,
+                        fname,
+                        referer,
+                        value,
+                        newNode,
+                        next,
+                        node
+                    );
+                    if (!doProcess)
                         return [];
-                    }
                     var returnNode = processCallExpression (value, node, true);
                     if (!returnNode)
                         return [];
@@ -799,23 +708,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                             var waitingCalls = node[WAITING_CALLS];
                             delete node[WAITING_CALLS];
                             for (var i=0,j=waitingCalls.length; i<j; i++) {
-                                var callPack = waitingCalls[i];
-                                var waitingInnerScope = new filth.SafeMap (scope);
-                                for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                    waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
-                                var localDeadLine = deadLine;
-                                for (var k=0,l=node[BODY].length; k<l; k++) {
-                                    walkLevel (
-                                        node[BODY][k],
-                                        waitingInnerScope,
-                                        node[THIS],
-                                        localDeadLine,
-                                        callPack[0],
-                                        localChain,
-                                        fileScope.concat()
-                                    );
-                                    localDeadLine = node[BODY][k].loc.end.line;
-                                }
+                                waitingCalls[i] (node[BODY]);
                             }
                         }
                     }
@@ -831,7 +724,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         return;
                     var chain = [ typeNode ];
                     while (
-                        typeNode[DEREF].length == 1
+                        typeNode[DEREF].length === 1
                      && chain.indexOf (typeNode[DEREF][0]) < 0
                     )
                         chain.push (typeNode = typeNode[DEREF][0]);
@@ -965,7 +858,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                     anon[RETURNS] = newNode (initialPointer);
                     anon[RETURNS][TRANSIENT] = true;
                     anon[BODY] = level.body.body;
-                    anon[THIS] = level.type == 'FunctionExpression' ? anon : (thisNode || anon);
+                    anon[THIS] = level.type === 'FunctionExpression' ? anon : (thisNode || anon);
                     // take our first pass through the body
                     var innerScope = anon[SCOPE] = new filth.SafeMap (scope);
                     for (var i=0,j=args.length; i<j; i++)
@@ -996,7 +889,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         return;
                     var chain = [ typeNode ];
                     while (
-                        typeNode[DEREF].length == 1
+                        typeNode[DEREF].length === 1
                      && chain.indexOf (typeNode[DEREF][0]) < 0
                     )
                         chain.push (typeNode = typeNode[DEREF][0]);
@@ -1039,7 +932,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
             if (!shallow) {
                 while (
                     pointer[DEREF]
-                 && pointer[DEREF].length == 1
+                 && pointer[DEREF].length === 1
                  // && !pointer[TYPES].length
                  && cycle.indexOf (pointer[DEREF][0]) < 0
                 )
@@ -1124,7 +1017,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 var cycle = [];
                 while (
                     pointer[DEREF]
-                 && pointer[DEREF].length == 1
+                 && pointer[DEREF].length === 1
                  && !pointer[TYPES].length
                  && cycle.indexOf (pointer[DEREF][0]) < 0
                 )
@@ -1162,7 +1055,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                     var match;
                     Patterns.tag.lastIndex = 0;
                     if (
-                        comment.type == 'Line'
+                        comment.type === 'Line'
                      || !(match = Patterns.tag.exec ('/*'+comment.value+'*/'))
                     )
                         continue;
@@ -1355,12 +1248,12 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
             if (
                 node
              && level.trailingComments
-             && level.trailingComments[0].loc.start.line == level.loc.end.line
+             && level.trailingComments[0].loc.start.line === level.loc.end.line
             ) {
                 // use a trailing comment that starts on the same line as this statement ends on
                 var trailer = level.trailingComments[0];
                 // only use a line comment if no other DOCSTR has been found yet.
-                if (trailer.type == 'Line') {
+                if (trailer.type === 'Line') {
                     if (!node[DOCSTR])
                         node[DOCSTR] = [ trailer.value ];
                 } else {
@@ -1605,19 +1498,11 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                                     else
                                         target[PROPS][name] = source[PROPS][name];
                                 }
-                            if (source[THROWS])
-                                if (!target[THROWS]) {
-                                    target[THROWS] = tools.newCollection (source[THROWS])
-                                    target[THROWS][PARENT] = target;
-                                } else for (var name in source[THROWS]) {
-                                    if (Object.hasOwnProperty.call (target[THROWS], name))
-                                        mergeNodes (
-                                            target[THROWS][name],
-                                            source[THROWS][name]
-                                        );
-                                    else
-                                        target[THROWS][name] = source[THROWS][name];
-                                }
+                            if (source[THROWS]) {
+                                if (!target[THROWS])
+                                    target[THROWS] = newNode();
+                                mergeNodes (target[THROWS], source[THROWS]);
+                            }
                             if (source[ARGUMENTS]) {
                                 if (!target[ARGUMENTS])
                                     target[ARGUMENTS] = source[ARGUMENTS].concat();
@@ -1714,7 +1599,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         }
 
                         // copy the dummy's props into the members collection
-                        context.latency.log ('parsing');
+                        context.latency.log ('analysis');
 
                         function cloneChildren (source) {
                             if (source[PROPS])
@@ -1736,13 +1621,17 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         node = node[PARENT];
                         break;
                     case 'CallExpression':
-                        if (
-                            level.expression.arguments.length
-                         && level.expression.callee.type == 'Identifier'
-                         && level.expression.callee.name == 'require'
-                        )
-                            processRequireStatement (level.expression);
-                        else
+                        var doProcess = langPack.trip (
+                            'CallExpression',
+                            context,
+                            baseNode,
+                            fname,
+                            referer,
+                            level.expression,
+                            newNode,
+                            next
+                        );
+                        if (doProcess)
                             processCallExpression (level.expression);
                         break;
                     case 'UnaryExpression':
@@ -1822,7 +1711,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                             return;
                         var chain = [ typeNode ];
                         while (
-                            typeNode[DEREF].length == 1
+                            typeNode[DEREF].length === 1
                          && chain.indexOf (typeNode[DEREF][0]) < 0
                         )
                             chain.push (typeNode = typeNode[DEREF][0]);
@@ -1944,8 +1833,9 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 }
                 node[SCOPE] = innerScope;
                 var localDeadLine = deadLine;
-                node[BODY] = level.body.body; // comment to stop recursion crashes
+                node[BODY] = level.body.body;
                 node[THIS] = node;
+                var current;
                 hoistNames (innerScope, level.body.body);
                 if (fnChain.length < context.argv.maxDepth && fnChain.indexOf (node) < 0) {
                     var localChain = fnChain.concat();
@@ -1967,23 +1857,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                         var waitingCalls = node[WAITING_CALLS];
                         delete node[WAITING_CALLS];
                         for (var i=0,j=waitingCalls.length; i<j; i++) {
-                            var callPack = waitingCalls[i];
-                            var waitingInnerScope = new filth.SafeMap (scope);
-                            for (var k=1,l=Math.min (args.length+1, callPack.length); k<l; k++)
-                                waitingInnerScope[args[k-1][NAME][1]] = callPack[k];
-                            var localDeadLine = deadLine;
-                            for (var k=0,l=level.body.body.length; k<l; k++) {
-                                walkLevel (
-                                    level.body.body[k],
-                                    waitingInnerScope,
-                                    node || thisNode,
-                                    localDeadLine,
-                                    callPack[0],
-                                    localChain,
-                                    fileScope.concat()
-                                );
-                                localDeadLine = level.body.body[k].loc.end.line;
-                            }
+                            waitingCalls[i] (node[BODY]);
                         }
                     }
                 }
@@ -2273,7 +2147,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
 
                 break;
             case 'MethodDefinition':
-                if (level.key.name == 'constructor')
+                if (level.key.name === 'constructor')
                     node = thisNode;
                 else if (Object.hasOwnProperty.call (thisNode[MEMBERS], level.key.name))
                     node = thisNode[MEMBERS][level.key.name];
@@ -2347,9 +2221,9 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
         var level = tree.body[i];
         switch (level.type) {
             case 'ImportDeclaration':
-                var importName = level.source.value[0] == '/' ?
+                var importName = level.source.value[0] === '/' ?
                     pathLib.resolve (context.argv.fileRoot, importName.slice (1))
-                  : level.source.value.slice (0, 2) == './' ?
+                  : level.source.value.slice (0, 2) === './' ?
                         level.source.value
                       : './' + level.source.value
                       ;
@@ -2367,7 +2241,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
                 next (pathInfo.file, pathInfo.referer || referer);
 
                 // first check if it's `import * as ModName from "foo.js"`
-                if (level.specifiers[0].type == "ImportNamespaceSpecifier") {
+                if (level.specifiers[0].type === "ImportNamespaceSpecifier") {
                     var localNode;
                     if (Object.hasOwnProperty.call (baseNode, level.specifiers[0].local.name))
                         localNode = baseNode[level.specifiers[0].local.name];
@@ -2475,7 +2349,7 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
             var match;
             Patterns.tag.lastIndex = 0;
             if (
-                comment.type == 'Line'
+                comment.type === 'Line'
              || !(match = Patterns.tag.exec ('/*'+comment.value+'*/'))
             )
                 continue;
@@ -2576,7 +2450,262 @@ function processSyntaxFile (context, fname, referer, fstr, langPack, defaultScop
 }
 
 
+/*
+    Prepares the syntax tree produced by [processSyntaxFile](.processSyntaxFile) by collapsing all
+    information relevant to the future Components into individual representative Nodes.
+     * Gather documentation from the DEREF tree of each Node
+     * propagate NAME and BLIND
+     * set ALIAS when a MOUNT is encountered
+@argument:doczar.ComponentCache context
+@argument:doczar/src/langs/LangPack langPack
+@argument:doczar.Parser/Path defaultScope
+*/
+function preprocessSyntaxTree (context, langPack, defaultScope) {
+    function preprocessDerefs (level, target, chain, isTransient) {
+        var didFinishDeref = false;
+        if (!target)
+            target = level;
+        if (!chain)
+            chain = [ target ];
+        if (target[TRANSIENT])
+            isTransient = true;
+
+        function recurse (level, target) {
+            if (chain.length >= context.argv.maxRefDepth)
+                return false;
+            if (IS_COL in level)
+                return false;
+            if (chain.indexOf (level) >= 0)
+                return false;
+            var newChain = chain.concat();
+            newChain.push (level);
+            return preprocessDerefs (level, target || level, newChain, isTransient);
+        }
+
+        if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
+            target[NAME] = level[NAME];
+        else if (level[MOUNT] && level[MOUNT].path && level[MOUNT].path.length)
+            target[NAME] = level[MOUNT].path[level[MOUNT].path.length-1].concat();
+
+        if (level[BLIND])
+            target[BLIND] = true;
+
+        if (!level[DEREF])
+            return false;
+
+        // dive for LINE definitions
+        if (target === level && !target[LINE] && !isTransient) {
+            var pointer = level;
+            var lineChain = [ level ];
+            while (
+                !pointer[LINE]
+             && pointer[DEREF]
+             && pointer[DEREF].length === 1
+             && !pointer[DEREF][0][TRANSIENT]
+            ) {
+                pointer = pointer[DEREF][0];
+                if (pointer[LINE])
+                    break;
+                if (lineChain.indexOf (pointer) >= 0)
+                    break;
+                lineChain.push (pointer);
+            }
+            if (pointer[LINE])
+                target[LINE] = pointer[LINE];
+        }
+
+        for (var i=0,j=level[DEREF].length; i<j; i++) {
+            var ref = level[DEREF][i];
+            if (chain.indexOf (ref) >= 0)
+                continue;
+            if (IS_COL in ref)
+                continue;
+            recurse (ref, target);
+
+            // alias to mount
+            if (ref[MOUNT] && !isTransient && ref[MOUNT].path) {
+                target[ALIAS] = ref;
+                recurse (ref);
+            }
+
+            // basic types
+            var baseTypes = ref[TYPES];
+            for (var k=0,l=baseTypes.length; k<l; k++)
+                if (target[TYPES].indexOf (baseTypes[k]) < 0) {
+                    target[TYPES].push (baseTypes[k]);
+                    didFinishDeref = true;
+                }
+            if (ref[INSTANCE]) {
+                var classes = ref[INSTANCE];
+                if (!target[INSTANCE]) {
+                    target[INSTANCE] = classes.concat();
+                    didFinishDeref = true;
+                } else for (var k=0,l=classes.length; k<l; k++)
+                    if (target[INSTANCE].indexOf (classes[k]) < 0) {
+                        target[INSTANCE].push (classes[k]);
+                        didFinishDeref = true;
+                    }
+            }
+            // promote documentation
+            if (ref[DOCSTR]) {
+                if (!target[DOCSTR]) {
+                    target[DOCSTR] = ref[DOCSTR].concat();
+                    didFinishDeref = true;
+                } else for (var i=0,j=ref[DOCSTR].length; i<j; i++)
+                    if (target[DOCSTR].indexOf (ref[DOCSTR][i]) < 0) {
+                        target[DOCSTR].push (ref[DOCSTR][i]);
+                        didFinishDeref = true;
+                    }
+            }
+            // promote children
+            if (ref[PROPS]) {
+                if (!target[PROPS]) {
+                    target[PROPS] = tools.newCollection (target[PROPS]);
+                    target[PROPS][PARENT] = target;
+                } else for (var name in ref[PROPS])
+                    if (!Object.hasOwnProperty.call (target[PROPS], name))
+                        target[PROPS][name] = ref[PROPS][name];
+                    else
+                        recurse (ref[PROPS][name], target[PROPS][name]);
+            }
+            if (ref[MEMBERS]) {
+                if (!target[MEMBERS]) {
+                    target[MEMBERS] = tools.newCollection (target[MEMBERS]);
+                    target[MEMBERS][PARENT] = target;
+                } else for (var name in ref[MEMBERS])
+                    if (!Object.hasOwnProperty.call (target[MEMBERS], name))
+                        target[MEMBERS][name] = ref[MEMBERS][name];
+                    else
+                        recurse (ref[MEMBERS][name], target[MEMBERS][name]);
+            }
+            if (ref[ARGUMENTS]) {
+                if (!target[ARGUMENTS])
+                    target[ARGUMENTS] = ref[ARGUMENTS].concat();
+                else for (var i=0,j=ref[ARGUMENTS].length; i<j; i++) {
+                    var refArg = ref[ARGUMENTS][i];
+                    if (target[ARGUMENTS].indexOf (refArg) >= 0)
+                        continue;
+                    var found = false;
+                    if (i < target[ARGUMENTS].length) {
+                        found = true;
+                        didFinishDeref += recurse (refArg, target[ARGUMENTS][i])
+                    }
+
+                    if (!found) {
+                        // add to arguments
+                        if (i < target[ARGUMENTS].length)
+                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i]);
+                        else {
+                            target[ARGUMENTS].push (refArg);
+                            didFinishDeref = true;
+                        }
+                    }
+                }
+            }
+            if (ref[RETURNS]) {
+                if (!target[RETURNS])
+                    target[RETURNS] = ref[RETURNS];
+                else
+                    recurse (ref[RETURNS], target[RETURNS]);
+            }
+            if (ref[THROWS]) {
+                if (!target[THROWS])
+                    target[THROWS] = ref[THROWS];
+                else
+                    recurse (ref[THROWS], target[THROWS]);
+            }
+
+            if (ref[BODY] && !target[BODY]) {
+                didFinishDeref = true;
+                target[BODY] = ref[BODY];
+            }
+        }
+
+        // recurse
+        if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
+            didFinishDeref += recurse (level[ARGUMENTS][i]);
+        if (level[RETURNS])
+            didFinishDeref += recurse (level[RETURNS]);
+
+        if (typeof level !== 'object')
+            throw new Error ('unexpected error');
+
+        for (var key in level)
+            didFinishDeref += recurse (level[key], undefined);
+
+        if (target[NO_SET])
+            return didFinishDeref;
+
+        if (level[MEMBERS]) for (var key in level[MEMBERS]) {
+            var nextTarget = level[MEMBERS][key];
+            didFinishDeref += recurse (nextTarget, nextTarget);
+        }
+
+        if (level[PROPS]) for (var key in level[PROPS]) {
+            var nextTarget = level[PROPS][key];
+            didFinishDeref += recurse (nextTarget, nextTarget);
+        }
+
+        if (target[WAITING_CALLS] && target[BODY]) {
+            didFinishDeref = true;
+            var waitingCalls = target[WAITING_CALLS];
+            delete target[WAITING_CALLS];
+            for (var i=0,j=waitingCalls.length; i<j; i++)
+                waitingCalls[i] (target[BODY]);
+        }
+
+        return didFinishDeref;
+    }
+
+    // clean up roots
+    var globalNode = langPack.cleanupGlobal (context);
+    for (var rootPath in context.sources) {
+        var sourceRoot = context.sources[rootPath];
+        for (var key in globalNode)
+            if (sourceRoot[key] === globalNode[key])
+                delete sourceRoot[key];
+    }
+    langPack.cleanupRoot (context.sources);
+
+    // preprocess syntax tree
+    var finishedADeref;
+    var round = 1;
+    do {
+        finishedADeref = false;
+        for (var rootPath in context.sources) {
+            context.logger.setTask (
+                'preprocessing syntax tree (round '
+              + round
+              + ') '
+              + pathLib.relative (process.cwd(), rootPath)
+            );
+            var sourceRoot = context.sources[rootPath];
+            delete sourceRoot.globals;
+            for (var key in sourceRoot) try {
+                var target = sourceRoot[key];
+                finishedADeref += preprocessDerefs (target, target, [ target ]);
+            } catch (err) {
+                context.logger.error (
+                    { err:err, path:rootPath, parse:context.argv.parse },
+                    'failed to preprocess syntax tree'
+                );
+            }
+        }
+        for (var key in globalNode) try {
+            var target = globalNode[key];
+            finishedADeref += preprocessDerefs (target, target, [ target ]);
+        } catch (err) {
+            context.logger.error (
+                { err:err, path:rootPath, parse:context.argv.parse },
+                'failed to preprocess syntax tree'
+            );
+        }
+        round++;
+    } while (finishedADeref);
+}
+
 
 module.exports = {
-    processSyntaxFile:  processSyntaxFile
+    processSyntaxFile:      processSyntaxFile,
+    preprocessSyntaxTree:   preprocessSyntaxTree
 };

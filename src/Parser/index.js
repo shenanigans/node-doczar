@@ -1,7 +1,7 @@
 
 /*      @module
-    Digs document comments out of source files, splits them into Declarations and Modifiers, then
-    reports everything it finds to a [ComponentCache](doczar/src/ComponentCache) instance.
+    Processes tags and full files when `--parse` is not enabled. Submits explicit documentation as
+    it is discovered to a [ComponentCache](doczar.ComponentCache).
 */
 
 /*      @submodule:Array<Array> Path

@@ -4,6 +4,7 @@ var fs = require ('fs-extra');
 var esprima = require ('esprima');
 var tools = require ('tools');
 var filth = require ('filth');
+var LangPack = require ('./LangPack');
 
 function tokenize (fstr) {
     return esprima.parse (fstr, {
@@ -177,11 +178,8 @@ function onCallable () {
 
 }
 
-function onCallExpression () {
 
-}
-
-module.exports = {
+module.exports = LangPack ({
     tokenize:           tokenize,
     getGlobalNode:      getGlobalNode,
     getRoot:            getRoot,
@@ -189,4 +187,4 @@ module.exports = {
     cleanupGlobal:      cleanupGlobal,
     cleanupRoot:        cleanupRoot,
     generateComponents: generateComponents
-};
+});

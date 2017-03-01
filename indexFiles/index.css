@@ -60,7 +60,7 @@ h1, h2, h3, h4, h5, h6 {
     min-width: 18em;
     font-size: 210%;
     text-align: left;
-    padding: 0.5em 0 0.5em 0.7em;
+    padding: 0.2em 0 0.2em 0.7em;
     color: #C813B1;
     border-bottom: 1px solid #D6D6D6;
     background-color: #F2F2F2;
@@ -125,6 +125,9 @@ h1, h2, h3, h4, h5, h6 {
 .markdown:empty {
     display: none;
 }
+.markdown:first-child {
+    margin-top: 0;
+}
 
 p {
     max-width: 27em;
@@ -170,6 +173,7 @@ p {
 .child {
     padding-top: 2em;
     min-height: 1.6em;
+    margin-top: -1.4em;
     transition:         border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
     -webkit-transition: border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
     -moz-transition:    border-color 0.5s linear, box-shadow 0.5s linear, background-color 0.5s linear;
@@ -207,7 +211,7 @@ p {
 }
 
 #details {
-    padding: 0 0 1.5em 0;
+    padding: 1em 0 1em 0;
     border-bottom: 2px solid #E5E5E5;
 }
 

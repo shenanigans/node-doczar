@@ -40,7 +40,7 @@
                         {{/generics}}</span>
                         <span class="punctuation">&gt;</span>
                     {{/if}}
-                {{/valtype}}</span>
+                {{/valtype}}
             {{else}}
                 {{#if pathname}}
                     <a class="title" href="{{softlink path}}">
@@ -49,7 +49,7 @@
                 {{else}}
                     <a class="title fake" href="{{softlink path}}">argument</a>
                 {{/if}}
-            {{/if}}{{/if}}
+            {{/if}}{{/if}}</span>
         {{/if}}
     {{/if}}
     {{#if isOptional}}<span class="optionBracket">]</span>{{/if}}

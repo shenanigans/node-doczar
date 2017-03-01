@@ -4,6 +4,7 @@ var path = require ('path');
 // var esprima = require ('esprima');
 var tools = require ('tools');
 // var filth = require ('filth');
+var LangPack = require ('./LangPack');
 
 function tokenize (fstr) {
     return esprima.parse (fstr, {
@@ -36,11 +37,11 @@ function generateComponents (context, submitSourceLevel) {
 
 }
 
-module.exports = {
+module.exports = LangPack ({
     tokenize:           tokenize,
     getGlobalNode:      getGlobalNode,
     getRoot:            getRoot,
     cleanupGlobal:      cleanupGlobal,
     cleanupRoot:        cleanupRoot,
     generateComponents: generateComponents
-};
+});

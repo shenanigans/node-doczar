@@ -10,7 +10,7 @@ function killDir (dir, callback) {
     var tries = 0;
     fs.readdir (dir, function (err, list) {
         if (err) {
-            if (err.code == 'ENOENT')
+            if (err.code === 'ENOENT')
                 return callback();
             return callback (err);
         }
@@ -28,7 +28,7 @@ function killDir (dir, callback) {
                 return callback (new Error ('failed to clear directory'));
             fs.rmdir (dir, function (err) {
                 if (err) {
-                    if (err.code == 'ENOTEMPTY')
+                    if (err.code === 'ENOTEMPTY')
                         return setTimeout (tryToRemove, 100);
                     callback (err);
                 }

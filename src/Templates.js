@@ -27,7 +27,7 @@ markedRenderer.link = function (href, title, text) {
 
     // pass http and https links through unmodified
     var target = url.parse (targetStr);
-    if (target.protocol == 'http:' || target.protocol == 'https:')
+    if (target.protocol === 'http:' || target.protocol === 'https:')
         return '<a href="'+href+'">' + ( text || href ) + '</a>'
 
     // typelink
@@ -36,7 +36,7 @@ markedRenderer.link = function (href, title, text) {
     // is this a loaded document with a local path (like .Foo)
     if (!currentLinkContext && !targetStr[0].match (Patterns.pathWord)) {
         // the only acceptable possibility here is a hash link
-        if (targetStr[0] == '#') // such as #more-info
+        if (targetStr[0] === '#') // such as #more-info
             return '<a href="'+targetStr+'">'+( text||targetStr )+'</a>'
         logger.warn (
             { from:uglySrc, type:targetStr },
@@ -80,7 +80,7 @@ var partials = {};
 var pnames = fs.readdirSync (partialsPath);
 for (var i in pnames) {
     var currentTemplateName = pnames[i];
-    if (currentTemplateName[0] == '.' || currentTemplateName.slice (-5) != '.bars')
+    if (currentTemplateName[0] === '.' || currentTemplateName.slice (-5) != '.bars')
         continue;
     Handlebars.registerPartial (
         currentTemplateName.slice (0, -5),
@@ -189,7 +189,7 @@ function renderRoot (root, context, logInst) {
     var modules = [];
     var globals = [];
     for (var key in root)
-        if (root[key].ctype == 'module')
+        if (root[key].ctype === 'module')
             modules.push (root[key].final);
         else
             globals.push (root[key].final);

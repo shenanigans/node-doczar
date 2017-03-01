@@ -1,6 +1,7 @@
 
 /*  @module
-
+    Inspects a [static model](doczar.Analyzer) and adds appropriate [Components](doczar.Component)
+    to a [ComponentCache](doczar.ComponentCache).
 */
 
 var pathLib  = require ('path');
@@ -19,207 +20,17 @@ var PREPROCESS_ARR_KEYS = mapOf ([ ARGUMENTS, SUPER ]);
 var PREPROCESS_OBJ_KEYS = mapOf ([ RETURNS, THROWS ]);
 var PREPROCESS_MAX_DEPTH = 8;
 /*
-    Use the compiled information from syntax parsing to add Component definitions to a
-    [ComponentCache](doczar.ComponentCache).
+    Use the compiled information from [syntax analysis](doczar.Analyzer) to add [Component]
+    (doczar.Component) definitions to a [ComponentCache](doczar.ComponentCache).
+@argument:doczar.ComponentCache context
+    The ComponentCache in which new [Component](doczar.Component) instances are stored.
+@argument:doczar/src/langs/LangPack langPack
+    Language-specific procedures for Component generation.
+@argument:doczar.Parser/Path defaultScope
+    The Component path of the syntax file being processed. This may be overwritten with an explicit
+    documentation comment.
 */
 function generateComponents (context, langPack, defaultScope) {
-    context.latency.log();
-
-    // tools for syntax parsing
-    function preprocessDerefs (level, target, chain, isTransient) {
-        var didFinishDeref = false;
-        if (!target)
-            target = level;
-        if (!chain)
-            chain = [ target ];
-        if (target[TRANSIENT])
-            isTransient = true;
-
-        function recurse (level, target) {
-            if (chain.length >= context.argv.maxRefDepth)
-                return false;
-            if (IS_COL in level)
-                return false;
-            if (chain.indexOf (level) >= 0)
-                return false;
-            var newChain = chain.concat();
-            newChain.push (level);
-            return preprocessDerefs (level, target || level, newChain, isTransient);
-        }
-
-        if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
-            target[NAME] = level[NAME];
-        else if (level[MOUNT] && level[MOUNT].path && level[MOUNT].path.length)
-            target[NAME] = level[MOUNT].path[level[MOUNT].path.length-1].concat();
-
-        if (level[BLIND])
-            target[BLIND] = true;
-
-        if (!level[DEREF])
-            return false;
-
-        // dive for LINE definitions
-        if (target === level && !target[LINE] && !isTransient) {
-            var pointer = level;
-            var lineChain = [ level ];
-            while (
-                !pointer[LINE]
-             && pointer[DEREF]
-             && pointer[DEREF].length === 1
-             && !pointer[DEREF][0][TRANSIENT]
-            ) {
-                pointer = pointer[DEREF][0];
-                if (pointer[LINE])
-                    break;
-                if (lineChain.indexOf (pointer) >= 0)
-                    break;
-                lineChain.push (pointer);
-            }
-            if (pointer[LINE])
-                target[LINE] = pointer[LINE];
-        }
-
-        for (var i=0,j=level[DEREF].length; i<j; i++) {
-            var ref = level[DEREF][i];
-            if (chain.indexOf (ref) >= 0)
-                continue;
-            if (IS_COL in ref)
-                continue;
-            recurse (ref, target);
-
-            // alias to mount
-            if (ref[MOUNT] && !isTransient && ref[MOUNT].path) {
-                target[ALIAS] = ref;
-                recurse (ref);
-            }
-
-            // basic types
-            var baseTypes = ref[TYPES];
-            for (var k=0,l=baseTypes.length; k<l; k++)
-                if (target[TYPES].indexOf (baseTypes[k]) < 0) {
-                    target[TYPES].push (baseTypes[k]);
-                    didFinishDeref = true;
-                }
-            if (ref[INSTANCE]) {
-                var classes = ref[INSTANCE];
-                if (!target[INSTANCE]) {
-                    target[INSTANCE] = classes.concat();
-                    didFinishDeref = true;
-                } else for (var k=0,l=classes.length; k<l; k++)
-                    if (target[INSTANCE].indexOf (classes[k]) < 0) {
-                        target[INSTANCE].push (classes[k]);
-                        didFinishDeref = true;
-                    }
-            }
-            // promote documentation
-            if (ref[DOCSTR]) {
-                if (!target[DOCSTR]) {
-                    target[DOCSTR] = ref[DOCSTR].concat();
-                    didFinishDeref = true;
-                } else for (var i=0,j=ref[DOCSTR].length; i<j; i++)
-                    if (target[DOCSTR].indexOf (ref[DOCSTR][i]) < 0) {
-                        target[DOCSTR].push (ref[DOCSTR][i]);
-                        didFinishDeref = true;
-                    }
-            }
-            // promote children
-            if (ref[PROPS]) {
-                if (!target[PROPS]) {
-                    target[PROPS] = tools.newCollection (target[PROPS]);
-                    target[PROPS][PARENT] = target;
-                } else for (var name in ref[PROPS])
-                    if (!Object.hasOwnProperty.call (target[PROPS], NAME))
-                        target[PROPS][name] = ref[PROPS][name];
-            }
-            if (ref[MEMBERS]) {
-                if (!target[MEMBERS]) {
-                    target[MEMBERS] = tools.newCollection (target[MEMBERS]);
-                    target[MEMBERS][PARENT] = target;
-                } else for (var name in ref[MEMBERS])
-                    if (!Object.hasOwnProperty.call (target[MEMBERS], NAME))
-                        target[MEMBERS][name] = ref[MEMBERS][name];
-            }
-            if (ref[ARGUMENTS]) {
-                if (!target[ARGUMENTS])
-                    target[ARGUMENTS] = ref[ARGUMENTS].concat();
-                else for (var i=0,j=ref[ARGUMENTS].length; i<j; i++) {
-                    var refArg = ref[ARGUMENTS][i];
-                    if (target[ARGUMENTS].indexOf (refArg) >= 0)
-                        continue;
-                    var found = false;
-                    if (!refArg[NAME] || !refArg[NAME][1]) {
-                        // merge argument information by index, if possible
-                        if (i < target[ARGUMENTS].length) {
-                            found = true;
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i])
-                        }
-                    } else for (var k=0,l=target[ARGUMENTS].length; k<l; k++)
-                        // look for an argument of the same name
-                        if (
-                            target[ARGUMENTS][k][NAME]
-                         && target[ARGUMENTS][k][NAME][1]
-                         && target[ARGUMENTS][k][NAME][1] === refArg[NAME][1]
-                        ) {
-                            // merge in place
-                            found = true;
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][k]);
-                            break;
-                        }
-
-                    if (!found) {
-                        // add to arguments
-                        if (i < target[ARGUMENTS].length)
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i]);
-                        else {
-                            target[ARGUMENTS].push (refArg);
-                            didFinishDeref = true;
-                        }
-                    }
-                }
-            }
-            if (ref[RETURNS]) {
-                if (!target[RETURNS])
-                    target[RETURNS] = ref[RETURNS];
-            }
-            if (ref[THROWS]) {
-                if (!target[THROWS]) {
-                    target[THROWS] = tools.newCollection (target[THROWS]);
-                    target[THROWS][PARENT] = target;
-                } else for (var name in ref[THROWS])
-                    if (!Object.hasOwnProperty.call (target[THROWS], NAME))
-                        target[THROWS][name] = ref[THROWS][name];
-            }
-        }
-
-        // process arguments and returns
-        if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
-            didFinishDeref += recurse (level[ARGUMENTS][i]);
-        if (level[RETURNS])
-            didFinishDeref += recurse (level[RETURNS]);
-
-        // recurse
-        if (typeof level !== 'object')
-            throw new Error ('unexpected error');
-
-        for (var key in level)
-            didFinishDeref += recurse (level[key], undefined);
-
-        if (target[NO_SET])
-            return didFinishDeref;
-
-        if (level[MEMBERS]) for (var key in level[MEMBERS]) {
-            var nextTarget = level[MEMBERS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-        if (level[PROPS]) for (var key in level[PROPS]) {
-            var nextTarget = level[PROPS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
-        }
-
-        return didFinishDeref;
-    }
-
     // recursively submit all the information built into the namespace
     function submitSourceLevel (level, scope, localDefault, chain, force) {
         if (!chain)
@@ -233,7 +44,7 @@ function generateComponents (context, langPack, defaultScope) {
 
         function isLocalPath (path) {
             for (var i=0,j=path.length; i<j; i++)
-                if (path[i][0] == '%')
+                if (path[i][0] === '%')
                     return true;
             return false;
         }
@@ -310,7 +121,6 @@ function generateComponents (context, langPack, defaultScope) {
                 fileScope = [];
             }
             level[LOCALPATH] = path;
-            // var fullpath = level[PATH] = concatPaths (localDefault, path);
             var fullpath = level[PATH] = localDefault.concat (path);
             if (ctype === 'class') for (var i=types.length-1; i>=0; i--) {
                 var type = types[i];
@@ -409,7 +219,6 @@ function generateComponents (context, langPack, defaultScope) {
                 ( level[MOUNT] ? level[MOUNT].docstr : level[DOCSTR] ) || [],
                 function (fname) { nextFiles.push (fname); }
             );
-            // var fullpath = concatPaths (localDefault, level[LOCALPATH]);
             var fullpath = localDefault.concat (level[LOCALPATH]);
             if (level[LINE]) {
                 var lineDoc = {
@@ -420,7 +229,6 @@ function generateComponents (context, langPack, defaultScope) {
                     lineDoc.sourceModule = level[MODULE];
                 context.submit (
                     localDefault.concat (level[LOCALPATH]),
-                    // concatPaths (localDefault, level[LOCALPATH]),
                     lineDoc
                 );
             }
@@ -428,7 +236,6 @@ function generateComponents (context, langPack, defaultScope) {
             // alias?
             if (force && !tools.pathsEqual (scope, level[LOCALPATH])) {
                 context.submit (localDefault.concat (scope), {
-                // context.submit (concatPaths (localDefault, scope), {
                     modifiers:[ { mod:'alias', path:level[PATH] } ]
                 });
                 return true;
@@ -481,7 +288,6 @@ function generateComponents (context, langPack, defaultScope) {
                         [],
                         function (fname) { nextFiles.push (fname); }
                     );
-                    // var fullpath = concatPaths (localDefault, scope);
                     var fullpath = localDefault.concat (scope);
                     if (level[LINE]) {
                         var lineDoc = {
@@ -490,7 +296,6 @@ function generateComponents (context, langPack, defaultScope) {
                         };
                         if (level[MODULE] && !tools.pathsEqual (level[MODULE], context.argv.root))
                             lineDoc.sourceModule = level[MODULE];
-                        // context.submit (concatPaths (localDefault, scope), lineDoc);
                         context.submit (localDefault.concat (scope), lineDoc);
                     }
                 }
@@ -502,7 +307,7 @@ function generateComponents (context, langPack, defaultScope) {
             var superChain = [];
             while (
                 pointer[DEREF]
-             && pointer[DEREF].length == 1
+             && pointer[DEREF].length === 1
              && superChain.indexOf (pointer[DEREF][0]) < 0
             )
                 superChain.push (pointer = pointer[DEREF][0]);
@@ -626,57 +431,8 @@ function generateComponents (context, langPack, defaultScope) {
         return didSubmit;
     }
 
-    // clean up roots
-    var globalNode = langPack.cleanupGlobal (context);
-    for (var rootPath in context.sources) {
-        var sourceRoot = context.sources[rootPath];
-        for (var key in globalNode)
-            if (sourceRoot[key] === globalNode[key])
-                delete sourceRoot[key];
-    }
-    langPack.cleanupRoot (context.sources);
-
-    // preprocess primitive types
-    var finishedADeref;
-    var round = 1;
-    do {
-        finishedADeref = false;
-        for (var rootPath in context.sources) {
-            context.logger.setTask (
-                'preprocessing (round '
-              + round
-              + ') '
-              + pathLib.relative (process.cwd(), rootPath)
-            );
-            var sourceRoot = context.sources[rootPath];
-            delete sourceRoot.globals;
-            for (var key in sourceRoot) try {
-                var target = sourceRoot[key];
-                finishedADeref += preprocessDerefs (target, target, [ target ]);
-            } catch (err) {
-                context.logger.error (
-                    { err:err, path:rootPath, parse:context.argv.parse },
-                    'failed to preprocess primitive types'
-                );
-            }
-        }
-        for (var key in globalNode) try {
-            var target = globalNode[key];
-            finishedADeref += preprocessDerefs (target, target, [ target ]);
-        } catch (err) {
-            context.logger.error (
-                { err:err, path:rootPath, parse:context.argv.parse },
-                'failed to process deferred types'
-            );
-        }
-        round++;
-    } while (finishedADeref);
-    context.logger.info ({ parse:context.argv.parse }, 'finished preprocessing primitive types');
-
     // generate Components for items defined in each source file
     langPack.generateComponents (context, submitSourceLevel);
-    context.latency.log ('generation');
-    context.logger.info ({ parse:context.argv.parse }, 'finished generating Components');
 }
 
 

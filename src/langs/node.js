@@ -4,6 +4,7 @@ var fs = require ('fs-extra');
 var esprima = require ('esprima');
 var tools = require ('tools');
 var filth = require ('filth');
+var LangPack = require ('./LangPack');
 
 function tokenize (fstr) {
     return esprima.parse (fstr, {
@@ -338,16 +339,116 @@ function onCallable () {
 
 }
 
-function onCallExpression () {
+var CORE_MODS = [
+    "assert",           "buffer_ieee754",   "buffer",           "child_process",    "cluster",
+    "console",          "constants",        "crypto",           "_debugger",        "dgram",
+    "dns",              "domain",           "events",           "freelist",         "fs",
+    "http",             "https",            "_linklist",        "module",           "net",
+    "os",               "path",             "punycode",         "querystring",      "readline",
+    "repl",             "stream",           "string_decoder",   "sys",              "timers",
+    "tls",              "tty",              "url",              "util",             "vm",
+    "zlib",             "_http_server",     "process",          "v8"
+];
+function onCallExpression (context, baseNode, fname, referer, expression, newNode, next, targetNode) {
+    if (
+        !expression.arguments.length
+     || expression.callee.type !== 'Identifier'
+     || expression.callee.name !== 'require'
+    )
+        return true;
 
+    if (targetNode) targetNode[SILENT] = true;
+    // gather the module name
+    var depName;
+    if (expression.arguments[0].type === 'Literal')
+        depName = expression.arguments[0].value;
+    else {
+        // tricky source for the dependency name
+        function getFragStr (level) {
+            switch (level.type) {
+                case 'Literal':
+                    if (typeof level.value !== 'string')
+                        throw new Error ('invalid literal');
+                    return level.value;
+                case 'BinaryExpression':
+                    if (level.operator !== '+')
+                        throw new Error ('invalid binary expression');
+                    return getFragStr (level.left) + getFragStr (level.right);
+                case 'AssignmentExpression':
+                    // assignment expression?
+                    if (level.operator !== '=')
+                        throw new Error ('invalid assignment expression');
+                    return getFragStr (level.right);
+                default:
+                    throw new Error ('invalid expression type');
+            }
+        }
+        try {
+            depName = getFragStr (expression.arguments[0]);
+        } catch (err) {
+            // could not generate dep name
+            return true;
+        }
+    }
+
+    if (CORE_MODS.indexOf (depName) >= 0) {
+        context.logger.debug ({
+            required:   expression.arguments[0].value,
+            line:       expression.loc.start.line
+        }, 'ignored core dependency');
+        if (!targetNode)
+            return false;
+        var dummy = newNode();
+        dummy[SILENT] = true;
+        dummy[ROOT] = [ [ '/', depName ] ];
+        targetNode[DEREF].push (dummy);
+        return false;
+    }
+    var pathInfo = getDependency (
+        context,
+        path.resolve (process.cwd(), referer),
+        fname,
+        baseNode[MODULE],
+        depName
+    );
+    if (!pathInfo) {
+        if (!targetNode)
+            return false;
+        var dummy = newNode();
+        dummy[SILENT] = true;
+        dummy[ROOT] = [ [ '/', depName ] ];
+        targetNode[DEREF].push (dummy);
+        return false;
+    }
+
+    if (context.argv.noDeps && !tools.pathsEqual (pathInfo.root, baseNode[MODULE])) {
+        if (!targetNode)
+            return false;
+        var dummy = newNode();
+        dummy[SILENT] = true;
+        dummy[ROOT] = pathInfo.path;
+        dummy[MODULE] = pathInfo.root;
+        targetNode[DEREF].push (dummy);
+        return false;
+    }
+    var sourceRoot = getRoot (context, pathInfo.file, pathInfo.root, pathInfo.path);
+    sourceRoot[MODULE] = pathInfo.root;
+    next (pathInfo.file, pathInfo.referer || referer);
+    var foreignExports = sourceRoot.module[PROPS].exports;
+    if (!targetNode)
+        return false;
+    targetNode[ALIAS] = foreignExports;
+    targetNode[DEREF].push (foreignExports);
+    return false;
 }
 
-module.exports = {
+module.exports = LangPack ({
     tokenize:           tokenize,
     getGlobalNode:      getGlobalNode,
     getRoot:            getRoot,
     getDependency:      getDependency,
     cleanupGlobal:      cleanupGlobal,
     cleanupRoot:        cleanupRoot,
+    onCallExpression:   onCallExpression,
     generateComponents: generateComponents
-};
+});

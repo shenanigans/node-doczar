@@ -1,14 +1,5 @@
 #!/usr/bin/env node
 
-/*      @module
-    Select, load and parse source files for `doczar` format documentation comments. Write json or
-    rendered html output to a configured disk location.
-@spare `README.md`
-    This is the rendered output of the `doczar` source documentation.
-    *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*
-    @load
-        ./README.md
-*/
 var path           = require ('path');
 var fs             = require ('fs-extra');
 var async          = require ('async');
@@ -296,6 +287,11 @@ if (argv.node) {
     argv.parse = 'node';
 }
 
+// if parsing syntax, fetch a language pack
+var langPack;
+if (argv.parse)
+    langPack = langs[PARSE_SYNONYMS[argv.parse]];
+
 // begin building the documentation context
 var context = new ComponentCache (logger);
 context.argv = argv;
@@ -418,6 +414,7 @@ if (!argv.jsmod) {
     return processSource (libFiles);
 }
 
+// jsmod and parse together
 if (argv.parse) {
     if (argv.parse !== 'node')
         return logger.fatal (
@@ -450,6 +447,7 @@ if (argv.parse) {
     return processSource (libFiles);
 }
 
+// process jsmod
 var modules = argv.jsmod instanceof Array ? argv.jsmod : [ argv.jsmod ];
 var dfnames = [];
 async.eachSeries (modules, function (mod, callback) {
@@ -548,18 +546,22 @@ function processSource (filenames) {
             }
 
             try {
+                var lastAction = 'parsing';
                 if (argv.parse) {
                     logger.setTask ('parsing syntax file: ' + path.relative (process.cwd(), fname));
-                    // Parser.parseSyntaxFile (
+                    // we don't prime the latency asto include shebangMatch above
+                    context.latency.log ('parsing');
+                    lastAction = 'analysis';
                     Analyzer.processSyntaxFile (
                         context,
                         fname,
                         fileInfo.referer,
-                        fileStr,
-                        langs[PARSE_SYNONYMS[argv.parse]],
+                        langPack.tokenize (fileStr),
+                        langPack,
                         localDefaultScope,
                         addToNextFiles
                     );
+                    context.latency.log ('analysis');
                 } else {
                     logger.setTask ('parsing tag file: ' + path.relative (process.cwd(), fname));
                     Parser.parseFile (
@@ -570,6 +572,7 @@ function processSource (filenames) {
                         logger,
                         addToNextFiles
                     );
+                    context.latency.log ('parsing');
                 }
             } catch (err) {
                 var scopePath = localDefaultScope
@@ -579,9 +582,9 @@ function processSource (filenames) {
                     { err:err, path:fname, scope:scopePath },
                     'parsing failed'
                 );
+                context.latency.log (lastAction);
             }
 
-            context.latency.log ('parsing');
             callback();
         });
     }, function (err) {
@@ -611,8 +614,13 @@ function processSource (filenames) {
         }
 
         if (argv.parse) {
+            logger.setTask ('preprocessing syntax tree');
+            Analyzer.preprocessSyntaxTree (context, langPack, defaultScope);
+            logger.info ({ parse:context.argv.parse }, 'finished preprocessing syntax tree');
             logger.setTask ('generating Components');
             Generator.generateComponents (context, langs[PARSE_SYNONYMS[argv.parse]], defaultScope);
+            context.latency.log ('generation');
+            logger.info ({ parse:context.argv.parse }, 'finished generating Components');
         }
 
         var renderOptions = {
