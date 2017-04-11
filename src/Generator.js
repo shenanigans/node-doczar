@@ -431,8 +431,12 @@ function generateComponents (context, langPack, defaultScope) {
         return didSubmit;
     }
 
+
     // generate Components for items defined in each source file
     langPack.generateComponents (context, submitSourceLevel);
+
+    // var TP = 'C:\\code\\node-doczar\\test\\tests\\Prototype.js';
+    // console.log (context.sources[TP].bar[MEMBERS].first[ARGUMENTS][0][PATH]);
 }
 
 

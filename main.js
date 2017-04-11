@@ -2,6 +2,18 @@
 /*      @module
     Select, load and parse source files for `doczar` format documentation comments. Write json or
     rendered html output to a configured disk location.
+
+    The normal workflow for document generation with syntax parsing enabled is:
+     * instantiate a [ComponentCache](doczar.ComponentCache) to contain your context.
+     * Tokenize the target entry files and pass them to the [Analyzer](doczar.Analyzer).
+     * Tokenize and analyze each additional file requested by the Analyzer.
+     * [Pre-process](doczar.Analyzer.preprocessSyntaxTree) the model.
+     * [Generate Components](doczar.Generator) for the model in the current context.
+     * [Finalize](doczar.ComponentCache#finalize) and [render](doczar.ComponentCache#writeFiles) the
+       documentation.
+
+    When syntax parsing is not desired, files can be fed directly into the [Parser](doczar.Parser)
+    at which point the context is ready to be finalized and rendered.
 @spare `README.md`
     This is the rendered output of the `doczar` source documentation.
     *View the [source](https://github.com/shenanigans/node-doczar) on GitHub!*

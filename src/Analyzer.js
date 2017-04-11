@@ -27,6 +27,9 @@ function cloneShallowFilter (key) {
     late to permit, for example, the simulated execution of call expressions when a function's
     body is not yet available. The result will not be suitable for [Component generation]
     (doczar.Generator) until it has been [pre-processed](.preprocessSyntaxTree).
+
+    The `next` callback is used to queue further files for analysis. There is no guarantee against
+    repeat requests. The calling context should ensure that each syntax file is only processed once.
 @argument:doczar.ComponentCache context
     The syntax file's model root will be stored on this context.
 @argument:String fname
@@ -56,8 +59,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
     var dirname = pathLib.parse (fname).dir;
     var logger = context.logger.child ({ file:fname });
 
-    function newNode (parent) {
-        var node = tools.newNode.apply (tools, arguments);
+    function newNode (parent, seed) {
+        var node = tools.newNode (seed);
         node[DOC] = fname;
         node[REFERER] = referer;
         if (parent) {
@@ -185,7 +188,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 }
             }
 
-            function simulateCallExpression (target, body, doApply) {
+            function simulateCallExpression (target, thisNode, body, doApply) {
                 if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (callNode) >= 0)
                     return;
                 localChain = fnChain.concat();
@@ -250,12 +253,30 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         delete innerScope[key];
             }
 
+            // if (!callNode[REBASE])
+            //     callNode[REBASE] = function (base) {
+            //         var newCall = newNode (callNode[PARENT], callNode);
+            //         delete newCall[MEMBERS];
+            //         delete newCall[WAITING_CALLS];
+            //         if (!newCall[BODY]) {
+            //             console.log ('defer rebase');
+            //             newCall[WAITING_CALLS] = [ function (body) {
+            //                 console.log ('deferred rebase!');
+            //                 simulateCallExpression (newCall, base, body, true);
+            //             } ];
+            //         } else {
+            //             console.log ('rebase!');
+            //             simulateCallExpression (newCall, base, newCall[BODY], true);
+            //         }
+            //         return newCall;
+            //     };
+
             if (!callNode[BODY]) {
                 if (!callNode[WAITING_CALLS])
                     callNode[WAITING_CALLS] = [];
                 if (!generateReturn) {
                     callNode[WAITING_CALLS].push (function (body) {
-                        simulateCallExpression (callNode, body, true);
+                        simulateCallExpression (callNode, callNode[THIS], body, true);
                     });
                     return callNode;
                 }
@@ -264,14 +285,14 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 dummy[RETURNS][TRANSIENT] = true;
                 targetRow.returns = dummy[RETURNS];
                 callNode[WAITING_CALLS].push (function (body) {
-                    simulateCallExpression (callNode, body, true);
-                    simulateCallExpression (dummy, body, false);
+                    simulateCallExpression (callNode, callNode[THIS], body, true);
+                    simulateCallExpression (dummy, callNode[THIS], body, false);
                 });
                 return dummy[RETURNS];
             }
 
             // simulate immediately
-            simulateCallExpression (callNode, callNode[BODY], true);
+            simulateCallExpression (callNode, callNode[THIS], callNode[BODY], true);
 
             if (!generateReturn)
                 return callNode;
@@ -280,7 +301,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             dummy[RETURNS] = newNode();
             dummy[RETURNS][TRANSIENT] = true;
             targetRow.returns = dummy[RETURNS];
-            simulateCallExpression (dummy, callNode[BODY], false);
+            simulateCallExpression (dummy, callNode[THIS], callNode[BODY], false);
             return dummy[RETURNS];
         }
 
@@ -321,11 +342,16 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         node[TYPES].push ('Array');
                     return [ 'Array' ];
                 case 'ObjectExpression':
-                    if (node[TYPES].indexOf ('json') < 0)
-                        node[TYPES].push ('json');
-                    if (!node[PROPS])
-                        node[PROPS] = tools.newCollection();
-                    var props = node[PROPS];
+                    var props;
+                    if (node[IS_COL])
+                        props = node;
+                    else {
+                        if (node[TYPES].indexOf ('json') < 0)
+                            node[TYPES].push ('json');
+                        if (!node[PROPS])
+                            node[PROPS] = tools.newCollection();
+                        props = node[PROPS];
+                    }
                     var lastPropDef;
                     for (var i=0,j=value.properties.length; i<j; i++) {
                         var propDef = value.properties[i];
@@ -381,144 +407,153 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             return [];
                         var dummy;
                         if (targetNode[IS_COL]) {
+
                             // something like Foo.prototype = {
+                            divineTypes (targetNode, value.right, targetNode[PARENT]);
+                            var refNode = node[IS_COL] ?
+                                node
+                              : ( node[MEMBERS] || ( ode[MEMBERS] = tools.newCollection() ) )
+                              ;
+                            if (refNode[DEREF].indexOf (targetNode) < 0)
+                                refNode[DEREF].push (targetNode);
+
                             // this node is the [MEMBERS] collection of Foo
-                            dummy = newNode (targetNode[PARENT]);
-                            divineTypes (dummy, value.right, targetNode[PARENT]);
+                            // dummy = newNode (targetNode[PARENT]);
+                            // divineTypes (dummy, value.right, targetNode[PARENT]);
 
-                            // rebases functions as methods
-                            function rebase (item, chain) {
-                                chain = chain || fnChain;
+                            // // rebases functions as methods
+                            // function rebase (item, chain) {
+                            //     chain = chain || fnChain;
 
-                                // recurse to rebase methods housed on DEREF
-                                if (item[DEREF] && chain.length < context.argv.maxDepth) {
-                                    for (var i=0,j=item[DEREF].length; i<j; i++) {
-                                        var subItem = item[DEREF][i];
-                                        if (chain.indexOf (subItem) >= 0)
-                                            continue;
-                                        var localChain = chain.concat();
-                                        localChain.push (subItem);
-                                        rebase (subItem, localChain);
-                                    }
-                                }
+                            //     // recurse to rebase methods housed on DEREF
+                            //     if (item[DEREF] && chain.length < context.argv.maxDepth) {
+                            //         for (var i=0,j=item[DEREF].length; i<j; i++) {
+                            //             var subItem = item[DEREF][i];
+                            //             if (chain.indexOf (subItem) >= 0)
+                            //                 continue;
+                            //             var localChain = chain.concat();
+                            //             localChain.push (subItem);
+                            //             rebase (subItem, localChain);
+                            //         }
+                            //     }
 
-                                if (!item[BODY])
-                                    return item;
+                            //     if (!item[BODY])
+                            //         return item;
 
-                                // re-parse the body of this method using the new `this`
-                                var args = ARGUMENTS in item ?
-                                    item[ARGUMENTS]
-                                  : item[ARGUMENTS] = []
-                                  ;
-                                var localChain = chain.concat();
-                                localChain.push (item);
-                                // run call test
-                                var innerScope = new filth.SafeMap (scope, item[SCOPE]);
-                                for (var i=0,j=args.length; i<j; i++) {
-                                    var argNode = args[i];
-                                    var dummy = newNode (argNode);
-                                    if (item[SILENT])
-                                        dummy[SILENT] = true;
-                                    dummy[DEREF].push (argNode);
-                                    dummy[NO_SET] = true;
-                                    dummy[TRANSIENT] = true;
-                                    innerScope[argNode[NAME][1]] = dummy;
-                                }
-                                if (
-                                    localChain.length < context.argv.maxDepth
-                                 && localChain.indexOf (item) < 0
-                                )
-                                    for (var i=0,j=item[BODY].length; i<j; i++) {
-                                        walkLevel (
-                                            item[BODY][i],
-                                            innerScope,
-                                            targetNode[PARENT],
-                                            localDeadLine,
-                                            item,
-                                            localChain,
-                                            fileScope.concat()
-                                        );
-                                        localDeadLine = item[BODY][i].loc.end.line;
-                                    }
-                                // reduce innerScope to new keys only
-                                for (var key in scope)
-                                    if (scope[key] === innerScope[key] || innerScope[key] === undefined)
-                                        delete innerScope[key];
-                                return item;
-                            }
-                            // copy the dummy's props into the members collection
-                            // and rebase any methods onto the new class
-                            context.latency.log ('analysis');
-                            if (node[IS_COL]) {
-                                if (dummy[PROPS])
-                                    for (var key in dummy[PROPS]) {
-                                        node[key] =
-                                         targetNode[key] =
-                                         rebase (dummy[PROPS][key])
-                                         ;
-                                        node[key][NAME][0] = '#';
-                                    }
-                                if (dummy[MEMBERS])
-                                    for (var key in dummy[MEMBERS])
-                                        node[key] =
-                                         targetNode[key] =
-                                         rebase (dummy[MEMBERS][key])
-                                         ;
-                                if (dummy[DEREF].length) {
-                                    if (dummy[DEREF][0][PROPS])
-                                        for (var key in dummy[DEREF][0][PROPS]) {
-                                            node[key] =
-                                             targetNode[key] =
-                                             rebase (dummy[DEREF][0][PROPS][key])
-                                             ;
-                                            node[key][NAME][0] = '#';
-                                        }
-                                    if (dummy[DEREF][0][MEMBERS])
-                                        for (var key in dummy[DEREF][0][MEMBERS])
-                                            node[key] =
-                                             targetNode[key] =
-                                             rebase (dummy[DEREF][0][MEMBERS][key])
-                                             ;
-                                }
-                            } else {
-                                dummy = newNode (targetNode);
-                                divineTypes (dummy, value.right, targetNode);
-                                if (!node[MEMBERS]) {
-                                    node[MEMBERS] = tools.newCollection();
-                                    node[MEMBERS][PARENT] = node;
-                                }
-                                if (dummy[PROPS])
-                                    for (var key in dummy[PROPS]) {
-                                        node[MEMBERS][key] =
-                                         targetNode[key] =
-                                         rebase (dummy[PROPS][key])
-                                         ;
-                                        node[MEMBERS][key][NAME][0] = '#';
-                                    }
-                                if (dummy[MEMBERS])
-                                    for (var key in dummy[MEMBERS])
-                                        node[MEMBERS][key] =
-                                         targetNode[key] =
-                                         rebase (dummy[MEMBERS][key])
-                                         ;
-                                if (dummy[DEREF].length) {
-                                    if (dummy[DEREF][0][PROPS])
-                                        for (var key in dummy[DEREF][0][PROPS]) {
-                                            node[MEMBERS][key] =
-                                             targetNode[key] =
-                                             rebase (dummy[DEREF][0][PROPS][key])
-                                             ;
-                                            node[MEMBERS][key][NAME][0] = '#';
-                                        }
-                                    if (dummy[DEREF][0][MEMBERS])
-                                        for (var key in dummy[DEREF][0][MEMBERS])
-                                            node[MEMBERS][key] =
-                                             targetNode[key] =
-                                             rebase (dummy[DEREF][0][MEMBERS][key])
-                                             ;
-                                }
-                            }
-                            context.latency.log ('cloning');
+                            //     // re-parse the body of this method using the new `this`
+                            //     var args = ARGUMENTS in item ?
+                            //         item[ARGUMENTS]
+                            //       : item[ARGUMENTS] = []
+                            //       ;
+                            //     var localChain = chain.concat();
+                            //     localChain.push (item);
+                            //     // run call test
+                            //     var innerScope = new filth.SafeMap (scope, item[SCOPE]);
+                            //     for (var i=0,j=args.length; i<j; i++) {
+                            //         var argNode = args[i];
+                            //         var dummy = newNode (argNode);
+                            //         if (item[SILENT])
+                            //             dummy[SILENT] = true;
+                            //         dummy[DEREF].push (argNode);
+                            //         dummy[NO_SET] = true;
+                            //         dummy[TRANSIENT] = true;
+                            //         innerScope[argNode[NAME][1]] = dummy;
+                            //     }
+                            //     if (
+                            //         localChain.length < context.argv.maxDepth
+                            //      && localChain.indexOf (item) < 0
+                            //     )
+                            //         for (var i=0,j=item[BODY].length; i<j; i++) {
+                            //             walkLevel (
+                            //                 item[BODY][i],
+                            //                 innerScope,
+                            //                 targetNode[PARENT],
+                            //                 localDeadLine,
+                            //                 item,
+                            //                 localChain,
+                            //                 fileScope.concat()
+                            //             );
+                            //             localDeadLine = item[BODY][i].loc.end.line;
+                            //         }
+                            //     // reduce innerScope to new keys only
+                            //     for (var key in scope)
+                            //         if (scope[key] === innerScope[key] || innerScope[key] === undefined)
+                            //             delete innerScope[key];
+                            //     return item;
+                            // }
+                            // // copy the dummy's props into the members collection
+                            // // and rebase any methods onto the new class
+                            // context.latency.log ('analysis');
+                            // if (node[IS_COL]) {
+                            //     if (dummy[PROPS])
+                            //         for (var key in dummy[PROPS]) {
+                            //             node[key] =
+                            //              targetNode[key] =
+                            //              rebase (dummy[PROPS][key])
+                            //              ;
+                            //             node[key][NAME][0] = '#';
+                            //         }
+                            //     if (dummy[MEMBERS])
+                            //         for (var key in dummy[MEMBERS])
+                            //             node[key] =
+                            //              targetNode[key] =
+                            //              rebase (dummy[MEMBERS][key])
+                            //              ;
+                            //     if (dummy[DEREF].length) {
+                            //         if (dummy[DEREF][0][PROPS])
+                            //             for (var key in dummy[DEREF][0][PROPS]) {
+                            //                 node[key] =
+                            //                  targetNode[key] =
+                            //                  rebase (dummy[DEREF][0][PROPS][key])
+                            //                  ;
+                            //                 node[key][NAME][0] = '#';
+                            //             }
+                            //         if (dummy[DEREF][0][MEMBERS])
+                            //             for (var key in dummy[DEREF][0][MEMBERS])
+                            //                 node[key] =
+                            //                  targetNode[key] =
+                            //                  rebase (dummy[DEREF][0][MEMBERS][key])
+                            //                  ;
+                            //     }
+                            // } else {
+                            //     dummy = newNode (targetNode);
+                            //     divineTypes (dummy, value.right, targetNode);
+                            //     if (!node[MEMBERS]) {
+                            //         node[MEMBERS] = tools.newCollection();
+                            //         node[MEMBERS][PARENT] = node;
+                            //     }
+                            //     if (dummy[PROPS])
+                            //         for (var key in dummy[PROPS]) {
+                            //             node[MEMBERS][key] =
+                            //              targetNode[key] =
+                            //              rebase (dummy[PROPS][key])
+                            //              ;
+                            //             node[MEMBERS][key][NAME][0] = '#';
+                            //         }
+                            //     if (dummy[MEMBERS])
+                            //         for (var key in dummy[MEMBERS])
+                            //             node[MEMBERS][key] =
+                            //              targetNode[key] =
+                            //              rebase (dummy[MEMBERS][key])
+                            //              ;
+                            //     if (dummy[DEREF].length) {
+                            //         if (dummy[DEREF][0][PROPS])
+                            //             for (var key in dummy[DEREF][0][PROPS]) {
+                            //                 node[MEMBERS][key] =
+                            //                  targetNode[key] =
+                            //                  rebase (dummy[DEREF][0][PROPS][key])
+                            //                  ;
+                            //                 node[MEMBERS][key][NAME][0] = '#';
+                            //             }
+                            //         if (dummy[DEREF][0][MEMBERS])
+                            //             for (var key in dummy[DEREF][0][MEMBERS])
+                            //                 node[MEMBERS][key] =
+                            //                  targetNode[key] =
+                            //                  rebase (dummy[DEREF][0][MEMBERS][key])
+                            //                  ;
+                            //     }
+                            // }
+                            // context.latency.log ('cloning');
                             return [];
                         }
                         var gotTypes = divineTypes (targetNode, value.right);
@@ -712,6 +747,26 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             }
                         }
                     }
+                    if (!node[REBASE])
+                        node[REBASE] = function (base) {
+                            // var item = newNode (node[PARENT], node);
+                            var item = filth.circularClone (node, undefined, cloneShallowFilter);
+                            delete item[MEMBERS];
+                            var innerScope = new filth.SafeMap (scope, node[SCOPE]);
+                            for (var i=0,j=node[BODY].length; i<j; i++) {
+                                walkLevel (
+                                    node[BODY][i],
+                                    innerScope,
+                                    base,
+                                    localDeadLine,
+                                    node,
+                                    localChain,
+                                    fileScope.concat()
+                                );
+                                localDeadLine = node[BODY][i].loc.end.line;
+                            }
+                            return item;
+                        };
                     // reduce innerScope to new keys only
                     for (var key in scope)
                         if (scope[key] === innerScope[key] || innerScope[key] === undefined)
@@ -877,6 +932,26 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         );
                         localDeadLine = level.body.body[i].loc.end.line;
                     }
+                    if (!anon[REBASE])
+                        anon[REBASE] = function (base) {
+                            // var item = newNode (anon[PARENT], anon);
+                            var item = filth.circularClone (anon, undefined, cloneShallowFilter);
+                            delete item[MEMBERS];
+                            var innerScope = new filth.SafeMap (scope, node[SCOPE]);
+                            for (var i=0,j=anon[BODY].length; i<j; i++) {
+                                walkLevel (
+                                    anon[BODY][i],
+                                    innerScope,
+                                    base,
+                                    localDeadLine,
+                                    base,
+                                    localChain,
+                                    fileScope.concat()
+                                );
+                                localDeadLine = anon[BODY][i].loc.end.line;
+                            }
+                            return item;
+                        };
                     // reduce innerScope to new keys only
                     for (var key in scope)
                         if (scope[key] === innerScope[key] || innerScope[key] === undefined)
@@ -1103,7 +1178,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 // process final leading comment
                 var comment = level.leadingComments[level.leadingComments.length-1];
                 Patterns.tag.lastIndex = 0;
-                if (comment.type !== 'Line' && (
+                if (comment.type !== 'Line' && comment.value[0] !== '!' && (
                     deadLine === undefined
                  || comment.loc.start.line > deadLine
                  || (level.loc.start.line === deadLine && comment.loc.start.line === deadLine)
@@ -1249,6 +1324,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 node
              && level.trailingComments
              && level.trailingComments[0].loc.start.line === level.loc.end.line
+             && level.trailingComments[0].value[0] !== '!'
             ) {
                 // use a trailing comment that starts on the same line as this statement ends on
                 var trailer = level.trailingComments[0];
@@ -1467,157 +1543,160 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             break;
                         }
                         // something like Foo.prototype = {
+
+                        divineTypes (node, level.expression.right, node[PARENT]);
+
                         // this node is the [MEMBERS] collection of Foo
-                        var dummy = newNode (node[PARENT]);
-                        divineTypes (dummy, level.expression.right, node[PARENT]);
+                        // var dummy = newNode (node[PARENT]);
+                        // divineTypes (dummy, level.expression.right, node[PARENT]);
 
-                        function mergeNodes (target, source) {
-                            if (source[MEMBERS])
-                                if (!target[MEMBERS]) {
-                                    target[MEMBERS] = tools.newCollection (source[MEMBERS])
-                                    target[MEMBERS][PARENT] = target;
-                                } else for (var name in source[MEMBERS]) {
-                                    if (Object.hasOwnProperty.call (target[MEMBERS], name))
-                                        mergeNodes (
-                                            target[MEMBERS][name],
-                                            source[MEMBERS][name]
-                                        );
-                                    else
-                                        target[MEMBERS][name] = source[MEMBERS][name];
-                                }
-                            if (source[PROPS])
-                                if (!target[PROPS]) {
-                                    target[PROPS] = tools.newCollection (source[PROPS])
-                                    target[PROPS][PARENT] = target;
-                                } else for (var name in source[PROPS]) {
-                                    if (Object.hasOwnProperty.call (target[PROPS], name))
-                                        mergeNodes (
-                                            target[PROPS][name],
-                                            source[PROPS][name]
-                                        );
-                                    else
-                                        target[PROPS][name] = source[PROPS][name];
-                                }
-                            if (source[THROWS]) {
-                                if (!target[THROWS])
-                                    target[THROWS] = newNode();
-                                mergeNodes (target[THROWS], source[THROWS]);
-                            }
-                            if (source[ARGUMENTS]) {
-                                if (!target[ARGUMENTS])
-                                    target[ARGUMENTS] = source[ARGUMENTS].concat();
-                                else {
-                                    var targetArgs = target[ARGUMENTS].length;
-                                    for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
-                                        if (i < targetArgs)
-                                            mergeNodes (
-                                                target[ARGUMENTS][i],
-                                                source[ARGUMENTS][i]
-                                            );
-                                        else
-                                            target[ARGUMENTS][i] = source[ARGUMENTS][i];
-                                }
-                            }
-                            if (source[RETURNS])
-                                if (target[RETURNS])
-                                    mergeNodes (target[RETURNS], source[RETURNS]);
-                                else
-                                    target[RETURNS] = source[RETURNS];
-                        }
+                        // function mergeNodes (target, source) {
+                        //     if (source[MEMBERS])
+                        //         if (!target[MEMBERS]) {
+                        //             target[MEMBERS] = tools.newCollection (source[MEMBERS])
+                        //             target[MEMBERS][PARENT] = target;
+                        //         } else for (var name in source[MEMBERS]) {
+                        //             if (Object.hasOwnProperty.call (target[MEMBERS], name))
+                        //                 mergeNodes (
+                        //                     target[MEMBERS][name],
+                        //                     source[MEMBERS][name]
+                        //                 );
+                        //             else
+                        //                 target[MEMBERS][name] = source[MEMBERS][name];
+                        //         }
+                        //     if (source[PROPS])
+                        //         if (!target[PROPS]) {
+                        //             target[PROPS] = tools.newCollection (source[PROPS])
+                        //             target[PROPS][PARENT] = target;
+                        //         } else for (var name in source[PROPS]) {
+                        //             if (Object.hasOwnProperty.call (target[PROPS], name))
+                        //                 mergeNodes (
+                        //                     target[PROPS][name],
+                        //                     source[PROPS][name]
+                        //                 );
+                        //             else
+                        //                 target[PROPS][name] = source[PROPS][name];
+                        //         }
+                        //     if (source[THROWS]) {
+                        //         if (!target[THROWS])
+                        //             target[THROWS] = newNode();
+                        //         mergeNodes (target[THROWS], source[THROWS]);
+                        //     }
+                        //     if (source[ARGUMENTS]) {
+                        //         if (!target[ARGUMENTS])
+                        //             target[ARGUMENTS] = source[ARGUMENTS].concat();
+                        //         else {
+                        //             var targetArgs = target[ARGUMENTS].length;
+                        //             for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
+                        //                 if (i < targetArgs)
+                        //                     mergeNodes (
+                        //                         target[ARGUMENTS][i],
+                        //                         source[ARGUMENTS][i]
+                        //                     );
+                        //                 else
+                        //                     target[ARGUMENTS][i] = source[ARGUMENTS][i];
+                        //         }
+                        //     }
+                        //     if (source[RETURNS])
+                        //         if (target[RETURNS])
+                        //             mergeNodes (target[RETURNS], source[RETURNS]);
+                        //         else
+                        //             target[RETURNS] = source[RETURNS];
+                        // }
 
-                        // rebases functions as methods
-                        function rebase (item, gotChain) {
-                            var chain = gotChain || fnChain;
+                        // // rebases functions as methods
+                        // function rebase (item, gotChain) {
+                        //     var chain = gotChain || fnChain;
 
-                            // recurse to rebase methods housed on DEREF
-                            if (item[DEREF] && chain.length < context.argv.maxDepth) {
-                                for (var i=0,j=item[DEREF].length; i<j; i++) {
-                                    var subItem = item[DEREF][i];
-                                    if (chain.indexOf (subItem) >= 0)
-                                        continue;
-                                    var localChain = chain.concat();
-                                    localChain.push (subItem);
-                                    rebase (subItem, localChain);
-                                }
-                            }
+                        //     // recurse to rebase methods housed on DEREF
+                        //     if (item[DEREF] && chain.length < context.argv.maxDepth) {
+                        //         for (var i=0,j=item[DEREF].length; i<j; i++) {
+                        //             var subItem = item[DEREF][i];
+                        //             if (chain.indexOf (subItem) >= 0)
+                        //                 continue;
+                        //             var localChain = chain.concat();
+                        //             localChain.push (subItem);
+                        //             rebase (subItem, localChain);
+                        //         }
+                        //     }
 
-                            if (!item[BODY])
-                                return gotChain ?
-                                    item
-                                  : filth.circularClone (item, undefined, cloneShallowFilter)
-                                  ;
+                        //     if (!item[BODY])
+                        //         return gotChain ?
+                        //             item
+                        //           : filth.circularClone (item, undefined, cloneShallowFilter)
+                        //           ;
 
-                            // re-parse the body of this method using the new `this`
-                            var args = ARGUMENTS in item ?
-                                item[ARGUMENTS]
-                              : item[ARGUMENTS] = []
-                              ;
-                            // run call test
-                            var innerScope = new filth.SafeMap (scope, item[SCOPE]);
-                            for (var i=0,j=args.length; i<j; i++) {
-                                var argNode = args[i];
-                                var dummy = newNode (argNode);
-                                if (item[SILENT])
-                                    dummy[SILENT] = true;
-                                dummy[DEREF].push (argNode);
-                                dummy[NO_SET] = true;
-                                innerScope[argNode[NAME][1]] = dummy;
-                            }
-                            if (
-                                fnChain.length < context.argv.maxDepth
-                             && fnChain.indexOf (item) < 0
-                            ) {
-                                var localChain = chain.concat();
-                                localChain.push (item);
-                                for (var i=0,j=item[BODY].length; i<j; i++) {
-                                    walkLevel (
-                                        item[BODY][i],
-                                        innerScope,
-                                        node[PARENT],
-                                        localDeadLine,
-                                        item,
-                                        localChain,
-                                        fileScope.concat()
-                                    );
-                                    localDeadLine = item[BODY][i].loc.end.line;
-                                }
-                            }
-                            // reduce innerScope to new keys only
-                            for (var key in scope)
-                                if (scope[key] === innerScope[key] || innerScope[key] === undefined)
-                                    delete innerScope[key];
+                        //     // re-parse the body of this method using the new `this`
+                        //     var args = ARGUMENTS in item ?
+                        //         item[ARGUMENTS]
+                        //       : item[ARGUMENTS] = []
+                        //       ;
+                        //     // run call test
+                        //     var innerScope = new filth.SafeMap (scope, item[SCOPE]);
+                        //     for (var i=0,j=args.length; i<j; i++) {
+                        //         var argNode = args[i];
+                        //         var dummy = newNode (argNode);
+                        //         if (item[SILENT])
+                        //             dummy[SILENT] = true;
+                        //         dummy[DEREF].push (argNode);
+                        //         dummy[NO_SET] = true;
+                        //         innerScope[argNode[NAME][1]] = dummy;
+                        //     }
+                        //     if (
+                        //         fnChain.length < context.argv.maxDepth
+                        //      && fnChain.indexOf (item) < 0
+                        //     ) {
+                        //         var localChain = chain.concat();
+                        //         localChain.push (item);
+                        //         for (var i=0,j=item[BODY].length; i<j; i++) {
+                        //             walkLevel (
+                        //                 item[BODY][i],
+                        //                 innerScope,
+                        //                 node[PARENT],
+                        //                 localDeadLine,
+                        //                 item,
+                        //                 localChain,
+                        //                 fileScope.concat()
+                        //             );
+                        //             localDeadLine = item[BODY][i].loc.end.line;
+                        //         }
+                        //     }
+                        //     // reduce innerScope to new keys only
+                        //     for (var key in scope)
+                        //         if (scope[key] === innerScope[key] || innerScope[key] === undefined)
+                        //             delete innerScope[key];
 
-                            if (item[MEMBERS]) {
-                                for (var name in item[MEMBERS])
-                                    if (Object.hasOwnProperty.call (node, name))
-                                        mergeNodes (node[name], item[MEMBERS][name]);
-                                    else
-                                        node[name] = item[MEMBERS][name];
-                                delete item[MEMBERS];
-                            }
-                            return item;
-                        }
+                        //     if (item[MEMBERS]) {
+                        //         for (var name in item[MEMBERS])
+                        //             if (Object.hasOwnProperty.call (node, name))
+                        //                 mergeNodes (node[name], item[MEMBERS][name]);
+                        //             else
+                        //                 node[name] = item[MEMBERS][name];
+                        //         delete item[MEMBERS];
+                        //     }
+                        //     return item;
+                        // }
 
-                        // copy the dummy's props into the members collection
-                        context.latency.log ('analysis');
+                        // // copy the dummy's props into the members collection
+                        // context.latency.log ('analysis');
 
-                        function cloneChildren (source) {
-                            if (source[PROPS])
-                                for (var key in source[PROPS])
-                                    node[key] =
-                                     rebase (source[PROPS][key])
-                                     ;
-                            if (source[MEMBERS])
-                                for (var key in source[MEMBERS])
-                                    node[key] =
-                                     rebase (source[MEMBERS][key])
-                                     ;
-                            if (source[DEREF])
-                                for (var i=0,j=source[DEREF].length; i<j; i++)
-                                    cloneChildren (source[DEREF][i]);
-                        }
-                        cloneChildren (dummy);
-                        context.latency.log ('cloning');
+                        // function cloneChildren (source) {
+                        //     if (source[PROPS])
+                        //         for (var key in source[PROPS])
+                        //             node[key] =
+                        //              rebase (source[PROPS][key])
+                        //              ;
+                        //     if (source[MEMBERS])
+                        //         for (var key in source[MEMBERS])
+                        //             node[key] =
+                        //              rebase (source[MEMBERS][key])
+                        //              ;
+                        //     if (source[DEREF])
+                        //         for (var i=0,j=source[DEREF].length; i<j; i++)
+                        //             cloneChildren (source[DEREF][i]);
+                        // }
+                        // cloneChildren (dummy);
+                        // context.latency.log ('cloning');
                         node = node[PARENT];
                         break;
                     case 'CallExpression':
@@ -1823,9 +1902,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 }
 
                 // recurse into function body
-                var target = node;
-                if (target[TYPES].indexOf ('Function') < 0)
-                    target[TYPES].push ('Function');
+                if (node[TYPES].indexOf ('Function') < 0)
+                    node[TYPES].push ('Function');
                 var innerScope = new filth.SafeMap (scope);
                 for (var i=0,j=args.length; i<j; i++) {
                     var arg = args[i];
@@ -1846,7 +1924,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             innerScope,
                             node,
                             localDeadLine,
-                            target,
+                            node,
                             localChain,
                             fileScope.concat()
                         );
@@ -1861,6 +1939,26 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         }
                     }
                 }
+                if (!node[REBASE])
+                    node[REBASE] = function (base) {
+                        // var item = newNode (node[PARENT], node);
+                        item = filth.circularClone (node, undefined, cloneShallowFilter);
+                        delete item[MEMBERS];
+                        var innerScope = new filth.SafeMap (scope, node[SCOPE]);
+                        for (var i=0,j=node[BODY].length; i<j; i++) {
+                            walkLevel (
+                                node[BODY][i],
+                                innerScope,
+                                base,
+                                localDeadLine,
+                                node,
+                                localChain,
+                                fileScope.concat()
+                            );
+                            localDeadLine = node[BODY][i].loc.end.line;
+                        }
+                        return item;
+                    };
                 // reduce scope to new keys only
                 for (var key in scope)
                     if (scope[key] === innerScope[key] || innerScope[key] === undefined)
@@ -2461,6 +2559,190 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
 @argument:doczar.Parser/Path defaultScope
 */
 function preprocessSyntaxTree (context, langPack, defaultScope) {
+    function compressCollection (collection) {
+        var didWrite = false;
+        function mergeNodes (target, source) {
+            var didWrite = false;
+            if (source[MEMBERS])
+                if (!target[MEMBERS]) {
+                    didWrite = true;
+                    target[MEMBERS] = tools.newCollection (source[MEMBERS])
+                    target[MEMBERS][PARENT] = target;
+                } else for (var name in source[MEMBERS])
+                    if (Object.hasOwnProperty.call (target[MEMBERS], name))
+                        didWrite += mergeNodes (
+                            target[MEMBERS][name],
+                            source[MEMBERS][name]
+                        );
+                    else {
+                        didWrite = true;
+                        target[MEMBERS][name] = source[MEMBERS][name];
+                    }
+            if (source[PROPS])
+                if (!target[PROPS]) {
+                    didWrite = true;
+                    target[PROPS] = tools.newCollection (source[PROPS])
+                    target[PROPS][PARENT] = target;
+                } else for (var name in source[PROPS]) {
+                    if (Object.hasOwnProperty.call (target[PROPS], name))
+                        didWrite += mergeNodes (
+                            target[PROPS][name],
+                            source[PROPS][name]
+                        );
+                    else {
+                        didWrite = true;
+                        target[PROPS][name] = source[PROPS][name];
+                    }
+                }
+            if (source[THROWS]) {
+                if (!target[THROWS]) {
+                    didWrite = true;
+                    target[THROWS] = tools.newNode();
+                } else
+                    didWrite += mergeNodes (target[THROWS], source[THROWS]);
+            }
+            if (source[ARGUMENTS]) {
+                if (!target[ARGUMENTS]) {
+                    didWrite = true;
+                    target[ARGUMENTS] = source[ARGUMENTS].concat();
+                } else {
+                    var targetArgs = target[ARGUMENTS].length;
+                    for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
+                        if (i < targetArgs)
+                            didWrite += mergeNodes (
+                                target[ARGUMENTS][i],
+                                source[ARGUMENTS][i]
+                            );
+                        else {
+                            didWrite = true;
+                            target[ARGUMENTS][i] = source[ARGUMENTS][i];
+                        }
+                }
+            }
+            if (source[RETURNS])
+                if (target[RETURNS])
+                    didWrite += mergeNodes (target[RETURNS], source[RETURNS]);
+                else {
+                    didWrite = true;
+                    target[RETURNS] = source[RETURNS];
+                }
+            return didWrite;
+        }
+
+        // rebases functions as methods
+        function rebase (item) {
+            // recurse to rebase methods housed on DEREF
+            preprocessDerefs (item);
+
+            if (item[REBASE])
+                return item[REBASE] (collection[PARENT]);
+            return tools.newNode (item);
+            // if (!item[BODY])
+            //     return item;
+
+            // delete item[MEMBERS];
+
+            // // re-parse the body of this method using the new `this`
+            // var args = ARGUMENTS in item ?
+            //     item[ARGUMENTS]
+            //   : item[ARGUMENTS] = []
+            //   ;
+            // var localChain = chain.concat();
+            // localChain.push (item);
+
+            // // run call test
+            // var innerScope = new filth.SafeMap (item[SCOPE]);
+            // for (var i=0,j=args.length; i<j; i++) {
+            //     var argNode = args[i];
+            //     var dummy = tools.newNode (argNode);
+            //     if (item[SILENT])
+            //         dummy[SILENT] = true;
+            //     dummy[DEREF].push (argNode);
+            //     dummy[NO_SET] = true;
+            //     dummy[TRANSIENT] = true;
+            //     innerScope[argNode[NAME][1]] = dummy;
+            // }
+            // if (
+            //     localChain.length < context.argv.maxDepth
+            //  // && localChain.indexOf (item) < 0
+            // )
+            //     for (var i=0,j=item[BODY].length; i<j; i++) {
+            //         walkLevel (
+            //             item[BODY][i],
+            //             innerScope,
+            //             collection[PARENT],
+            //             localDeadLine,
+            //             item,
+            //             localChain,
+            //             fileScope.concat()
+            //         );
+            //         localDeadLine = item[BODY][i].loc.end.line;
+            //     }
+            // // reduce innerScope to new keys only
+            // // for (var key in scope)
+            // //     if (scope[key] === innerScope[key] || innerScope[key] === undefined)
+            // //         delete innerScope[key];
+
+            // // if (item[MEMBERS]) {
+            // //     for (var name in item[MEMBERS])
+            // //         if (Object.hasOwnProperty.call (collection, name))
+            // //             didWrite += mergeNodes (collection[name], item[MEMBERS][name]);
+            // //         else {
+            // //             didWrite = true;
+            // //             collection[name] = item[MEMBERS][name];
+            // //         }
+            // //     delete item[MEMBERS];
+            // // }
+
+            // return item;
+        }
+
+        for (var i=0,j=collection[DEREF].length; i<j; i++) {
+            var sourceNode = collection[DEREF][i];
+            didWrite += preprocessDerefs (sourceNode);
+
+            // copy the sourceNode's props into the members collection
+            // and rebase any methods onto the new class
+            if (sourceNode[IS_COL])
+                for (var key in sourceNode) {
+                    var item = rebase (sourceNode[key]);
+                    didWrite += preprocessDerefs (item);
+                    if (Object.hasOwnProperty.call (collection, key))
+                        didWrite += mergeNodes (collection[key], item);
+                    else {
+                        didWrite = true;
+                        collection[key] = item;
+                    }
+                }
+            if (sourceNode[PROPS])
+                for (var key in sourceNode[PROPS]) {
+                    var item = rebase (sourceNode[PROPS][key]);
+                    if (Object.hasOwnProperty.call (collection, key))
+                        didWrite += mergeNodes (collection[key], item);
+                    else {
+                        didWrite = true;
+                        collection[key] = item;
+                    }
+                    if (collection[key][NAME])
+                        collection[key][NAME][0] = '#';
+                    else
+                        collection[key][NAME] = [ '#', key ];
+                }
+            if (sourceNode[MEMBERS])
+                for (var key in sourceNode[MEMBERS]) {
+                    var item = rebase (sourceNode[MEMBERS][key]);
+                    if (Object.hasOwnProperty.call (collection, key))
+                        didWrite += mergeNodes (collection[key], item);
+                    else {
+                        didWrite = true;
+                        collection[key] = item;
+                    }
+                }
+        }
+
+        return didWrite;
+    }
+
     function preprocessDerefs (level, target, chain, isTransient) {
         var didFinishDeref = false;
         if (!target)
@@ -2473,8 +2755,8 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         function recurse (level, target) {
             if (chain.length >= context.argv.maxRefDepth)
                 return false;
-            if (IS_COL in level)
-                return false;
+            // if (IS_COL in level)
+            //     return false;
             if (chain.indexOf (level) >= 0)
                 return false;
             var newChain = chain.concat();
@@ -2490,8 +2772,8 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         if (level[BLIND])
             target[BLIND] = true;
 
-        if (!level[DEREF])
-            return false;
+        // if (!level[DEREF])
+        //     return false;
 
         // dive for LINE definitions
         if (target === level && !target[LINE] && !isTransient) {
@@ -2557,6 +2839,12 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                         didFinishDeref = true;
                     }
             }
+            // promot REBASE function
+            if (ref[REBASE])
+                target[REBASE] = ref[REBASE];
+            // promote function body
+            if (ref[BODY] && !target[BODY])
+                target[BODY] = ref[BODY];
             // promote children
             if (ref[PROPS]) {
                 if (!target[PROPS]) {
@@ -2570,7 +2858,7 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
             }
             if (ref[MEMBERS]) {
                 if (!target[MEMBERS]) {
-                    target[MEMBERS] = tools.newCollection (target[MEMBERS]);
+                    target[MEMBERS] = tools.newCollection (ref[MEMBERS]);
                     target[MEMBERS][PARENT] = target;
                 } else for (var name in ref[MEMBERS])
                     if (!Object.hasOwnProperty.call (target[MEMBERS], name))
@@ -2633,17 +2921,25 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         for (var key in level)
             didFinishDeref += recurse (level[key], undefined);
 
-        if (target[NO_SET])
-            return didFinishDeref;
+        // if (target[NO_SET])
+        //     return didFinishDeref;
 
-        if (level[MEMBERS]) for (var key in level[MEMBERS]) {
-            var nextTarget = level[MEMBERS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
+        if (level[MEMBERS]) {
+            if (level[MEMBERS][DEREF].length)
+                didFinishDeref += compressCollection (level[MEMBERS]);
+            for (var key in level[MEMBERS]) {
+                var nextTarget = level[MEMBERS][key];
+                didFinishDeref += recurse (nextTarget, nextTarget);
+            }
         }
 
-        if (level[PROPS]) for (var key in level[PROPS]) {
-            var nextTarget = level[PROPS][key];
-            didFinishDeref += recurse (nextTarget, nextTarget);
+        if (level[PROPS]) {
+            if (level[PROPS][DEREF].length)
+                didFinishDeref += compressCollection (level[PROPS]);
+            for (var key in level[PROPS]) {
+                var nextTarget = level[PROPS][key];
+                didFinishDeref += recurse (nextTarget, nextTarget);
+            }
         }
 
         if (target[WAITING_CALLS] && target[BODY]) {

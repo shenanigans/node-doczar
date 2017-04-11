@@ -1,66 +1,31 @@
 doczar
 ======
-Doczar (pronounced **dōzer**) is a simple, explicit documentation generator for javascript, python,
-ruby, java, c-like languages, and others. It is used to generate [its own docs.]
-(http://shenanigans.github.io/node-doczar/docs/module/doczar/index.html)
+Doczar (pronounced **dōzer** as in *bulldozer*) is a documentation generator. It is used to generate
+[its own docs.](http://shenanigans.github.io/node-doczar/docs/module/doczar/index.html)
 
-`doczar` has one significant conceptual difference from most documentation generation tools: your
-project is always presented as being part of a global namespace. Because `doczar` aspires to be
-language agnostic, the built-in primitives of your environment (i.e. `Object` or `int`) are treated
-no differently than the types you write yourself.
+`doczar` features an advanced static analysis tool for generating documentation automatically with a
+minimum of explicit documentation required. Conversely, the tag dialect emphasizes easy explicit
+definitions. In fact, `doczar` was originally designed to avoid the syntax analysis probem
+altogether with a streamlined explicit tag dialect requiring the same or less typing load than
+typically required by existing generators.
 
-The benefits of this scheme are accessed via the `--with` command line option. A selection of
-[very simple libraries](https://github.com/shenanigans/node-doczar/tree/master/standardLibs) loads
-remote URLs documenting environment primitives. These types will then be crosslinked wherever they
-appear in your documentation. You can easily document large projects, multiple projects, or even
-everything you're working on all at once within the same namespace. When you view this
-documentation, you will also have instant access to the standard library documentation. In rapidly
-upcoming features, the documentation for your external dependencies will be included automatically
-as well.
+Currently, `doczar` supports javascript in browser and [Node.js](https://nodejs.org) runtimes.
+Future supported languages are planned to include C/C++/C#, Java, Python, Go, and PHP.
 
-The second goal of `doczar` is to create a single comment dialect which documents a large subset of
-all programming languages. There are facilities for keyword arguments and argument defaults,
-multiple return values, pointers, generics and interfaces. The `@module` tag can adequately describe
-a Node.js module, a C++ namespace or a Java package.
-
-In early days, `doczar` focused entirely on manual tag authoring with a focus on an easy-to-type
-syntax to lighten the extra burden. As syntax support matures and expands to more platforms,
-intuitive support for explicit expressions will remain a priority. In a nutshell: `doczar` may
-involve slightly more typing than a javadoc-derived sollution, but you should never find it
-difficult to explain what you mean when the parser isn't following you.
-
-The `doczar` comment syntax allows manual documentation of source in C/C++/C#, Java, Javascript,
-Python, Go, php, css and html. Library support is currently only available for Javascript es5, es6
-and the browser environment with or without strict mode. If you are interested in contributing,
-authoring a standard lib file is a great way to start! Code parsing support is currently only
-available for es5 browser and node-like environments, with es6 support coming very soon. The next
-action items are to support javadoc comment syntax and expand code parsing support to python and
-java.
-
-#### Features
- * describe modules and object-oriented structures
- * inheritence, multiple inheritence and Java `interface`
- * Github-flavored markdown with syntax highlighting
- * automatic crosslinking
- * callbacks and events
- * multiple return values and keyword arguments
- * function signatures
 
 |    | Table Of Contents
 |---:|-------------------------------
 |  1 | [Installation](#installation)
 |  2 | [Shell Usage](#shell-usage)
-|  3 | [Development](#development)
-|  5 | [Comment Syntax](#comment-syntax)
-|  6 | [Syntax Parsing](#syntax-parsing)
-|  7 | [Components, Types and Paths](#components-types-and-paths)
-|  8 | [Documents and Spares](#documents-and-spares)
-|  9 | [Functions](#functions)
-| 10 | [Inheritence](#inheritence)
-| 11 | [Events and Errors](#events-and-errors)
-| 12 | [Generics](#generics)
-| 13 | [Javascript ES6](#javascript-es6)
-| 14 | [LICENSE](#license)
+|  3 | [Syntax Analysis](#syntax-analysis)
+|  4 | [Comment Syntax](#comment-syntax)
+|  5 | [Documents and Spares](#documents-and-spares)
+|  6 | [Functions](#functions)
+|  7 | [Inheritence](#inheritence)
+|  8 | [Events and Errors](#events-and-errors)
+|  9 | [Javascript ES6](#javascript-es6)
+| 10 | [LICENSE](#license)
+
 
 
 Installation
@@ -76,6 +41,7 @@ $ doczar --with browser
 ```
 
 
+
 Shell Usage
 -----------
 The default output path is `./docs/`. There is no input default whatsoever.
@@ -86,8 +52,8 @@ $ doczar --jsmod ./index
 
 option             | description
 ------------------:|--------------------------------------------------------------------------------
---o, --out         | Selects a directory to fill with documentation output. The directory need not exist or be empty.
---i, --in          | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files.
+--o, --out         | Selects a directory to fill with documentation output. The directory need not exist or be empty. The default output directory is `./docs`.
+--i, --in          | Selects files to document. Parses nix-like wildcards using [glob](https://github.com/isaacs/node-glob). `doczar` does not parse directories - you must select files. There is no default search path.
 --j, --js, --jsmod | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
 --node             | Automatically fills the `--jsmod`, `--parse` and `--root` options for a Node.js module by reading `./package.json`.
 --with             | Include a prebuilt standard library in the documentation. Standard libraries may be selected automatically when using other options (such as `--jsmod` or `--parse`) which imply a specific environment.
@@ -102,24 +68,131 @@ option             | description
 --noImply, --noimp | Do not allow shell options to load a standard doc library by implying the `--with` option.
 --jTrap, --jtrap   | Ensures that all javadoc-flavored documentation produced by the parser is contained within the parent `@module`.
 
-Development
------------
-`doczar` is developed and maintained by Kevin "Schmidty" Smith under the MIT license. If you want to see continued development on `doczar`, please help Kevin
-[pay his bills!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PN6C2AZTS2FP8&lc=US&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+
+
+Syntax Analysis
+---------------
+`doczar` features a hollistic static analyzer that can load an entire application, model the
+resulting architecture and infer typing in a dynamic language. Interractions between each unit of
+the application are simulated to create a complete picture of the underlying system. This approach
+makes `doczar` potentially more powerful than traditional syntax-parsing documentation generators
+which directly infer structural information only from the file in which a unit of the application
+appears.
+
+Syntax analysis is activated with the `--parse` command line argument. Comments without formal
+declarations are assumed to be markdown-format documentation for nearby lines of code. Comments with
+formal declarations override the paths configured by the analyzer and may reconfigure the
+documentation path used to refer to a line of code.
+
+### Command Line Options
+#### `--parse`
+Activates syntax analysis and selects the language to parse.
+
+##### `--parse js`
+The simplest javascript parsing mode. Values in the scope of each file parsed are documented as
+global values. Typical scope wrapping methods use in browser javascript are supported. ES6 features
+are supported. Dependant files loaded with `import` will be assigned default module paths. When a
+typical Browser/CommonJS/AMD compatibility shim is used, the browser context version of the file
+will be documented.
+
+
+##### `--parse node`
+Used to document code written for the [Node.js](https://nodejs.org) javascript runtime. Names in the
+local scope are treated as local names and documented (or not) depending on the value of the
+`--locals` argument. By default, no local values are documented. Node conventions such as `global`
+and `exports` are supported and a skeleton of the standard library will be injected during analysis.
+ When a typical Browser/CommonJS/AMD compatibility shim is used, the browser context version of the
+file will be documented.
+
+#### `--root`
+Sets the default module path for files that are selected directly by the `--in` argument. Further
+files imported by the directly selected files will be assigned a default module path that begins
+with this root path. If `doczar` detects that the imported file belongs to a source-managed
+library, such as those loaded by `npm`, this file will instead receive a default path appropriate to
+its source library. The root path is defined using the standard `doczar`
+[path format](#components-types-and-paths).
+
+The root path is overriden by the first `module` tag encountered in each file.
+
+#### `--locals`
+By default, names that exist only in an isolated local scope are not documented. You may use the
+argument `--locals all` to document all detected local names, or `--locals comments` to document
+only those local names with attached comments.
+
+#### `--node`
+Searches the current working directory for a `package.json` and uses it to automatically configure
+the `--parse`, `--root` and `--with` arguments.
+
+#### `--nodeps`
+By default, `doczar` analyzes and documents every source file in the entire import tree. When
+`--nodeps` is present, libraries managed by a tool such as `npm` will be ignored.
+
+
+A comment is attached to a line of code by any of these means:
+```javascript
+/* A local name called `foo`. */
+var foo = "bar";
+
+// This comment is ignored.
+// This comment is also ignored.
+var bar = foo; // This comment is included!
+
+/* @module OverriddenName
+    Rather than the parsed name (`thingy`) this [Object]()
+    will be documented as a module named `OverriddenName`.
+
+    Everything later in the same file will become a child of the `OveriddenName` module.
+*/
+var thingy = {
+    /* documented as OverriddenName.utilFunction */
+    utilFunction:   function (information) {
+        var disinformation = spin (information);
+        return disinformation;
+    }
+};
+
+var movieIndex = Math.floor (
+    Math.random()*NEW_MOVIES.length
+); // this comment will document `movieIndex`
+
+var trailer = NEW_MOVIES[movieIndex].trailer; /*
+    This comment will document `trailer`.
+*/
+```
+
+### Javascript Caveats
+In order to track classes that use the `__proto__` property to build instances, this behavior is
+interpereted in a slightly skewed way. Consider the following code fragment:
+
+```javascript
+function ClassConstructor (arg0, arg1) {
+    this.__proto__ = {
+        method1:    function(){ }
+    };
+}
+ClassConstructor.prototype.method0 = function(){ };
+```
+
+`doczar` will document the `ClassConstructor` class as containing two members, called `method0` and
+`method1`. This is because `doczar` chooses to document **every** property which **may** appear on a
+type, regardless of whether it is **always** present.
+
 
 
 Comment Syntax
 --------------
 ### Declarations
-The simplest form of documentation is a single Declaration in its own block comment with an
-informational summary. The opening line of a block comment must contain only the characters opening
-the comment, a Declaration and as many spaces and tabs as you want. On the next line you may begin
-describing this unit of code with
-[github-flavored markdown](https://help.github.com/articles/github-flavored-markdown/).
+An explicit doc comment is a block comment whose opening line contains only a Declaration. A
+Declaration consists of a Tag usually followed by a path, for example `@property title`. Optionally,
+one or more types may be specified, for example `@property:String|undefined title`. The following
+lines may contain [modifiers](#modifiers),
+[github-flavored markdown](https://help.github.com/articles/github-flavored-markdown/)
+documentation, or additional Inner Declarations.
 
-In languages with c-like block comments it looks like the following. Note that using exactly two
-asterisks to start your comment, `/**`, will soon cause the comment to be treated as a javadoc-style
-comment.
+Block comments in c-like languages which are opened with exactly two asterisks in the javadoc
+convention will be treated as javadoc comments. Javadoc-flavored comments are only supported in
+[syntax analysis mode](#syntax-analysis).
+
 ```c
 /*      @class MyClass
     C-like block comments support any number of asterisks
@@ -134,7 +207,7 @@ comment.
 The final newline is not required.
 ```c
 /* @module BoxFactory */
-int myInt = 42; /* @local/int myInt */
+int myInt = 42; /* @local:int myInt */
 
 /*  @spare ExtraDocs
     These extra documents are part of the
@@ -145,7 +218,7 @@ int myInt = 42; /* @local/int myInt */
 
 A special markdown caveat: you will need *two* newlines to terminate a bullet list.
 ```c
-/*      @property/Function doTheThings
+/*      @property:Function doTheThings
     Does all the things. It does:
      * the hottest things
      * the coolest things
@@ -157,7 +230,7 @@ A special markdown caveat: you will need *two* newlines to terminate a bullet li
 ```
 
 If you are using the `--parse` option you may usually ommit the leading Declaration and simply get
-right into your documentation. For more information see the section on [Syntax Parsing](#syntax-parsing).
+right into your documentation.
 ```javascript
 /* How often the user will
   be able to:
@@ -168,33 +241,11 @@ right into your documentation. For more information see the section on [Syntax P
 var timesGonna = "never";
 ```
 
-In python, any "triple" string literal that starts with a declaration is considered a doc comment.
-```python
-def referenceMontyPython (skit):
-    """     @property/function referenceMontyPython
-        Either triple or triple-double is fine.
-    """
-```
-
-Ruby users may use `=begin` and `=end` with the same rules.
-```ruby
-=begin  @module MyRubyGem
-    I don't know very much about Ruby.
-=end
-```
-
-Finally, HTML comments are also supported.
-```html
-<!--    @module SplashPage
-    Guest user landing page with corporate logo and account login/registration tools.
--->
-```
-
 Indentation of a markdown section is automagically normalized to the least-indented line and you may
-include any number of tab and space characters before any Declaration. You can even break in the
-middle of a link, like so:
+include any number of tab and space characters before any Declaration. You may break in the middle
+of a link, like so:
 ```c
-/*  @member/int foo
+/*  @member:int foo
     A contracted document with
     little available horizontal
     space that needs a [link]
@@ -209,14 +260,107 @@ To add a child with a standalone doc comment, simply specify a
 /*      @class FooClass
     A simple class.
 */
-/*      @property/Function FooClass.getDefault
+/*      @property:Function FooClass.getDefault
     Get a new default instance of FooClass.
 */
-/*      @returns/FooClass FooClass.getDefault)defaultInstance
-    Returns a new instance with the default configuration.
+/*      @returns:FooClass FooClass.getDefault)defaultInstance
+    A new FooClass instance with the default configuration.
 */
 ```
 
+This is the complete list of tags:
+ * `@module` organizational Component
+ * `@class` instantiable class objects
+ * `@struct` c-like structures
+ * `@interface` Java interface
+ * `@spare` bare markdown document
+ * `@property` static property
+ * `@member` instance property or method
+ * `@event` event descriptions
+ * `@throws` conditions causing an exception to be thrown
+ * `@argument` optionally-named function or event argument
+ * `@kwarg` python-style keyword argument
+ * `@callback` callback function
+ * `@returns` return value
+ * `@signature` an alternate function signature
+ * `@enum` list of named values
+ * `@named` a named value in an `@enum`.
+
+
+### Paths
+In `doczar`, every unit of documentation may be referenced by a unique path and any unique path may
+be specified as a type. The following delimiter characters are used:
+ * `/` `@module`
+ * `.` `@property`
+ * `#` `@member`
+ * `(` `@argument`
+ * `)` `@returns`
+ * `!` `@throws`
+ * `+` `@event`
+ * `&` `@signature`
+ * `~` `@spare`
+
+To use a name containing reserved characters or whitespace within a path, surround the name with
+backticks, for example `\`Complex \\\`Module\\\` Name\`.fooProperty`. If a unit of documentation is
+unnamed, as can occur with `@argument` or `@returns` for example, it can be referenced numerically,
+for example `MyFunction(0` references the first argument of `MyFunction`.
+
+When writing a type path, note that you can start in the file scope instead of from the root by
+starting your path with a delimiter. For example:
+```javascript
+/*  @module MyModule
+    A package of functions and classes.
+*/
+/*  @property:class Result
+    Result info wrapper class.
+*/
+/*  @property:Function getResult
+    Get a Result object.
+@returns:.Result
+    Returns a new Result object.
+*/
+```
+
+`doczar` supports pointers, arrays, and generics. For example:
+```c++
+/*  @property:Function fillWithAverage
+    Fill a float pointer with the average of an array or [List](.List) of ints.
+@argument:float* result
+@argument:int[]:.List[int] values
+@returns:bool
+*/
+```
+
+You may also specify generics as part of your Class Declarations.
+```c
+/*      @class Container<Object elemType>
+    A container of arbitrarily-typed references.
+@function #get
+    @argument:String elemName
+        The name of the element to get.
+    @returns:%elemType|null
+        The requested element, or `null`.
+*/
+```
+
+
+#### Crosslinking
+You can easily crosslink to any other defined Component using the normal markdown link syntax. If
+you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
+```c
+/*      @module MyModule
+    A simple module.
+*/
+/*      @class MyClass
+    A simple class.
+*/
+/*      @property:Function clone
+@argument:.MyClass source
+    The [MyClass](.MyClass) instance to clone.
+@returns:MyModule.MyClass
+    The fresh [MyClass](MyModule.MyClass) instance.
+*/
+```
 
 ### Inner Declarations
 Once you have opened a declaration, you may write additional declarations which will all be scoped
@@ -225,28 +369,20 @@ to the enclosing comment.
 ```c
 /*      @class MyClass
     A simple class.
-@property/Function getAllInstances
+@property:Function getAllInstances
     A static Function that returns all instances of MyClass.
-@member/Function doSomethingCool
+@member:Function doSomethingCool
     A member Function on each instance of MyClass.
 */
 ```
 
 
 ###Modules
-
 The `@module` Declaration has an infectious scope. Every Declaration after it is scoped to the
 module Component, as are value type paths that begin with a delimiter. See [crosslinking]
 (#crosslinking) for more information. If you want to semantically declare a `@module` without
 affecting the scope, use the `@submodule` declaration instead.
 
-In some languages such as Java, the concept of a module is very specific and `@module` declarations
-always describe an importable structure. In environments like Node.js where directly importing
-submodules is rare, one might use a `@module` to describe a type that is involved in processing or
-may be returned but which is abstract or cannot be accessed directly.
-
-The global namespace and the first level of modules live together. Beyond the root, modules possess
-their own namespace and are delimited with forward slash (`/`).
 ```c
 /*      @module Foo
     The Foo module.
@@ -254,24 +390,13 @@ their own namespace and are delimited with forward slash (`/`).
 /*      @class Bar
     The Foo.Bar class.
 */
-/*      @submodule/class Baz
-    The Foo/Baz class.
+/*      @submodule:class Baz
+    The Foo/Baz module.
+@property:Function createBar
+    The Foo/Bar.createBar function.
 */
-/*      @property/Function createBar
+/*      @property:Function createBar
     The Foo.createBar function.
-*/
-```
-
-
-### Value Types
-A value type is declared with a forward slash. Multiple value types are declared with the pipe `|`
-character.
-```c
-/*      @property/String foobar
-    A String property called "foobar".
-*/
-/*      @property/Number|undefined result
-    This property may be either a Number or `undefined`.
 */
 ```
 
@@ -280,13 +405,14 @@ character.
 Modifiers, and their simpler counterpart Flags, are statements which modify the Declaration directly
 above them rather than declaring a new Component. Modifiers have serious consequences for the
 visibility and position of a Component and its children. Flags simply appear in the final
-documentation as keywords in a contrasting color.
+documentation as keywords in a contrasting color. Modifiers must appear before any markdown
+documentation.
 ```c
 /*      @class MyClass
     @super LisasClass
     @public
     A simple subclass of Lisa's class.
-@member/String uniqueID
+@member:String uniqueID
     @const
     This id String is generated at instantiation and because
     it is constant, it will never give you up, never let you
@@ -318,194 +444,6 @@ Here is a list of the available Modifiers and Flags:
  * `@final`
  * `@volatile`
  * `@const`
-
-
-
-Syntax Parsing
---------------
-Syntax parsing is currently available for Javascript in two distinct flavors for either code used in
-a browser through a `<script>` tag (including use of the ES6 `import` statement) or module-based
-code as used with [node.js](https://nodejs.org/) or [browserify](http://browserify.org/). The next
-platforms planned to receive parsing support are python and java.
-
-When documenting any kind of importable module with `doczar` you will probably want to use the
-`--root` flag. This flag will tell `doczar` where to mount documentation for the first files it
-encounters. Files that are then pulled in by tracing dependencies will be given a generated root
-path. Rather than add `@module` tags to every document, run `doczar` with `--root MyModule` to
-prefix your module path onto the generated module path for each file. You may still override this
-path in any given file by adding a `@module` tag. The first `@module` tag of any file is *always*
-relative to the documentation root, *never* the `--root` option path.
-
-Most parsing modes are affected by the `--locals` option. This option controls whether documentation
-is generated for identifiers that are only available on their local scope. If so, these names have
-the Component type `local` and use `%` as their path delimiter, e.g.
-`@local MyModule.MyClass#method%localVariable`. The options are: `--locals none` (default).
-`--locals comments` generates documentation for any value with a comment or at least one child
-Component. `--locals all` documents all local values.
-
-In all modes, you attach a comment to a value like this:
-```javascript
-/*
-    The leading declaration is no longer necessary
-    unless you want to override the parser.
-*/
-var foo = "bar";
-
-// This comment is ignored.
-// Only one leading inline comment will be used.
-var bar = foo;
-
-/* @module OverriddenName
-    Rather than the parsed name (`thingy`) this [Object]()
-    will be documented as a module named `OverriddenName`.
-
-    Everything later in the same file will become a child of the `OveriddenName` module.
-*/
-var thingy = {
-    // documented as OverriddenName.utilFunction
-    utilFunction:   function (information) {
-        var disinformation = spin (information);
-        return disinformation;
-    }
-};
-
-var movieIndex = Math.floor (
-    Math.random()*NEW_MOVIES.length
-); // this comment will document `movieIndex`
-
-var trailer = NEW_MOVIES[movieIndex].trailer; /*
-    This comment will document `trailer`.
-*/
-```
-
-### Javascript Caveats
-In order to track classes that use the `__proto__` property to build instances, this behavior is
-interpereted in a slightly skewed way. Consider the following code fragment:
-
-```javascript
-function ClassConstructor (arg0, arg1) {
-    this.__proto__ = {
-        method1:    function(){ }
-    };
-}
-ClassConstructor.prototype.method0 = function(){ };
-```
-
-`doczar` will document the `ClassConstructor` class as containing two members, called `method0` and
-`method1`. This is because `doczar` chooses to document *every* property which *may* appear on a
-type, regardless of whether it is always present.
-
-
-### Parsing Modes
-#### `--parse js`
-The simplest javascript parsing mode. Values in the scope of each file parsed are documented as
-global values. ES6 features are supported. Dependant files loaded with `import` will receive
-default module paths.
-
-
-#### `--parse node
-Parsing with `--parse node` is somewhat less automated, requiring that some tags be defined manually
-in order to anchor the documentation in the global scope.
-
-
-
-Components, Types and Paths
----------------------------
-Let's look at all the Components we have available.
-
-#### Primary Components
-These are the only Components which may be used to open a new document comment.
- * `@module` organizational Component
- * `@class` instantiable class objects
- * `@struct` c-like structures
- * `@interface` Java interface
- * `@spare` bare markdown document
- * `@property` static property
- * `@member` instance property or method
- * `@event` event descriptions
- * `@throws` conditions causing an exception to be thrown
- * `@enum` list of named values
-
-
-#### Inner Components
-These may only appear inside a document comment opened by a Primary Component Declaration.
- * `@argument` optionally-named function or event argument
- * `@kwarg` python-style keyword argument
- * `@callback` callback function
- * `@returns` return value
- * `@signature` an alternate function signature
- * `@named` a named value in an `@enum`.
-
-Many of these Component types have their own special path delimiters. This lets us reference more
-things as paths than in any other document generator. Here they are:
-
-#### Special Delimiters
- * `~` `@spare`
- * `/` `@module`
- * `.` `@property`
- * `#` `@member`
- * `(` `@argument`
- * `)` `@returns`
- * `!` `@throws`
- * `+` `@event`
- * `&` `@signature`
-
-You can use a name starting with a delimiter to imply the Component type of any Inner Declaration,
-skipping directly to the value type. You may do this with any of the types listed above as an
-entirely optional feature. My personal recommendation is to use it only for `@property` and
-`@member`.
-
-The default delimiter is `"."`, for `@property`.
-```c
-/*      @class MyClass
-@Function .getAllInstances
-    Load all instances of MyClass.
-@Number count
-    Total number of instances.
-@String #uniqueID
-    The unique identifier of this MyClass instance.
-@Error !EnvironFailure
-    Throws an Error during instantiation if the local
-    environment is configured incorrectly.
-@String (uniqueID
-    A unique identifier to instantiate with.
-*/
-```
-
-Feel free to document a type as being a pointer or array.
-```c
-/*      @struct Node
-    A linked list node.
-@member:Node* previous
-    Previous Node in the chain.
-@member:Node* next
-    Next Node in the chain.
-@member:char[] payload
-    Data stored by this node in the chain.
-*/
-```
-
-
-#### Crosslinking
-You can easily crosslink to any other defined Component using the normal markdown link syntax. If
-you start a crosslink path with a delimiter, the target will be rooted to the current module scope.
-
-Furthermore, every defined Component is also a valid type, and the same rule applies when starting a
-type path with a delimiter.
-```c
-/*      @module MyModule
-    A simple module.
-*/
-/*      @class MyClass
-    A simple class.
-*/
-/*      @property:Function clone
-@argument:.MyClass source
-    The [MyClass](.MyClass) instance to clone.
-@returns:MyModule.MyClass
-    The fresh [MyClass](MyModule.MyClass) instance.
-*/
-```
 
 
 
@@ -598,7 +536,7 @@ your arguments and return values, or not.
 ```
 
 ```c
-/*      @property/Function sortItems
+/*      @property:Function sortItems
     A sorting function for Item instances.
 @argument:Item
     The first Item.
@@ -671,7 +609,7 @@ argument signature and documents the signature separately.
 When you create a `@signature` with an Inner Declaration, the scope rules for Functions and
 `@argument` Components apply.
 ```c
-/*      @property/Function writeBuffer
+/*      @property:Function writeBuffer
     Interprets the contents of a Buffer as UTF-8
     and writes it in the sky with smoke signals.
 @signature:Number (content)
@@ -699,7 +637,7 @@ Signatures may be declared in their own comments.
 You may also define a signature with value types. These types have no additional implications, they
 are only displayed in the documentation (and crosslinked).
 ```c
-/*      @property/Function write
+/*      @property:Function write
     Output information through the Morse telegram interface.
 @argument content
     The content to send.
@@ -727,7 +665,7 @@ modifier.
     A simple base class.
 @Function createDefault
     Create and return a default instance.
-    @returns/.BaseClass
+    @returns:.BaseClass
 @Function #toString
     Produce a String representation of this instance.
 */
@@ -776,7 +714,7 @@ Document events with the `@event` declaration. Pass information with your Event 
     Unless cancelled, this event bubbles upward and
     occurs in parent Elements until the `document` is
     reached.
-    @argument/MouseEvent
+    @argument:MouseEvent
         The originating mouse event.
 */
 ```
@@ -789,7 +727,7 @@ class dict:
         A hash map of Strings to untyped references.
     """
     def get (self, key):
-        """     @member/function dict#get
+        """     @member:function dict#get
             Retrieve a reference.
         @throws/KeyError notFound
             Failure to find a key results in an exception.
@@ -799,31 +737,6 @@ class dict:
         """
 ```
 
-
-
-Generics
---------
-Type paths support generics (java), templates (c++) and arrays-of-things (javascript). You may
-specify any number of generic types on any type path, including with the use of multiple types and
-pipes `|`.
-```c
-/*      @property/Array<String>|Object<String, String>|undefined fooProp
-    An Array of Strings, an Object mapping Strings to Strings, or undefined.
-*/
-```
-
-### Coming Soon
-Generics in Class Declarations.
-```c
-/*      @class Container<Object elemType>
-    A container of arbitrarily-typed references.
-@function #get
-    @argument/String elemName
-        The name of the element to get.
-    @returns/%elemType|null
-        The requested element, or `null`.
-*/
-```
 
 
 
@@ -849,7 +762,7 @@ locally rooted paths in Symbols.
     A Symbol stored statically on the FooList class.
 */
 
-/*      @member/String FooList#[.FooList.staticSymbol]
+/*      @member:String FooList#[.FooList.staticSymbol]
     A String stored on FooList instances, mapped to a
     static symbol.
 */
