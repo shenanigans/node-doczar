@@ -420,12 +420,13 @@ function generateComponents (context, langPack, defaultScope) {
 
         if (level[SCOPE])
             for (var key in level[SCOPE])
-                didSubmit += submitSourceLevel (
-                    level[SCOPE][key],
-                    tools.pathPlus (scope, [ '%', key ]),
-                    localDefault,
-                    chain
-                );
+                if (level[SCOPE][key][PARENT] === level[SCOPE])
+                    didSubmit += submitSourceLevel (
+                        level[SCOPE][key],
+                        tools.pathPlus (scope, [ '%', key ]),
+                        localDefault,
+                        chain
+                    );
 
         delete level[SCOPE];
         return didSubmit;
