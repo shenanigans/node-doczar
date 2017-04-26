@@ -52,6 +52,8 @@ function cloneShallowFilter (key) {
 */
 function processSyntaxFile (context, fname, referer, tree, langPack, defaultScope, next) {
     var baseNode = langPack.getRoot (context, fname, defaultScope, defaultScope);
+    if (!baseNode[ORPHANS])
+        baseNode[ORPHANS] = [];
     defaultScope = baseNode[ROOT];
     if (!baseNode[MODULE])
         baseNode[MODULE] = defaultScope;
@@ -157,7 +159,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     arg[NAME] = [ '(', '' ];
                     arg[TRANSIENT] = true;
                 }
-                divineTypes (arg, expression.arguments[i]);
+                divineTypes (arg, expression.arguments[i], undefined, true);
                 if (callNode[SILENT])
                     arg[SILENT] = true;
             }
@@ -165,7 +167,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             // execute or defer a call test to produce a unique RETURNS for this call expression
             // if and only if there's no matching signature on the function already
             var argSig = expression.arguments.map (function (argExp) {
-                return getNode (scope, argExp);
+                return getNode (scope, argExp, false, true);
             });
             var targetRow;
             if (!callNode[SIGNATURES]) {
@@ -189,38 +191,37 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             }
 
             function simulateCallExpression (target, thisNode, body, doApply) {
-                if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (callNode) >= 0)
+                if (fnChain.length >= context.argv.maxDepth || fnChain.indexOf (target) >= 0)
                     return;
                 localChain = fnChain.concat();
-                localChain.push (callNode);
+                localChain.push (target);
 
                 // set up the function's inner scope
                 var innerScope = doApply ?
-                // var innerScope =
-                    // new filth.SafeMap (scope, callNode[SCOPE])
-                    new filth.SafeMap (callNode[SCOPE] || scope)
+                    new filth.SafeMap (target[SCOPE] || scope)
                   : new filth.SafeMap (scope)
                   ;
-                for (var i=0,j=Math.min (argSig.length, callNode[ARGUMENTS].length); i<j; i++) {
-                    var argName = callNode[ARGUMENTS][i][NAME];
+                var args = target[ARGUMENTS] || callNode[ARGUMENTS];
+                for (var i=0,j=Math.min (argSig.length, args.length); i<j; i++) {
+                    var argName = args[i][NAME];
                     if (
                         !argName
-                     && target[ARGUMENTS]
-                     && target[ARGUMENTS].length > i
-                     && target[ARGUMENTS][i][NAME]
+                     && args
+                     && args.length > i
+                     && args[i][NAME]
                     )
-                        argName = target[ARGUMENTS][i][NAME]
+                        argName = args[i][NAME]
                     if (!argName)
                         continue;
                     var argNode = argSig[i];
                     if (argNode && argNode[IS_COL]) {
                         var dummyParent = newNode (argNode[PARENT]);
-                        if (callNode[SILENT])
+                        if (target[SILENT])
                             dummyParent[SILENT] = true;
                         dummyParent[INSTANCE] = [ argNode ];
                         argNode = dummyParent;
                     }
-                    var targetArg = doApply ? callNode[ARGUMENTS][i] : newNode (argNode);
+                    var targetArg = doApply ? args[i] : newNode (argNode);
                     targetArg[NO_SET] = true;
                     targetArg[TRANSIENT] = true;
                     if (argNode && targetArg[DEREF].indexOf (argNode) < 0)
@@ -239,7 +240,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     walkLevel (
                         body[i],
                         innerScope,
-                        callNode[THIS],
+                        thisNode,
                         localDeadLine,
                         target,
                         localChain,
@@ -254,7 +255,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     callNode[WAITING_CALLS] = [];
                 if (!generateReturn) {
                     callNode[WAITING_CALLS].push (function (body) {
-                        simulateCallExpression (callNode, callNode[THIS], body, true);
+                        simulateCallExpression (this, this[THIS], body, true);
                     });
                     return callNode;
                 }
@@ -263,8 +264,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 dummy[RETURNS][TRANSIENT] = true;
                 targetRow.returns = dummy[RETURNS];
                 callNode[WAITING_CALLS].push (function (body) {
-                    simulateCallExpression (callNode, callNode[THIS], body, true);
-                    simulateCallExpression (dummy, callNode[THIS], body, false);
+                    simulateCallExpression (this, this[THIS], body, true);
+                    simulateCallExpression (dummy, this[THIS], body, false);
                 });
                 return dummy[RETURNS];
             }
@@ -284,7 +285,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
         }
 
         // divine the type of an assignment
-        function divineTypes (node, value, localThisNode) {
+        function divineTypes (node, value, localThisNode, mounted) {
             switch (value.type) {
                 case 'Identifier':
                     if (!Object.hasOwnProperty.call (scope, value.name)) {
@@ -321,15 +322,21 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     return [ 'Array' ];
                 case 'ObjectExpression':
                     var props;
-                    if (node[IS_COL])
-                        props = node;
-                    else {
+                    if (node[IS_COL]) {
+                        var dummy = newNode (node[PARENT][PARENT]);
+                        dummy[PROPS] = tools.newCollection();
+                        props = dummy[PROPS];
+                        node[DEREF].push (dummy);
+                        // props = node;
+                    } else {
                         if (node[TYPES].indexOf ('json') < 0)
                             node[TYPES].push ('json');
                         if (!node[PROPS])
                             node[PROPS] = tools.newCollection();
                         props = node[PROPS];
                     }
+                    if (!mounted && baseNode[ORPHANS].indexOf (node) < 0)
+                        baseNode[ORPHANS].push (node);
                     var lastPropDef;
                     for (var i=0,j=value.properties.length; i<j; i++) {
                         var propDef = value.properties[i];
@@ -353,7 +360,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             propNode[LINE] = propDef.key.loc.start.line;
                             propNode[NAME] = [ '.', propDef.key.name ];
                         }
-                        divineTypes (propNode, propDef.value, node);
+                        divineTypes (propNode, propDef.value, node, true);
                         processComments (
                             propNode,
                             propDef,
@@ -387,7 +394,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         if (targetNode[IS_COL]) {
 
                             // something like Foo.prototype = {
-                            divineTypes (targetNode, value.right, targetNode[PARENT]);
+                            divineTypes (targetNode, value.right, targetNode[PARENT], true);
                             var refNode = node[IS_COL] ?
                                 node
                               : ( node[MEMBERS] || ( ode[MEMBERS] = tools.newCollection() ) )
@@ -396,7 +403,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 refNode[DEREF].push (targetNode);
                             return [];
                         }
-                        var gotTypes = divineTypes (targetNode, value.right);
+                        var gotTypes = divineTypes (targetNode, value.right, undefined, true);
                         for (var i=0,j=gotTypes.length; i<j; i++) {
                             var tstr = gotTypes[i];
                             if (node[TYPES].indexOf (tstr) < 0)
@@ -487,7 +494,9 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             scope[value.id.name][NAME] = [ '.', value.id.name ];
                         }
                         scope[value.id.name][DEREF].push (node);
-                    }
+                    } else
+                        if (!mounted && baseNode[ORPHANS].indexOf (node) < 0)
+                            baseNode[ORPHANS].push (node);
                     // manage arguments
                     var args;
                     var localDeadLine = deadLine;
@@ -583,7 +592,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             var waitingCalls = node[WAITING_CALLS];
                             delete node[WAITING_CALLS];
                             for (var i=0,j=waitingCalls.length; i<j; i++) {
-                                waitingCalls[i] (node[BODY]);
+                                waitingCalls[i].call (node, node[BODY]);
                             }
                         }
                     }
@@ -640,7 +649,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             arg[NO_SET] = true;
                             arg[NAME] = [ '(', '' ];
                         }
-                        divineTypes (arg, value.arguments[i]);
+                        divineTypes (arg, value.arguments[i], undefined, true);
                         if (typeNode[SILENT])
                             arg[SILENT] = true;
                     }
@@ -661,7 +670,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
         }
 
         // get a descriptor node for the path
-        function getNode (initialPointer, level, shallow) {
+        function getNode (initialPointer, level, shallow, mounted) {
             if (level.computed)
                 return;
             var pointer = initialPointer;
@@ -679,7 +688,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     dummy[TYPES].push ('Array');
                     return dummy;
                 case 'MemberExpression':
-                    pointer = getNode (pointer, level.object, shallow);
+                    pointer = getNode (pointer, level.object, shallow, mounted);
                     if (!pointer)
                         return;
                     if (pointer[SILENT])
@@ -688,13 +697,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         level.object.type === 'Super'
                      || level.object.type === 'ThisExpression'
                     ) {
-                        if (!pointer[MEMBERS]) {
-                            pointer[MEMBERS] = tools.newCollection();
-                            pointer[MEMBERS][PARENT] = pointer;
-                        }
-                        pointer = pointer[MEMBERS];
-                    } else if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
-                        pointer = pointer[INSTANCE][0];
                         if (!pointer[MEMBERS]) {
                             pointer[MEMBERS] = tools.newCollection();
                             pointer[MEMBERS][PARENT] = pointer;
@@ -722,6 +724,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 case 'FunctionExpression':
                 case 'ArrowFunctionExpression':
                     var anon = newNode (initialPointer);
+                    if (!mounted)
+                        baseNode[ORPHANS].push (anon);
                     anon[TYPES].push ('Function');
                     anon[LINE] = level.loc.start.line;
                     var args = anon[ARGUMENTS] = [];
@@ -791,7 +795,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     return anon;
                 case 'NewExpression':
                     // get the type of the item instantiated
-                    var typeNode = getNode (scope, level.callee);
+                    var typeNode = getNode (scope, level.callee, mounted);
                     if (!typeNode)
                         return;
                     var chain = [ typeNode ];
@@ -826,6 +830,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         if (typeNode[SILENT])
                             arg[SILENT] = true;
                     }
+                    if (!mounted)
+                        baseNode[ORPHANS].push (dummy);
                     return dummy;
                 case 'BinaryExpression':
                     var dummy = newNode();
@@ -848,25 +854,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
 
             var stowThis;
             if (level.property) {
-                if (
-                    pointer[IS_COL]
-                 && pointer[PARENT][INSTANCE]
-                 && pointer[PARENT][INSTANCE].length === 1
-                )
-                    pointer = pointer[PARENT];
-
-                if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
-                    pointer = pointer[INSTANCE][0];
-                    if (!pointer[MEMBERS]) {
-                        pointer[MEMBERS] = tools.newCollection();
-                        pointer[MEMBERS][PARENT] = pointer;
-                        pointer[MEMBERS][THIS] = pointer;
-                    }
-                    pointer = pointer[MEMBERS];
-                    if (level.property.name === '__proto__')
-                        return pointer;
-                }
-
                 if (level.property.name === 'prototype' && !pointer[IS_COL]) {
                     if (!pointer[MEMBERS]) {
                         pointer[MEMBERS] = tools.newCollection();
@@ -1306,7 +1293,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     node[TRANSIENT] = true;
                 }
                 if (level.argument)
-                    divineTypes (node, level.argument);
+                    divineTypes (node, level.argument, undefined, true);
                 break;
             case 'VariableDeclaration':
                 // work each declaration
@@ -1339,7 +1326,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
 
                     // divine the type being set
-                    divineTypes (node, declaration.init);
+                    divineTypes (node, declaration.init, undefined, true);
                 }
                 break;
             case 'ExpressionStatement':
@@ -1369,14 +1356,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             break;
                         if (node[NO_SET])
                             break;
-                        if (!node[IS_COL]) {
-                            // divine the type being set
-                            divineTypes (node, level.expression.right);
-                            break;
-                        }
-                        // something like Foo.prototype = {
-                        divineTypes (node, level.expression.right, node[PARENT]);
-                        node = node[PARENT];
+                        // divine the type being set
+                        divineTypes (node, level.expression.right, undefined, true);
                         break;
                     case 'CallExpression':
                         var doProcess = langPack.trip (
@@ -1488,7 +1469,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 arg[NO_SET] = true;
                                 arg[NAME] = [ '(', '' ];
                             }
-                            divineTypes (arg, level.expression.arguments[i]);
+                            divineTypes (arg, level.expression.arguments[i], undefined, true);
                             if (typeNode[SILENT])
                                 arg[SILENT] = true;
                         }
@@ -1564,7 +1545,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         arg[DEREF] = [];
                         arg[NO_SET] = true;
                     }
-                    divineTypes (param, args[i]);
+                    divineTypes (param, args[i], undefined, true);
                     processComments (args[i], param, localDeadLine, node);
                     if (
                         lastArg
@@ -1614,7 +1595,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         var waitingCalls = node[WAITING_CALLS];
                         delete node[WAITING_CALLS];
                         for (var i=0,j=waitingCalls.length; i<j; i++) {
-                            waitingCalls[i] (node[BODY]);
+                            waitingCalls[i].call (node, node[BODY]);
                         }
                     }
                 }
@@ -1922,7 +1903,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     node = thisNode[MEMBERS][level.key.name] = newNode (thisNode);
                     node[LINE] = level.loc.start.line;
                 }
-                divineTypes (node, level.value);
+                divineTypes (node, level.value, undefined, true);
                 break;
             case 'EmptyStatement':
                 break;
@@ -1937,7 +1918,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     node = scopeParent[THROWS];
                 else
                     node = scopeParent[THROWS] = newNode (scopeParent);
-                divineTypes (node, level.argument);
+                divineTypes (node, level.argument, undefined, true);
                 break;
             case 'BreakStatement':
                 // nothing to do here
@@ -2228,75 +2209,97 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
 @argument:doczar.Parser/Path defaultScope
 */
 function preprocessSyntaxTree (context, langPack, defaultScope) {
-    function compressCollection (collection) {
+    // this lil map is used to swap derefs out from defunct Nodes to a relevant target Node
+    var replacementMap = new Map();
+
+    function mergeNodes (target, source) {
         var didWrite = false;
-        function mergeNodes (target, source) {
-            var didWrite = false;
-            if (source[MEMBERS])
-                if (!target[MEMBERS]) {
-                    didWrite = true;
-                    target[MEMBERS] = tools.newCollection (source[MEMBERS])
-                    target[MEMBERS][PARENT] = target;
-                } else for (var name in source[MEMBERS])
-                    if (Object.hasOwnProperty.call (target[MEMBERS], name))
-                        didWrite += mergeNodes (
-                            target[MEMBERS][name],
-                            source[MEMBERS][name]
-                        );
-                    else {
-                        didWrite = true;
-                        target[MEMBERS][name] = source[MEMBERS][name];
-                    }
-            if (source[PROPS])
-                if (!target[PROPS]) {
-                    didWrite = true;
-                    target[PROPS] = tools.newCollection (source[PROPS])
-                    target[PROPS][PARENT] = target;
-                } else for (var name in source[PROPS]) {
-                    if (Object.hasOwnProperty.call (target[PROPS], name))
-                        didWrite += mergeNodes (
-                            target[PROPS][name],
-                            source[PROPS][name]
-                        );
-                    else {
-                        didWrite = true;
-                        target[PROPS][name] = source[PROPS][name];
-                    }
-                }
-            if (source[THROWS]) {
-                if (!target[THROWS]) {
-                    didWrite = true;
-                    target[THROWS] = tools.newNode();
-                } else
-                    didWrite += mergeNodes (target[THROWS], source[THROWS]);
-            }
-            if (source[ARGUMENTS]) {
-                if (!target[ARGUMENTS]) {
-                    didWrite = true;
-                    target[ARGUMENTS] = source[ARGUMENTS].concat();
-                } else {
-                    var targetArgs = target[ARGUMENTS].length;
-                    for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
-                        if (i < targetArgs)
-                            didWrite += mergeNodes (
-                                target[ARGUMENTS][i],
-                                source[ARGUMENTS][i]
-                            );
-                        else {
-                            didWrite = true;
-                            target[ARGUMENTS][i] = source[ARGUMENTS][i];
-                        }
-                }
-            }
-            if (source[RETURNS])
-                if (target[RETURNS])
-                    didWrite += mergeNodes (target[RETURNS], source[RETURNS]);
+        replacementMap.set (source, target);
+        if (source[MEMBERS])
+            if (!target[MEMBERS]) {
+                didWrite = true;
+                target[MEMBERS] = tools.newCollection (source[MEMBERS])
+                target[MEMBERS][PARENT] = target;
+                for (var key in target[MEMBERS])
+                    replacementMap.set (source[MEMBERS][key], target[MEMBERS][key]);
+            } else for (var name in source[MEMBERS])
+                if (Object.hasOwnProperty.call (target[MEMBERS], name))
+                    didWrite += mergeNodes (
+                        target[MEMBERS][name],
+                        source[MEMBERS][name]
+                    );
                 else {
                     didWrite = true;
-                    target[RETURNS] = source[RETURNS];
+                    target[MEMBERS][name] = source[MEMBERS][name];
+                    replacementMap.set (source[MEMBERS][name], target[MEMBERS][name]);
                 }
-            return didWrite;
+        if (source[PROPS])
+            if (!target[PROPS]) {
+                didWrite = true;
+                target[PROPS] = tools.newCollection (source[PROPS])
+                target[PROPS][PARENT] = target;
+                for (var key in target[PROPS])
+                    replacementMap.set (source[PROPS][key], target[PROPS][key]);
+            } else for (var name in source[PROPS]) {
+                if (Object.hasOwnProperty.call (target[PROPS], name))
+                    didWrite += mergeNodes (
+                        target[PROPS][name],
+                        source[PROPS][name]
+                    );
+                else {
+                    didWrite = true;
+                    target[PROPS][name] = source[PROPS][name];
+                    replacementMap.set (source[PROPS][name], target[PROPS][name]);
+                }
+            }
+        if (source[THROWS]) {
+            if (!target[THROWS]) {
+                didWrite = true;
+                target[THROWS] = tools.newNode();
+                replacementMap.set (source[THROWS], target[THROWS]);
+            } else
+                didWrite += mergeNodes (target[THROWS], source[THROWS]);
         }
+        if (source[ARGUMENTS]) {
+            if (!target[ARGUMENTS]) {
+                didWrite = true;
+                target[ARGUMENTS] = source[ARGUMENTS].concat();
+            } else {
+                var targetArgs = target[ARGUMENTS].length;
+                for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
+                    if (i < targetArgs)
+                        didWrite += mergeNodes (
+                            target[ARGUMENTS][i],
+                            source[ARGUMENTS][i]
+                        );
+                    else {
+                        didWrite = true;
+                        target[ARGUMENTS][i] = source[ARGUMENTS][i];
+                    }
+            }
+        }
+        if (source[RETURNS])
+            if (target[RETURNS])
+                didWrite += mergeNodes (target[RETURNS], source[RETURNS]);
+            else {
+                didWrite = true;
+                target[RETURNS] = source[RETURNS];
+            }
+        if (source[WAITING_CALLS])
+            if (!target[WAITING_CALLS]) {
+                didWrite = true;
+                target[WAITING_CALLS] = source[WAITING_CALLS].concat();
+            } else
+                for (var i=0,j=source[WAITING_CALLS].length; i<j; i++)
+                    if (target[WAITING_CALLS].indexOf (source[WAITING_CALLS][i]) < 0) {
+                        didWrite = true;
+                        target[WAITING_CALLS].push (source[WAITING_CALLS][i]);
+                    }
+        return didWrite;
+    }
+
+    function compressCollection (collection) {
+        var didWrite = false;
 
         // rebases functions as methods
         function rebase (item) {
@@ -2310,6 +2313,9 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
         for (var i=0,j=collection[DEREF].length; i<j; i++) {
             var sourceNode = collection[DEREF][i];
+            var replacement = replacementMap.get (sourceNode);
+            if (replacement)
+                sourceNode = replacement;
             didWrite += preprocessDerefs (sourceNode);
 
             // copy the sourceNode's props into the members collection
@@ -2409,6 +2415,9 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
         for (var i=0,j=level[DEREF].length; i<j; i++) {
             var ref = level[DEREF][i];
+            var replacement = replacementMap.get (ref);
+            if (replacement)
+                ref = replacement;
             if (chain.indexOf (ref) >= 0)
                 continue;
             if (IS_COL in ref)
@@ -2450,7 +2459,7 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                         didFinishDeref = true;
                     }
             }
-            // promot REBASE function
+            // promote REBASE function
             if (ref[REBASE])
                 target[REBASE] = ref[REBASE];
             // promote function body
@@ -2558,7 +2567,49 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
             var waitingCalls = target[WAITING_CALLS];
             delete target[WAITING_CALLS];
             for (var i=0,j=waitingCalls.length; i<j; i++)
-                waitingCalls[i] (target[BODY]);
+                waitingCalls[i].call (target, target[BODY]);
+        }
+
+        if (
+            level[INSTANCE]
+         && level[INSTANCE].length === 1
+         && ( level[PROPS] || ( level[MEMBERS] && !level[MEMBERS][DEREF].length ) )
+        ) {
+            // transfer properties to class when matching definitions are found
+            var source = level[PROPS] || level[MEMBERS];
+            var classType = level[INSTANCE][0];
+            didFinishDeref += recurse (classType);
+            for (var key in source) {
+                // can we find this key in the class type or a parent type?
+                function findKey (pointer) {
+                    if (pointer[MEMBERS] && pointer[MEMBERS][key]) {
+                        didFinishDeref += mergeNodes (pointer[MEMBERS][key], source[key]);
+                        delete source[key];
+                        return true;
+                    }
+                    if (pointer[SUPER]) {
+                        for (var i=0,j=pointer[SUPER].length; i<j; i++) {
+                            if (findKey (pointer[SUPER][i]))
+                                return true;
+                        }
+                    }
+                    if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
+                        if (findKey (pointer[INSTANCE][0]))
+                            return true;
+                    }
+                    return false;
+                }
+                var foundKey = findKey (classType)
+                didFinishDeref += foundKey;
+                if (!foundKey) {
+                    if (!classType[MEMBERS]) {
+                        classType[MEMBERS] = tools.newCollection();
+                        classType[MEMBERS][PARENT] = classType;
+                    }
+                    classType[MEMBERS][key] = source[key];
+                    delete source[key];
+                }
+            }
         }
 
         return didFinishDeref;
@@ -2588,9 +2639,15 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
             );
             var sourceRoot = context.sources[rootPath];
             delete sourceRoot.globals;
-            for (var key in sourceRoot) try {
-                var target = sourceRoot[key];
-                finishedADeref += preprocessDerefs (target, target, [ target ]);
+            try {
+                for (var key in sourceRoot) {
+                    var target = sourceRoot[key];
+                    finishedADeref += preprocessDerefs (target, target, [ target ]);
+                }
+                for (var i=0,j=sourceRoot[ORPHANS].length; i<j; i++) {
+                    var orphan = sourceRoot[ORPHANS][i];
+                    finishedADeref += preprocessDerefs (orphan, orphan, [ orphan ]);
+                }
             } catch (err) {
                 context.logger.error (
                     { err:err, path:rootPath, parse:context.argv.parse },
@@ -2609,6 +2666,8 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         }
         round++;
     } while (finishedADeref);
+
+    return { rounds:round };
 }
 
 
