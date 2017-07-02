@@ -72,12 +72,9 @@ option             | description
 
 Syntax Analysis
 ---------------
-`doczar` features a hollistic static analyzer that can load an entire application, model the
-resulting architecture and infer typing in a dynamic language. Interractions between each unit of
-the application are simulated to create a complete picture of the underlying system. This approach
-makes `doczar` potentially more powerful than traditional syntax-parsing documentation generators
-which directly infer structural information only from the file in which a unit of the application
-appears.
+`doczar` features a hollistic static analyzer that can load an entire dynamic-language application,
+model the resulting architecture and infer typing. Interractions between each unit of the
+application are simulated to create a complete picture of the underlying system.
 
 Syntax analysis is activated with the `--parse` command line argument. Comments without formal
 declarations are assumed to be markdown-format documentation for nearby lines of code. Comments with
@@ -161,8 +158,8 @@ var trailer = NEW_MOVIES[movieIndex].trailer; /*
 ```
 
 ### Javascript Caveats
-In order to track classes that use the `__proto__` property to build instances, this behavior is
-interpereted in a slightly skewed way. Consider the following code fragment:
+If a constructor alters the `__proto__` property of the instance, members attached to the class by
+other means will not be discarded. Consider the following fragment:
 
 ```javascript
 function ClassConstructor (arg0, arg1) {
@@ -173,9 +170,9 @@ function ClassConstructor (arg0, arg1) {
 ClassConstructor.prototype.method0 = function(){ };
 ```
 
-`doczar` will document the `ClassConstructor` class as containing two members, called `method0` and
-`method1`. This is because `doczar` chooses to document **every** property which **may** appear on a
-type, regardless of whether it is **always** present.
+`doczar` will document the `ClassConstructor` class as containing two methods, called `method0` and
+`method1`. In reality, however, any real instance of `ClassConstructor` will not contain `method0`
+while any real subclass will not contain `method1`.
 
 
 

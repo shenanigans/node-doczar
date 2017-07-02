@@ -26,37 +26,12 @@ function getGlobalNode (context) {
             esVersion = 'es6';
             doLoadBrowser = true;
         }
-        var esRoot = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', esVersion + '.json')).toString()
-        );
-        for (var key in esRoot) {
-            var item = esRoot[key];
-            for (var subkey in item) {
-                if (subkey[0] !== '.')
-                    continue;
-                item[tools[subkey.slice(1).toUpperCase()]] = item[subkey];
-                delete item[subkey];
-            }
-        }
-        var browserRoot;
-        if (!doLoadBrowser)
-            browserRoot = {};
-        else {
-            browserRoot = JSON.parse (
-                fs.readFileSync (path.join (__dirname, 'roots', 'node.json')).toString()
-            );
-            for (var key in browserRoot) {
-                var item = browserRoot[key];
-                for (var subkey in item) {
-                    if (subkey[0] !== '.')
-                        continue;
-                    item[tools[subkey.slice(1).toUpperCase()]] = item[subkey];
-                    delete item[subkey];
-                }
-            }
-        }
-        globalNode = new filth.SafeMap (esRoot, browserRoot);
+        if (doLoadBrowser)
+            globalNode = LangPack.loadRootFiles ([ esVersion, 'browser' ]);
+        else
+            globalNode = LangPack.loadRootFiles ([ esVersion ]);
         globalNode[IS_COL] = true;
+        globalNode[NAME] = [ '.', 'window' ];
         globalNode.window = tools.newNode();
         globalNode.window[PROPS] = globalNode;
     }

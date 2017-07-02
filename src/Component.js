@@ -241,6 +241,7 @@ Component.prototype.submit = function (info) {
                     }
                 }
             }
+
             this[key] = info[key];
             continue;
         }
@@ -1161,7 +1162,7 @@ Component.prototype.inherit = function (loops) {
                     supertype = supertype.aliasTo;
             } catch (err) {
                 this.logger.warn (
-                    { type:this.pathstr, parent:classname },
+                    { type:this.pathstr, parent:tools.pathStr (classname) },
                     'cannot find parent class'
                 );
                 continue;
@@ -1187,7 +1188,7 @@ Component.prototype.inherit = function (loops) {
                 supertype = supertype.aliasTo;
         } catch (err) {
             this.logger.warn (
-                { type:this.pathstr, parent:classname },
+                { type:this.pathstr, parent:tools.pathStr (classname) },
                 'cannot find parent class'
             );
             continue;

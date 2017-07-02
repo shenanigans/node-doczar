@@ -4,16 +4,19 @@
     * parentMethod's argument should be type String
     * FooClass#overrideMethod should have only one argument
     * FooClass#overrideMethod's argument should be type String
-    * FooClass#cheese should be type String
+    * FooClass#cheese should be type String|Number
+    * FooClass#prop should be a String
 
     * BarClass should have both parentMethod and childMethod
     * childMethod's argument should be type Number
+    * BarClass#parentMethod should be documented as inherited
+    * BarClass#overrideMethod should be documented as an override
     * BarClass#overrideMethod should have two arguments
     * BarClass#overrideMethod's arguments should both be type Number
     * BarClass#cheese should be type Number|String
 
-    * simpleFun should have no members
-    * simpleFun should have two String arguments
+    * simpleFun should have no members or properties
+    * TODO simpleFun should have two String arguments
 */
 
 function FooClass (able, baker) {

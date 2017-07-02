@@ -24,6 +24,8 @@ var ComponentCache = function (logger) {
     this.root = Object.create (null);
     this.resolvedDependencies = Object.create (null);
     this.sources = Object.create (null);
+    this.fallbacks = Object.create (null);
+    this.replacementMap = new Map();
 
     this.failedPaths = {};
 };
@@ -156,9 +158,28 @@ ComponentCache.prototype.resolve = function (tpath) {
 
     var pointer;
     for (var i=0,j=tpath.length; i<j; i++)
-        if (!(pointer = this.walkStep (pointer, tpath[i], false)))
-            throw new Error ('not found');
-    return pointer;
+        if (!(pointer = this.walkStep (pointer, tpath[i], false))) {
+            pointer = undefined;
+            break;
+        }
+    if (pointer)
+        return pointer;
+
+    // fallbacks?
+    var tpathstr = tools.pathStr (tpath);
+    var fallbacks = this.fallbacks[tpathstr];
+    if (!fallbacks)
+        throw new Error ('not found');
+    for (var i=0,j=fallbacks.length; i<j; i++) {
+        for (var k=0,l=tpath.length; k<l; k++)
+            if (!(pointer = this.walkStep (pointer, tpath[k], false))) {
+                pointer = undefined;
+                break;
+            }
+        if (pointer)
+            return pointer;
+    }
+    throw new Error ('not found');
 };
 
 
@@ -344,6 +365,24 @@ ComponentCache.prototype.submit = function (tpath, info) {
     var pointer = this.getComponent (tpath);
     pointer.submit (info);
     return pointer;
+};
+
+
+/*
+    Indicate that a path should be used as a fallback for another path if (and only if) that path
+    cannot be resolved from the cache normally.
+@argument:String target
+    If this target path cannot be resolved, the fallback should be used.
+@argument:String fallback
+    A fallback to use for the `target` path.
+*/
+ComponentCache.prototype.addFallback = function (target, fallback) {
+    if (!this.fallbacks[target]) {
+        this.fallbacks[target] = [ fallback ];
+        return;
+    }
+    if (this.fallbacks[target].indexOf (fallback) < 0)
+        this.fallbacks[target].push (fallback);
 };
 
 

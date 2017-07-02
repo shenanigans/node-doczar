@@ -419,6 +419,7 @@ runTest ('Node Parsing Without Root', '--parse node');
 runTest ('Prototype', '--parse node --root test');
 runTest ('__proto__', '--parse node --root test');
 runTest ('Overrides', '--parse node --root test');
+runTest ('JS Inheritence', '--parse node --root test');
 runTest ('Skeleton', '--parse node --root skeleton --with node');
 runTest ('Syntax Parsing Challenges', '--parse node --root test');
 runTest ('ES6 Parsing', '--parse js');

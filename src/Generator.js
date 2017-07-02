@@ -122,10 +122,13 @@ function generateComponents (context, langPack, defaultScope) {
             }
             level[LOCALPATH] = path;
             var fullpath = level[PATH] = localDefault.concat (path);
-            if (ctype === 'class') for (var i=types.length-1; i>=0; i--) {
-                var type = types[i];
-                if (type.name === 'function' || type.name === 'Function')
-                    types.splice (i, 1);
+            if (ctype === 'class') {
+                delete level[INSTANCE];
+                for (var i=types.length-1; i>=0; i--) {
+                    var type = types[i];
+                    if (type.name === 'function' || type.name === 'Function')
+                        types.splice (i, 1);
+                }
             }
             if (fullpath.length && (
                 fullpath[fullpath.length-1][0] === '/' || fullpath[fullpath.length-1][0] === ':'
@@ -240,9 +243,17 @@ function generateComponents (context, langPack, defaultScope) {
                 });
                 return true;
             }
+
             scope = level[PATH];
             localDefault = [];
         }
+
+        var replacementObject = context.replacementMap.get (level);
+        if (replacementObject && replacementObject[PATH])
+            context.addFallback (
+                tools.pathStr (level[PATH]),
+                tools.pathStr (replacementObject[PATH])
+            );
 
         // are we waiting to add complex paths to the types list?
         if (level[INSTANCE]) {
@@ -302,22 +313,22 @@ function generateComponents (context, langPack, defaultScope) {
             }
         }
 
-        if (level[SUPER]) for (var i=level[SUPER].length-1; i>=0; i--) {
-            var pointer = level[SUPER][i];
-            var superChain = [];
-            while (
-                pointer[DEREF]
-             && pointer[DEREF].length === 1
-             && superChain.indexOf (pointer[DEREF][0]) < 0
-            )
-                superChain.push (pointer = pointer[DEREF][0]);
-            if (!pointer[PATH])
-                continue;
-
-            context.submit (level[PATH], { modifiers:[ { mod:'super', path:pointer[PATH] } ] });
-            didSubmit = true;
-            level[SUPER].splice (i, 1);
-        }
+        if (level[SUPER] && level[FORCE] !== undefined)
+            for (var i=level[SUPER].length-1; i>=0; i--) {
+                var superObj = level[SUPER][i];
+                var altSuper = context.replacementMap.get (superObj);
+                var superPath = altSuper ?
+                    altSuper[PATH] ?
+                        altSuper[PATH]
+                      : superObj[PATH]
+                  : superObj[PATH]
+                  ;
+                if (!superPath)
+                    continue;
+                context.submit (level[PATH], { modifiers:[ { mod:'super', path:superPath } ] });
+                didSubmit = true;
+                level[SUPER].splice (i, 1);
+            }
 
         if (level[ALIAS]) {
             if (level[PATH] && (

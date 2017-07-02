@@ -7,7 +7,7 @@ function foo (able, baker) {
 foo.prototype = {
     first:      9001,
     second:     function (able) {
-
+        this.third = 'four';
     }
 };
 

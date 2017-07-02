@@ -17,7 +17,7 @@ var Patterns = require ('./Parser/Patterns');
     A filter function for ignoring the BODY and THIS symbols.
 */
 function cloneShallowFilter (key) {
-    return key === BODY || key === THIS;
+    return key === BODY || key === THIS || key === ROUND;
 }
 
 
@@ -204,13 +204,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 var args = target[ARGUMENTS] || callNode[ARGUMENTS];
                 for (var i=0,j=Math.min (argSig.length, args.length); i<j; i++) {
                     var argName = args[i][NAME];
-                    if (
-                        !argName
-                     && args
-                     && args.length > i
-                     && args[i][NAME]
-                    )
-                        argName = args[i][NAME]
                     if (!argName)
                         continue;
                     var argNode = argSig[i];
@@ -488,6 +481,11 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 case 'ArrowFunctionExpression':
                     if (node[TYPES].indexOf ('Function') < 0)
                         node[TYPES].push ('Function');
+                    if (baseNode.Function)
+                        if (!node[INSTANCE])
+                            node[INSTANCE] = [ baseNode.Function ];
+                        else if (node[INSTANCE].indexOf (baseNode.Function) < 0)
+                            node[INSTANCE].push (baseNode.Function);
                     if (value.id) {
                         if (!Object.hasOwnProperty.call (scope, value.id.name)) {
                             scope[value.id.name] = newNode();
@@ -598,9 +596,9 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
                     if (!node[REBASE])
                         node[REBASE] = function (base) {
-                            // var item = newNode (node[PARENT], node);
                             var item = filth.circularClone (node, undefined, cloneShallowFilter);
                             delete item[MEMBERS];
+                            item[THIS] = base;
                             var innerScope = new filth.SafeMap (scope, node[SCOPE]);
                             for (var i=0,j=node[BODY].length; i<j; i++) {
                                 walkLevel (
@@ -608,7 +606,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                     innerScope,
                                     base,
                                     localDeadLine,
-                                    node,
+                                    base,
                                     localChain,
                                     fileScope.concat()
                                 );
@@ -727,6 +725,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     if (!mounted)
                         baseNode[ORPHANS].push (anon);
                     anon[TYPES].push ('Function');
+                    if (baseNode.Function)
+                        anon[INSTANCE] = [ baseNode.Function ];
                     anon[LINE] = level.loc.start.line;
                     var args = anon[ARGUMENTS] = [];
                     var lastArg;
@@ -774,9 +774,9 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
                     if (!anon[REBASE])
                         anon[REBASE] = function (base) {
-                            // var item = newNode (anon[PARENT], anon);
                             var item = filth.circularClone (anon, undefined, cloneShallowFilter);
                             delete item[MEMBERS];
+                            item[THIS] = base;
                             var innerScope = new filth.SafeMap (scope, node[SCOPE]);
                             for (var i=0,j=anon[BODY].length; i<j; i++) {
                                 walkLevel (
@@ -837,6 +837,21 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     var dummy = newNode();
                     divineTypes (dummy, level, thisNode);
                     return dummy;
+                case 'CallExpression':
+                    var doProcess = langPack.trip (
+                        'CallExpression',
+                        context,
+                        baseNode,
+                        fname,
+                        referer,
+                        level,
+                        newNode,
+                        next,
+                        thisNode
+                    );
+                    if (!doProcess)
+                        return;
+                    return processCallExpression (level, thisNode, true);
                 default:
                     return;
             }
@@ -845,6 +860,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             if (!shallow) {
                 while (
                     pointer[DEREF]
+                 && !pointer[IS_COL]
                  && pointer[DEREF].length === 1
                  // && !pointer[TYPES].length
                  && cycle.indexOf (pointer[DEREF][0]) < 0
@@ -911,6 +927,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 var cycle = [];
                 while (
                     pointer[DEREF]
+                 && !pointer[IS_COL]
                  && pointer[DEREF].length === 1
                  && !pointer[TYPES].length
                  && cycle.indexOf (pointer[DEREF][0]) < 0
@@ -1262,8 +1279,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 node[OVERRIDE] = fileScope;
         }
 
-        // ---------------------------------------------------------------- real processing begins
-        // walk this level
+        // ------------------------------------------------------------- immediate processing begins
         var node;
         switch (level.type) {
             case 'TryStatement':
@@ -1348,6 +1364,34 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             } else {
                                 // set `this` into a prop somewhere
                             }
+                            break;
+                        }
+
+                        if (
+                            level.expression.left.type === 'MemberExpression'
+                         && level.expression.left.property.name === '__proto__'
+                        ) {
+                            // changing prototype
+                            node = getNode (scope, level.expression.left.object);
+                            if (!node)
+                                break;
+                            if (node[NO_SET])
+                                break;
+                            if (!node[MEMBERS]) {
+                                node[MEMBERS] = tools.newCollection();
+                                node[MEMBERS][PARENT] = node;
+                            }
+                            var newProto = getNode (scope, level.expression.right);
+                            if (!newProto) {
+                                node = undefined;
+                                break;
+                            }
+                            if (node[MEMBERS][DEREF].indexOf (newProto) < 0)
+                                node[MEMBERS][DEREF].push (newProto);
+                            if (node[INSTANCE])
+                                node[INSTANCE].push (newProto)
+                            else
+                                node[INSTANCE] = [ newProto ];
                             break;
                         }
 
@@ -1524,6 +1568,11 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     break;
                 if (node[TYPES].indexOf ('Function') < 0)
                     node[TYPES].push ('Function');
+                if (baseNode.Function)
+                    if (!node[INSTANCE])
+                        node[INSTANCE] = [ baseNode.Function ];
+                    else if (node[INSTANCE].indexOf (baseNode.Function) < 0)
+                        node[INSTANCE].push (baseNode.Function);
                 var args;
                 if (node[ARGUMENTS])
                     args = node[ARGUMENTS];
@@ -1601,9 +1650,9 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 }
                 if (!node[REBASE])
                     node[REBASE] = function (base) {
-                        // var item = newNode (node[PARENT], node);
-                        item = filth.circularClone (node, undefined, cloneShallowFilter);
+                        var item = filth.circularClone (node, undefined, cloneShallowFilter);
                         delete item[MEMBERS];
+                        item[THIS] = base;
                         var innerScope = new filth.SafeMap (scope, node[SCOPE]);
                         for (var i=0,j=node[BODY].length; i<j; i++) {
                             walkLevel (
@@ -1611,7 +1660,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 innerScope,
                                 base,
                                 localDeadLine,
-                                node,
+                                base,
                                 localChain,
                                 fileScope.concat()
                             );
@@ -1903,6 +1952,11 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     node = thisNode[MEMBERS][level.key.name] = newNode (thisNode);
                     node[LINE] = level.loc.start.line;
                 }
+                if (baseNode.Function)
+                    if (!node[INSTANCE])
+                        node[INSTANCE] = [ baseNode.Function ];
+                    else if (node[INSTANCE].indexOf (baseNode.Function) < 0)
+                        node[INSTANCE].push (baseNode.Function);
                 divineTypes (node, level.value, undefined, true);
                 break;
             case 'EmptyStatement':
@@ -2210,28 +2264,39 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
 */
 function preprocessSyntaxTree (context, langPack, defaultScope) {
     // this lil map is used to swap derefs out from defunct Nodes to a relevant target Node
-    var replacementMap = new Map();
+    var localReplacementMap = new Map();
+    var round = 1;
+    var hostDoc;
 
-    function mergeNodes (target, source) {
+    // destructively deep-merge content from a source node into a target node
+    function mergeNodes (target, source, gotChain) {
         var didWrite = false;
-        replacementMap.set (source, target);
+        localReplacementMap.set (source, target);
+        var chain = gotChain || [ source ];
+        function recurse (subTarget, subSource) {
+            if (chain.length >= context.argv.maxRefDepth || chain.indexOf (subSource) >= 0)
+                return;
+            var localChain = chain.concat();
+            localChain.push (subSource);
+            didWrite += mergeNodes (subTarget, subSource, localChain);
+        }
         if (source[MEMBERS])
             if (!target[MEMBERS]) {
                 didWrite = true;
                 target[MEMBERS] = tools.newCollection (source[MEMBERS])
                 target[MEMBERS][PARENT] = target;
                 for (var key in target[MEMBERS])
-                    replacementMap.set (source[MEMBERS][key], target[MEMBERS][key]);
+                    localReplacementMap.set (source[MEMBERS][key], target[MEMBERS][key]);
             } else for (var name in source[MEMBERS])
                 if (Object.hasOwnProperty.call (target[MEMBERS], name))
-                    didWrite += mergeNodes (
+                    recurse (
                         target[MEMBERS][name],
                         source[MEMBERS][name]
                     );
                 else {
                     didWrite = true;
                     target[MEMBERS][name] = source[MEMBERS][name];
-                    replacementMap.set (source[MEMBERS][name], target[MEMBERS][name]);
+                    localReplacementMap.set (source[MEMBERS][name], target[MEMBERS][name]);
                 }
         if (source[PROPS])
             if (!target[PROPS]) {
@@ -2239,26 +2304,26 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                 target[PROPS] = tools.newCollection (source[PROPS])
                 target[PROPS][PARENT] = target;
                 for (var key in target[PROPS])
-                    replacementMap.set (source[PROPS][key], target[PROPS][key]);
+                    localReplacementMap.set (source[PROPS][key], target[PROPS][key]);
             } else for (var name in source[PROPS]) {
                 if (Object.hasOwnProperty.call (target[PROPS], name))
-                    didWrite += mergeNodes (
+                    recurse (
                         target[PROPS][name],
                         source[PROPS][name]
                     );
                 else {
                     didWrite = true;
                     target[PROPS][name] = source[PROPS][name];
-                    replacementMap.set (source[PROPS][name], target[PROPS][name]);
+                    localReplacementMap.set (source[PROPS][name], target[PROPS][name]);
                 }
             }
         if (source[THROWS]) {
             if (!target[THROWS]) {
                 didWrite = true;
                 target[THROWS] = tools.newNode();
-                replacementMap.set (source[THROWS], target[THROWS]);
+                localReplacementMap.set (source[THROWS], target[THROWS]);
             } else
-                didWrite += mergeNodes (target[THROWS], source[THROWS]);
+                recurse (target[THROWS], source[THROWS]);
         }
         if (source[ARGUMENTS]) {
             if (!target[ARGUMENTS]) {
@@ -2268,7 +2333,7 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                 var targetArgs = target[ARGUMENTS].length;
                 for (var i=0,j=source[ARGUMENTS].length; i<j; i++)
                     if (i < targetArgs)
-                        didWrite += mergeNodes (
+                        recurse (
                             target[ARGUMENTS][i],
                             source[ARGUMENTS][i]
                         );
@@ -2280,25 +2345,44 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         }
         if (source[RETURNS])
             if (target[RETURNS])
-                didWrite += mergeNodes (target[RETURNS], source[RETURNS]);
+                recurse (target[RETURNS], source[RETURNS]);
             else {
                 didWrite = true;
                 target[RETURNS] = source[RETURNS];
             }
-        if (source[WAITING_CALLS])
-            if (!target[WAITING_CALLS]) {
-                didWrite = true;
+        if (source[WAITING_CALLS]) {
+            didWrite = true;
+            if (target[BODY]) {
+                // run deferred call tests and discard
+                for (var i=0,j=source[WAITING_CALLS].length; i<j; i++)
+                    source[WAITING_CALLS][i].call (target, target[BODY]);
+            } else if (!target[WAITING_CALLS])
                 target[WAITING_CALLS] = source[WAITING_CALLS].concat();
-            } else
+            else
                 for (var i=0,j=source[WAITING_CALLS].length; i<j; i++)
                     if (target[WAITING_CALLS].indexOf (source[WAITING_CALLS][i]) < 0) {
                         didWrite = true;
                         target[WAITING_CALLS].push (source[WAITING_CALLS][i]);
                     }
+            delete source[WAITING_CALLS];
+        }
+
+        for (var i=0,j=source[DEREF].length; i<j; i++) {
+            var ref = source[DEREF][i];
+            if (target[DEREF].indexOf (ref) < 0)
+                target[DEREF].push (ref);
+        }
+
+        // TYPES
+        for (var i=0,j=source[TYPES]; i<j; i++)
+            if (target[TYPES].indexOf (source[TYPES][i]) < 0)
+                target[TYPES].push (source[TYPES][i]);
         return didWrite;
     }
 
-    function compressCollection (collection) {
+    // dig through trees defined by MEMBERS/DEREF and PROPS/DEREF
+    // gather all PROPS and MEMBERS in source collections into the target collection
+    function compressCollection (collection, chain) {
         var didWrite = false;
 
         // rebases functions as methods
@@ -2313,10 +2397,14 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
         for (var i=0,j=collection[DEREF].length; i<j; i++) {
             var sourceNode = collection[DEREF][i];
-            var replacement = replacementMap.get (sourceNode);
+            var replacement = localReplacementMap.get (sourceNode);
             if (replacement)
                 sourceNode = replacement;
-            didWrite += preprocessDerefs (sourceNode);
+
+            if (sourceNode[IS_COL])
+                didWrite += compressCollection (sourceNode, chain.concat());
+            else
+                didWrite += preprocessDerefs (sourceNode);
 
             // copy the sourceNode's props into the members collection
             // and rebase any methods onto the new class
@@ -2357,6 +2445,9 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                 }
         }
 
+        // drop the derefs, as the collection has already been fully compressed
+        collection[DEREF].splice (0, collection[DEREF].length);
+
         return didWrite;
     }
 
@@ -2369,16 +2460,23 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         if (target[TRANSIENT])
             isTransient = true;
 
-        function recurse (level, target) {
-            if (chain.length >= context.argv.maxRefDepth)
-                return false;
-            // if (IS_COL in level)
-            //     return false;
-            if (chain.indexOf (level) >= 0)
-                return false;
+        function recurse (subLevel, subTarget) {
+            var nextTarget = subTarget || subLevel;
+            if (chain.length >= context.argv.maxRefDepth || chain.indexOf (source) >= 0)
+                return;
+            if (level[ROUND] && level[ROUND].get (target) === round)
+                return;
+            if (chain.indexOf (subLevel) >= 0)
+                return;
             var newChain = chain.concat();
-            newChain.push (level);
-            return preprocessDerefs (level, target || level, newChain, isTransient);
+            newChain.push (subLevel);
+            var result = preprocessDerefs (
+                subLevel,
+                nextTarget,
+                newChain,
+                isTransient
+            );
+            didFinishDeref += result;
         }
 
         if (level[NAME] && level[NAME][1] && (!target[NAME] || !target[NAME][1]))
@@ -2388,9 +2486,6 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
         if (level[BLIND])
             target[BLIND] = true;
-
-        // if (!level[DEREF])
-        //     return false;
 
         // dive for LINE definitions
         if (target === level && !target[LINE] && !isTransient) {
@@ -2415,7 +2510,7 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
         for (var i=0,j=level[DEREF].length; i<j; i++) {
             var ref = level[DEREF][i];
-            var replacement = replacementMap.get (ref);
+            var replacement = localReplacementMap.get (ref);
             if (replacement)
                 ref = replacement;
             if (chain.indexOf (ref) >= 0)
@@ -2448,6 +2543,18 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                         didFinishDeref = true;
                     }
             }
+            if (ref[SUPER]) {
+                if (!target[SUPER]) {
+                    target[SUPER] = ref[SUPER].concat();
+                    didFinishDeref = true;
+                } else for (var i=0,j=ref[SUPER].length; i<j; i++) {
+                    if (target[SUPER].indexOf (ref[SUPER][i]) < 0) {
+                        target[SUPER].push (ref[SUPER][i]);
+                        didFinishDeref = true;
+                    }
+                }
+            }
+
             // promote documentation
             if (ref[DOCSTR]) {
                 if (!target[DOCSTR]) {
@@ -2496,13 +2603,13 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                     var found = false;
                     if (i < target[ARGUMENTS].length) {
                         found = true;
-                        didFinishDeref += recurse (refArg, target[ARGUMENTS][i])
+                        recurse (refArg, target[ARGUMENTS][i])
                     }
 
                     if (!found) {
                         // add to arguments
                         if (i < target[ARGUMENTS].length)
-                            didFinishDeref += recurse (refArg, target[ARGUMENTS][i]);
+                            recurse (refArg, target[ARGUMENTS][i]);
                         else {
                             target[ARGUMENTS].push (refArg);
                             didFinishDeref = true;
@@ -2529,37 +2636,39 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
             }
         }
 
+        // update replacement map for unambiguous links
+        if (level[DEREF].length === 1)
+            context.replacementMap.set (
+                level[DEREF][0],
+                localReplacementMap.get (target) || target
+            );
+
         // recurse
         if (level[ARGUMENTS]) for (var i=0,j=level[ARGUMENTS].length; i<j; i++)
-            didFinishDeref += recurse (level[ARGUMENTS][i]);
+            recurse (level[ARGUMENTS][i]);
         if (level[RETURNS])
-            didFinishDeref += recurse (level[RETURNS]);
+            recurse (level[RETURNS]);
 
         if (typeof level !== 'object')
             throw new Error ('unexpected error');
 
         for (var key in level)
-            didFinishDeref += recurse (level[key], undefined);
-
-        // if (target[NO_SET])
-        //     return didFinishDeref;
+            recurse (level[key], undefined);
 
         if (level[MEMBERS]) {
             if (level[MEMBERS][DEREF].length)
-                didFinishDeref += compressCollection (level[MEMBERS]);
+                didFinishDeref += compressCollection (level[MEMBERS], chain);
             for (var key in level[MEMBERS]) {
                 var nextTarget = level[MEMBERS][key];
-                didFinishDeref += recurse (nextTarget, nextTarget);
+                recurse (nextTarget);
             }
         }
 
         if (level[PROPS]) {
             if (level[PROPS][DEREF].length)
-                didFinishDeref += compressCollection (level[PROPS]);
-            for (var key in level[PROPS]) {
-                var nextTarget = level[PROPS][key];
-                didFinishDeref += recurse (nextTarget, nextTarget);
-            }
+                didFinishDeref += compressCollection (level[PROPS], chain);
+            for (var key in level[PROPS])
+                recurse (level[PROPS][key]);
         }
 
         if (target[WAITING_CALLS] && target[BODY]) {
@@ -2570,48 +2679,132 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                 waitingCalls[i].call (target, target[BODY]);
         }
 
+        // dig for a child key found somewhere in the DEREF/PARENT/INSTANCE matrix
+        function findKey (key, source, pointer, keyChain) {
+            if (!keyChain)
+                keyChain = [ pointer ]
+            function recurse (key, subSource, pointer) {
+                if (keyChain.length >= context.argv.maxRefDepth || keyChain.indexOf (pointer) >= 0)
+                    return false;
+                return findKey (key, subSource, pointer);
+            }
+            if (pointer[MEMBERS] && pointer[MEMBERS][key]) {
+                didFinishDeref += mergeNodes (pointer[MEMBERS][key], source[key]);
+                return true;
+            }
+            if (pointer[SUPER])
+                for (var i=0,j=pointer[SUPER].length; i<j; i++)
+                    if (recurse (key, source, pointer[SUPER][i]))
+                        return true;
+            if (pointer[INSTANCE] && pointer[INSTANCE].length === 1)
+                if (recurse (key, source, pointer[INSTANCE][0]))
+                    return true;
+            return false;
+        }
+
+        // is this Node an instance of a class type?
         if (
             level[INSTANCE]
          && level[INSTANCE].length === 1
          && ( level[PROPS] || ( level[MEMBERS] && !level[MEMBERS][DEREF].length ) )
         ) {
             // transfer properties to class when matching definitions are found
-            var source = level[PROPS] || level[MEMBERS];
             var classType = level[INSTANCE][0];
-            didFinishDeref += recurse (classType);
-            for (var key in source) {
-                // can we find this key in the class type or a parent type?
-                function findKey (pointer) {
-                    if (pointer[MEMBERS] && pointer[MEMBERS][key]) {
-                        didFinishDeref += mergeNodes (pointer[MEMBERS][key], source[key]);
+            recurse (classType);
+            var source;
+            if (level[PROPS]) {
+                source = level[PROPS];
+                for (var key in source) {
+                    // can we find this key in the class type or a parent type?
+                    var foundKey = findKey (key, source, classType)
+                    if (foundKey)
                         delete source[key];
-                        return true;
+                    else if (!classType[SILENT]) {
+                        didFinishDeref = true;
+                        if (!classType[MEMBERS]) {
+                            classType[MEMBERS] = tools.newCollection();
+                            classType[MEMBERS][PARENT] = classType;
+                        }
+                        classType[MEMBERS][key] = source[key];
+                        delete source[key];
                     }
-                    if (pointer[SUPER]) {
-                        for (var i=0,j=pointer[SUPER].length; i<j; i++) {
-                            if (findKey (pointer[SUPER][i]))
-                                return true;
+                }
+            }
+            if (level[MEMBERS]) {
+                source = level[MEMBERS];
+                for (var key in source) {
+                    // can we find this key in the class type or a parent type?
+                    var foundKey = findKey (key, source, classType);
+                    if (foundKey) {
+                        didFinishDeref = true;
+                        delete source[key];
+                    } else {
+                        if (!classType[SILENT]) {
+                            didFinishDeref = true;
+                            if (!classType[MEMBERS]) {
+                                classType[MEMBERS] = tools.newCollection();
+                                classType[MEMBERS][PARENT] = classType;
+                            }
+                            classType[MEMBERS][key] = source[key];
+                            delete source[key];
                         }
                     }
-                    if (pointer[INSTANCE] && pointer[INSTANCE].length === 1) {
-                        if (findKey (pointer[INSTANCE][0]))
-                            return true;
-                    }
-                    return false;
                 }
-                var foundKey = findKey (classType)
-                didFinishDeref += foundKey;
-                if (!foundKey) {
-                    if (!classType[MEMBERS]) {
-                        classType[MEMBERS] = tools.newCollection();
-                        classType[MEMBERS][PARENT] = classType;
+            }
+            if (!Object.keys (source).length && !source[DEREF].length && !level[PROPS]) {
+                didFinishDeref = true;
+                delete level[MEMBERS];
+            }
+        }
+
+        // prototype-style superclass?
+        // burrow to the leaves and mark leaves as Super
+        if (level[MEMBERS] && level[MEMBERS][INSTANCE]) {
+            function dive (item) {
+                var didDive = false;
+                if (item[MEMBERS]) {
+                    if (item[MEMBERS][INSTANCE]) {
+                        didDive = true;
+                        for (var i=0,j=item[MEMBERS][INSTANCE].length; i<j; i++)
+                            dive (item[MEMBERS][INSTANCE][i]);
                     }
-                    classType[MEMBERS][key] = source[key];
-                    delete source[key];
+                    if (item[MEMBERS][DEREF].length) {
+                        didDive = true;
+                        for (var i=0,j=item[MEMBERS][DEREF].length; i<j; i++) {
+                            dive (item[MEMBERS][DEREF][i][PARENT]);
+                        }
+                    }
+                }
+                if (!didDive && level[SUPER].indexOf (item) < 0)
+                    level[SUPER].push (item);
+            }
+            if (!level[SUPER])
+                level[SUPER] = [];
+            dive (level);
+            delete level[MEMBERS][INSTANCE];
+        }
+        if (( level[MEMBERS] || level[PROPS] ) && level[SUPER]) {
+            var source = level[MEMBERS] || level[PROPS];
+            var keys = Object.keys (source);
+            for (var i=0,j=keys.length; i<j; i++) {
+                var key = keys[i];
+                var item = source[key];
+                if (item[BODY])
+                    continue;
+                for (var k=0,l=level[SUPER].length; k<l; k++) {
+                    var target = level[SUPER][k];
+                    if (findKey (key, source, target)) {
+                        item[THIS] = target;
+                        delete source[key];
+                        break;
+                    }
                 }
             }
         }
 
+        if (!level[ROUND])
+            level[ROUND] = new Map();
+        level[ROUND].set (target, round);
         return didFinishDeref;
     }
 
@@ -2627,17 +2820,16 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
     // preprocess syntax tree
     var finishedADeref;
-    var round = 1;
     do {
         finishedADeref = false;
-        for (var rootPath in context.sources) {
+        for (hostDoc in context.sources) {
             context.logger.setTask (
                 'preprocessing syntax tree (round '
               + round
               + ') '
-              + pathLib.relative (process.cwd(), rootPath)
+              + pathLib.relative (process.cwd(), hostDoc)
             );
-            var sourceRoot = context.sources[rootPath];
+            var sourceRoot = context.sources[hostDoc];
             delete sourceRoot.globals;
             try {
                 for (var key in sourceRoot) {
@@ -2650,21 +2842,22 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                 }
             } catch (err) {
                 context.logger.error (
-                    { err:err, path:rootPath, parse:context.argv.parse },
+                    { err:err, path:hostDoc, parse:context.argv.parse },
                     'failed to preprocess syntax tree'
                 );
             }
         }
+        round += 0.5;
         for (var key in globalNode) try {
             var target = globalNode[key];
             finishedADeref += preprocessDerefs (target, target, [ target ]);
         } catch (err) {
             context.logger.error (
-                { err:err, path:rootPath, parse:context.argv.parse },
+                { err:err, path:hostDoc, parse:context.argv.parse },
                 'failed to preprocess syntax tree'
             );
         }
-        round++;
+        round += 0.5;
     } while (finishedADeref);
 
     return { rounds:round };

@@ -19,35 +19,11 @@ function tokenize (fstr) {
 var globalNode;
 function getGlobalNode (context) {
     if (!globalNode) {
-        // load es6 and node roots
-        var es6Root = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'es6.json')).toString()
-        );
-        for (var key in es6Root) {
-            var item = es6Root[key];
-            for (var subkey in item) {
-                if (subkey[0] !== '.')
-                    continue;
-                item[tools[subkey.slice(1).toUpperCase()]] = item[subkey];
-                delete item[subkey];
-            }
-        }
-        var nodeRoot = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', 'node.json')).toString()
-        );
-        for (var key in nodeRoot) {
-            var item = nodeRoot[key];
-            for (var subkey in item) {
-                if (subkey[0] !== '.')
-                    continue;
-                item[tools[subkey.slice(1).toUpperCase()]] = item[subkey];
-                delete item[subkey];
-            }
-        }
-        globalNode = new filth.SafeMap (es6Root, nodeRoot);
+        globalNode = LangPack.loadRootFiles ([ 'es6', 'node' ]);
         globalNode[IS_COL] = true;
         globalNode.global = tools.newNode();
         globalNode.global[PROPS] = globalNode;
+        globalNode[NAME] = [ '.', 'globals' ];
     }
     return globalNode;
 }
@@ -60,11 +36,13 @@ function getRoot (context, filepath, module, root) {
     exports[ROOT] = root;
     exports[DOC] = filepath;
     exports[MODULE] = module;
+    exports[NAME] = [ '.', 'exports' ];
     var newModuleNode = tools.newNode();
     newModuleNode[PROPS] = tools.newCollection ({ exports:exports });
     newModuleNode[ROOT] = root;
     newModuleNode[DOC] = filepath;
     newModuleNode[MODULE] = module;
+    newModuleNode[NAME] = [ '.', 'module' ];
     var newRoot = new filth.SafeMap (getGlobalNode (context), {
         module:     newModuleNode,
         exports:    exports
