@@ -20,6 +20,36 @@ function cloneShallowFilter (key) {
     return key === BODY || key === THIS || key === ROUND;
 }
 
+/*
+    Creates a new Node representing a shallow clone of another Node. Produces new container Objects
+    for the immediate child collections of the Node.
+*/
+function shallowCloneNode (node) {
+    var newNode = Object.create (null);
+    var symbols = Object.getOwnPropertySymbols (node);
+    for (var i=0,j=symbols.length; i<j; i++) {
+        var sym = symbols[i];
+        var item = node[sym];
+        var itemType = filth.getTypeStr (item);
+        if (itemType !== 'object')
+            newNode[sym] = item;
+        else {
+            var newItem = Object.create (null);
+            newNode[sym] = newItem;
+            // copy keys and symbols into new collection
+            var itemSymbols = Object.getOwnPropertySymbols (item);
+            for (var k=0,l=itemSymbols.length; k<l; k++) {
+                itemSym = itemSymbols[k];
+                newItem[itemSym] = item[itemSym];
+            }
+            for (var key in item)
+                newItem[key] = item[key];
+        }
+    }
+    for (var key in node)
+        newNode[key] = node[key];
+    return newNode;
+}
 
 /*
     Process an entire document of mixed code and documentation tags. This initial pass produces a
@@ -596,7 +626,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
                     if (!node[REBASE])
                         node[REBASE] = function (base) {
-                            var item = filth.circularClone (node, undefined, cloneShallowFilter);
+                            var item = shallowCloneNode (node);
                             delete item[MEMBERS];
                             item[THIS] = base;
                             var innerScope = new filth.SafeMap (scope, node[SCOPE]);
@@ -774,7 +804,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
                     if (!anon[REBASE])
                         anon[REBASE] = function (base) {
-                            var item = filth.circularClone (anon, undefined, cloneShallowFilter);
+                            var item = shallowCloneNode (anon);
                             delete item[MEMBERS];
                             item[THIS] = base;
                             var innerScope = new filth.SafeMap (scope, node[SCOPE]);
@@ -1650,7 +1680,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                 }
                 if (!node[REBASE])
                     node[REBASE] = function (base) {
-                        var item = filth.circularClone (node, undefined, cloneShallowFilter);
+                        var item = shallowCloneNode (node);
                         delete item[MEMBERS];
                         item[THIS] = base;
                         var innerScope = new filth.SafeMap (scope, node[SCOPE]);
@@ -2388,7 +2418,7 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
         // rebases functions as methods
         function rebase (item) {
             // recurse to rebase methods housed on DEREF
-            preprocessDerefs (item);
+            preprocessDerefs (item, item, chain.concat());
 
             if (item[REBASE])
                 return item[REBASE] (collection[PARENT]);
@@ -2403,15 +2433,12 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
 
             if (sourceNode[IS_COL])
                 didWrite += compressCollection (sourceNode, chain.concat());
-            else
-                didWrite += preprocessDerefs (sourceNode);
 
             // copy the sourceNode's props into the members collection
             // and rebase any methods onto the new class
             if (sourceNode[IS_COL])
                 for (var key in sourceNode) {
                     var item = rebase (sourceNode[key]);
-                    didWrite += preprocessDerefs (item);
                     if (Object.hasOwnProperty.call (collection, key))
                         didWrite += mergeNodes (collection[key], item);
                     else {
