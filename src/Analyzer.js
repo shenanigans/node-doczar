@@ -190,8 +190,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     arg[TRANSIENT] = true;
                 }
                 divineTypes (arg, expression.arguments[i], undefined, true);
-                if (callNode[SILENT])
-                    arg[SILENT] = true;
             }
 
             // execute or defer a call test to produce a unique RETURNS for this call expression
@@ -239,8 +237,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     var argNode = argSig[i];
                     if (argNode && argNode[IS_COL]) {
                         var dummyParent = newNode (argNode[PARENT]);
-                        if (target[SILENT])
-                            dummyParent[SILENT] = true;
                         dummyParent[INSTANCE] = [ argNode ];
                         argNode = dummyParent;
                     }
@@ -317,16 +313,12 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     }
                     if (node[DEREF].indexOf (scope[value.name]) < 0)
                         node[DEREF].push (scope[value.name]);
-                    if (scope[value.name][SILENT])
-                        node[SILENT] = true;
                     return [];
                 case 'MemberExpression':
                     var memberNode = getNode (scope, value);
                     if (memberNode) {
                         if (node[DEREF].indexOf (memberNode) < 0)
                             node[DEREF].push (memberNode);
-                        if (memberNode[SILENT])
-                            node[SILENT] = true;
                     }
                     return [];
                 case 'Literal':
@@ -462,9 +454,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         return [];
                     if (node[DEREF].indexOf (returnNode) < 0)
                         node[DEREF].push (returnNode);
-                    // propagate silence
-                    if (returnNode[SILENT])
-                        node[SILENT] = true;
                     return [];
                 case 'ClassExpression':
                     if (node[TYPES].indexOf ('Function') < 0)
@@ -534,8 +523,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         for (var i=0,j=value.params.length; i<j; i++) {
                             if (i < args.length) {
                                 args[i][NAME] = [ '(', value.params[i].name ];
-                                if (node[SILENT])
-                                    args[i][SILENT] = true;
                             } else {
                                 var arg = args[i] = newNode (node);
                                 arg[NAME] = [ '(', value.params[i].name ];
@@ -543,7 +530,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 arg[DEREF] = [];
                                 arg[NO_SET] = true;
                                 arg[TRANSIENT] = true;
-                                arg[SILENT] = Boolean (node[SILENT]);
                             }
                             processComments (args[i], value.params[i], localDeadLine, node);
                             if (
@@ -568,7 +554,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             arg[DEREF] = [];
                             arg[NO_SET] = true;
                             arg[TRANSIENT] = true;
-                            arg[SILENT] = Boolean (node[SILENT]);
                             processComments (arg, param, localDeadLine, node);
                             if (
                                 lastArg
@@ -660,8 +645,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         node[INSTANCE].push (typeNode);
                     else
                         node[INSTANCE] = [ typeNode ];
-                    if (typeNode[SILENT])
-                        node[SILENT] = true;
                     // apply argument info to constructor
                     var args;
                     if (typeNode[ARGUMENTS])
@@ -678,8 +661,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             arg[NAME] = [ '(', '' ];
                         }
                         divineTypes (arg, value.arguments[i], undefined, true);
-                        if (typeNode[SILENT])
-                            arg[SILENT] = true;
                     }
                     return [];
                 case 'UnaryExpression':
@@ -702,7 +683,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             if (level.computed)
                 return;
             var pointer = initialPointer;
-            // var silent = Boolean (initialPointer[SILENT]);
             var silent = false;
 
             switch (level.type) {
@@ -839,8 +819,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         dummy[INSTANCE].push (typeNode);
                     else
                         dummy[INSTANCE] = [ typeNode ];
-                    if (typeNode[SILENT])
-                        dummy[SILENT] = true;
                     // apply argument info to constructor
                     var args;
                     if (typeNode[ARGUMENTS])
@@ -857,8 +835,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             arg[NAME] = [ '(', '' ];
                         }
                         divineTypes (arg, level.arguments[i]);
-                        if (typeNode[SILENT])
-                            arg[SILENT] = true;
                     }
                     if (!mounted)
                         baseNode[ORPHANS].push (dummy);
@@ -946,10 +922,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     pointer[LINE] = level.property.loc.start.line;
                     pointer[NAME] = [ nameDelimit, lastStep ];
                 }
-
-                // propagate silence
-                if (silent)
-                    pointer[SILENT] = true;
             }
 
             // gotta deref
@@ -1544,8 +1516,6 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 arg[NAME] = [ '(', '' ];
                             }
                             divineTypes (arg, level.expression.arguments[i], undefined, true);
-                            if (typeNode[SILENT])
-                                arg[SILENT] = true;
                         }
                     default:
                         logger.trace (
