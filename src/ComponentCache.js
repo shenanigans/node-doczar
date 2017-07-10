@@ -423,7 +423,7 @@ ComponentCache.prototype.finalize = function (options, callback) {
     if an Error interrupts the process.
 @argument:String basedir
     The full path of the root directory where Components should output their files.
-@argument:doczar/Options options
+@argument:doczar.Options options
 @callback
 */
 ComponentCache.prototype.writeFiles = function (basedir, options, callback) {

@@ -57,16 +57,13 @@ option             | description
 --j, --js, --jsmod | Loads the filename with [required](https://github.com/defunctzombie/node-required) and documents every required source file.
 --node             | Automatically fills the `--jsmod`, `--parse` and `--root` options for a Node.js module by reading `./package.json`.
 --with             | Include a prebuilt standard library in the documentation. Standard libraries may be selected automatically when using other options (such as `--jsmod` or `--parse`) which imply a specific environment.
---parse            | [Parse](#syntax-parsing) selected files as source code using inline documentation. Mimics the more familiar behavior of javadoc-derived documentation systems.
---root             | Prefixes a path to every documented or parser-generated declaration. The root path is overridden by the first `@module` directive found in each file. The path of a `@module` tag is **never** affected by the `--root` option. The `--parse` option does not apply the root path to external dependencies.
---dev              | Display Components marked with the `@development` modifier.
---api              | Display **only** Components marked with the `@api` modifier.
+--parse            | [Parse](#syntax-parsing) selected files as source code using inline documentation.
+--root             | Prefixes a path to every documented or parser-generated declaration. The root path is overridden by the first `@module` directive found in each file. The path of a `@module` tag is **never** affected by the `--root` option. The `--parse` option does not apply to external dependencies.
 --raw              | Log console events as json strings instead of pretty printing them. (`doczar` uses [Bunyan](https://github.com/trentm/node-bunyan) logging)
 --json             | Create an `index.json` file in each directory instead of a rendered `index.html`.
 --date             | By default, every page is marked with the (local) time it was generated. This option explicitly sets the datestamp on each page. Accepts any date/time string compatible with the common javascript Date constructor.
 --noDeps, --nodeps | Skip library dependencies.
 --noImply, --noimp | Do not allow shell options to load a standard doc library by implying the `--with` option.
---jTrap, --jtrap   | Ensures that all javadoc-flavored documentation produced by the parser is contained within the parent `@module`.
 
 
 
@@ -82,12 +79,12 @@ formal declarations override the paths configured by the analyzer and may reconf
 documentation path used to refer to a line of code.
 
 ### Command Line Options
-#### `--parse`
-Activates syntax analysis and selects the language to parse.
+The following command line arguments are used to control the basic functions of the syntax parsing
+engine.
 
 ##### `--parse js`
 The simplest javascript parsing mode. Values in the scope of each file parsed are documented as
-global values. Typical scope wrapping methods use in browser javascript are supported. ES6 features
+global values. Typical scope wrapping methods used in browser javascript are supported. ES6 features
 are supported. Dependant files loaded with `import` will be assigned default module paths. When a
 typical Browser/CommonJS/AMD compatibility shim is used, the browser context version of the file
 will be documented.
@@ -98,8 +95,8 @@ Used to document code written for the [Node.js](https://nodejs.org) javascript r
 local scope are treated as local names and documented (or not) depending on the value of the
 `--locals` argument. By default, no local values are documented. Node conventions such as `global`
 and `exports` are supported and a skeleton of the standard library will be injected during analysis.
- When a typical Browser/CommonJS/AMD compatibility shim is used, the browser context version of the
-file will be documented.
+When a typical Browser/CommonJS/AMD compatibility shim is used, the CommonJS version of the file
+will be loaded.
 
 #### `--root`
 Sets the default module path for files that are selected directly by the `--in` argument. Further
@@ -125,6 +122,7 @@ By default, `doczar` analyzes and documents every source file in the entire impo
 `--nodeps` is present, libraries managed by a tool such as `npm` will be ignored.
 
 
+### Documentation Comments
 A comment is attached to a line of code by any of these means:
 ```javascript
 /* A local name called `foo`. */
@@ -156,6 +154,8 @@ var trailer = NEW_MOVIES[movieIndex].trailer; /*
     This comment will document `trailer`.
 */
 ```
+
+
 
 ### Javascript Caveats
 If a constructor alters the `__proto__` property of the instance, members attached to the class by
@@ -812,6 +812,13 @@ copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+IES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
