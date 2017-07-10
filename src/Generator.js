@@ -87,6 +87,15 @@ function generateComponents (context, langPack, defaultScope) {
         if (level[OVERRIDE] && level[OVERRIDE].length)
             localDefault = level[OVERRIDE];
         var didSubmit = false;
+        // catch Components implied by an importing context
+        if (
+            localDefault
+         && localDefault.length
+         && level[MODULE]
+         && level[MODULE].length
+         && level[MODULE][0][1] != localDefault[0][1]
+        )
+            return false;
 
         if (!level[PATH]) {
             didSubmit = true;
@@ -238,9 +247,13 @@ function generateComponents (context, langPack, defaultScope) {
         } else {
             // alias?
             if (force && !tools.pathsEqual (scope, level[LOCALPATH])) {
+                // submit an alias modifier to the context
                 context.submit (localDefault.concat (scope), {
                     modifiers:[ { mod:'alias', path:level[PATH] } ]
                 });
+                // force the alias target
+                if (( level[FORCE] && level[FORCE] > 0 ) || !level[FORCE])
+                    level[FORCE] = 1;
                 return true;
             }
 
