@@ -244,13 +244,24 @@ function generateComponents (context, langPack, defaultScope) {
                     lineDoc
                 );
             }
+            if (level[NAME] !== undefined && level[NAME][1])
+                context.submit (
+                    fullpath,
+                    { name:level[NAME][1] }
+                );
         } else {
             // alias?
             if (force && !tools.pathsEqual (scope, level[LOCALPATH])) {
                 // submit an alias modifier to the context
-                context.submit (localDefault.concat (scope), {
+                var fullpath = localDefault.concat (scope);
+                context.submit (fullpath, {
                     modifiers:[ { mod:'alias', path:level[PATH] } ]
                 });
+                if (level[NAME] !== undefined && level[NAME][1])
+                    context.submit (
+                        fullpath,
+                        { name:level[NAME][1] }
+                    );
                 // force the alias target
                 if (( level[FORCE] && level[FORCE] > 0 ) || !level[FORCE])
                     level[FORCE] = 1;
@@ -322,6 +333,11 @@ function generateComponents (context, langPack, defaultScope) {
                             lineDoc.sourceModule = level[MODULE];
                         context.submit (localDefault.concat (scope), lineDoc);
                     }
+                    if (level[NAME] !== undefined && level[NAME][1])
+                        context.submit (
+                            fullpath,
+                            { name:level[NAME][1] }
+                        );
                 }
             }
         }
