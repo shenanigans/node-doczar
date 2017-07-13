@@ -656,7 +656,12 @@ Component.prototype.finalize = function (options, callback) {
             if (Object.hasOwnProperty.call (self.spare, 'constructor'))
                 self.final.constructorDoc = self.spare.constructor.final.doc;
 
+            try {
             var sourceDoc = self.inherited = self.inherit();
+            } catch (err) {
+                console.log ('failed', self.pathstr, self.superClasses.map (tools.pathStr));
+                throw err;
+            }
             // do we need to display ourself or our children? All of them?
             var showAPI = Boolean (options.showAPI);
             var showDev = Boolean (options.showDev);
@@ -1149,6 +1154,9 @@ Component.prototype.finalize = function (options, callback) {
     containing only child Components.
 */
 Component.prototype.inherit = function (loops) {
+    if (this.superDoc)
+        return this.superDoc;
+
     if (!loops)
         loops = Object.create (null);
     var propName = this.path[this.path.length-1][1];
@@ -1175,7 +1183,7 @@ Component.prototype.inherit = function (loops) {
             this.didProcessInheritence = true;
         }
 
-    var output = {
+    var output = this.superDoc = {
         member:             Object.create (null),
         memberSymbols:      Object.create (null),
         event:              Object.create (null)
@@ -1286,6 +1294,7 @@ Component.prototype.inherit = function (loops) {
         if (this.signature.length)
             output.signature = this.signature.slice();
     }
+
     return output;
 };
 
