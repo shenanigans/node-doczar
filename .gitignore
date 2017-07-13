@@ -4,5 +4,4 @@ node_modules
 docs
 index.html
 test/out
-roots
 testbed.js

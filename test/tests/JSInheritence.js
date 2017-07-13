@@ -15,6 +15,12 @@
     * BarClass#overrideMethod's arguments should both be type Number
     * BarClass#cheese should be type Number|String
 
+    * BargeClass should have one method, parentMethod
+    * BargeClass#parentMethod's argument is called able
+    * BilgeClass is a child class of BargeClass
+    * BilgeClass should have two method, parentMethod and childMethod
+    * BilgeClass#childMethod's argument is called baker
+
     * simpleFun should have no members or properties
     * TODO simpleFun should have two String arguments
 */
@@ -47,8 +53,16 @@ function simpleFun(){
     return this.apply (this, [ 'foo', 'bar' ]);
 }
 
+function BargeClass(){}
+BargeClass.prototype.parentMethod = function (able) {};
+function BilgeClass(){}
+BilgeClass.prototype = Object.create (BargeClass.prototype);
+BilgeClass.prototype.childMethod = function (baker) {};
+
 module.exports = {
     FooClass:   FooClass,
     BarClass:   BarClass,
+    BargeClass: BargeClass,
+    BilgeClass: BilgeClass,
     simpleFun:  simpleFun
 };

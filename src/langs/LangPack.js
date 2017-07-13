@@ -52,9 +52,7 @@ LangPack.loadRootFiles = function (names) {
         return node;
     }
     for (var i=0,j=names.length; i<j; i++) {
-        var rootFile = JSON.parse (
-            fs.readFileSync (path.join (__dirname, 'roots', names[i] + '.json')).toString()
-        );
+        var rootFile = require ('./roots/' + names[i]);
         for (var key in rootFile)
             newRoot[key] = convert (rootFile[key]);
     }

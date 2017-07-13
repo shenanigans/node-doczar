@@ -160,6 +160,8 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
             var callNode = getNode (scope, expression.callee);
             if (!callNode)
                 return;
+
+            // ensure the Node selected as a call Node is marked TYPES[ "Function"
             var setFunctionPointer = callNode;
             var setFunctionChain = [];
             do {
@@ -190,6 +192,21 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                     arg[TRANSIENT] = true;
                 }
                 divineTypes (arg, expression.arguments[i], undefined, true);
+            }
+
+            // special functionality
+            if (callNode[SPECIAL]) {
+                var specialResult = callNode[SPECIAL] (
+                    scope,
+                    expression,
+                    target,
+                    newNode,
+                    divineTypes,
+                    getNode
+                );
+                if (generateReturn)
+                    return specialResult;
+                return callNode;
             }
 
             // execute or defer a call test to produce a unique RETURNS for this call expression
@@ -2440,6 +2457,15 @@ function preprocessSyntaxTree (context, langPack, defaultScope) {
                         collection[key] = item;
                     }
                 }
+            if (sourceNode[INSTANCE])
+                if (!collection[INSTANCE]) {
+                    collection[INSTANCE] = sourceNode[INSTANCE].concat();
+                    didWrite = true;
+                } else for (var i=0,j=sourceNode[INSTANCE].length; i<j; i++)
+                    if (collection[INSTANCE].indexOf (sourceNode[INSTANCE][i]) < 0) {
+                        collection[INSTANCE].push (sourceNode[INSTANCE][i]);
+                        didWrite = true;
+                    }
         }
 
         // drop the derefs, as the collection has already been fully compressed
