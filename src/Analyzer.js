@@ -424,12 +424,11 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                             return [];
                         var dummy;
                         if (targetNode[IS_COL]) {
-
                             // something like Foo.prototype = {
                             divineTypes (targetNode, value.right, targetNode[PARENT], true);
                             var refNode = node[IS_COL] ?
                                 node
-                              : ( node[MEMBERS] || ( ode[MEMBERS] = tools.newCollection() ) )
+                              : ( node[MEMBERS] || ( node[MEMBERS] = tools.newCollection() ) )
                               ;
                             if (refNode[DEREF].indexOf (targetNode) < 0)
                                 refNode[DEREF].push (targetNode);
@@ -1345,6 +1344,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                         if (!selfPointer[MEMBERS]) {
                             selfPointer[MEMBERS] = tools.newCollection();
                             selfPointer[MEMBERS][PARENT] = selfPointer;
+                            selfPointer[MEMBERS][SOFT] = true;
                         }
                         node = scope[declaration.id.name] = newNode (scope);
                         node[NAME] = [ '.', declaration.id.name ];
@@ -1375,6 +1375,7 @@ function processSyntaxFile (context, fname, referer, tree, langPack, defaultScop
                                 if (!selfPointer[MEMBERS]) {
                                     selfPointer[MEMBERS] = tools.newCollection();
                                     selfPointer[MEMBERS][PARENT] = selfPointer;
+                                    selfPointer[MEMBERS][SOFT] = true;
                                 }
                                 node = scope[level.expression.left.name] = newNode (scope);
                                 node[NAME] = [ '.', level.expression.left.name ];

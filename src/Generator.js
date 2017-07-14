@@ -122,7 +122,10 @@ function generateComponents (context, langPack, defaultScope) {
                     localDefault = [];
             } else {
                 path = scope;
-                if (level[MEMBERS])
+                if (
+                    level[MEMBERS]
+                 && ( !level[MEMBERS][SOFT] || Object.keys (level[MEMBERS]).length )
+                )
                     ctype = 'class';
                 else
                     ctype = path.length ? Patterns.delimiters[path[path.length-1][0]] : 'property';
